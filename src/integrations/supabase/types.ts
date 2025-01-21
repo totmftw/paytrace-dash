@@ -477,6 +477,10 @@ export type Database = {
         }
         Returns: string
       }
+      generate_unique_invoice_number: {
+        Args: Record<PropertyKey, never>
+        Returns: number[]
+      }
       get_user_permissions: {
         Args: {
           user_id: string

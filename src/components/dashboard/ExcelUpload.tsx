@@ -17,10 +17,15 @@ export function ExcelUpload() {
     return d.toISOString().split('T')[0];
   };
 
-  const generateInvoiceNumber = () => {
-    const timestamp = Date.now();
-    const random = Math.floor(Math.random() * 1000);
-    return [timestamp, random];
+  const generateInvoiceNumber = async () => {
+    try {
+      const { data, error } = await supabase.rpc('generate_unique_invoice_number');
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error generating invoice number:', error);
+      throw error;
+    }
   };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,8 +58,8 @@ export function ExcelUpload() {
           throw new Error(`Invalid customer IDs found in rows: ${invalidRows.map((row: any) => row.CustomerId).join(', ')}`);
         }
 
-        // Validate and format data before processing
-        const validatedSales = jsonData.map((row: any) => {
+        // Process each row sequentially to ensure unique invoice numbers
+        for (const row of jsonData) {
           const invDate = formatDate(row.Date);
           const invDuedate = formatDate(row.DueDate);
 
@@ -62,9 +67,11 @@ export function ExcelUpload() {
             throw new Error('Invalid or missing Date format');
           }
 
-          return {
+          const invNumber = await generateInvoiceNumber();
+
+          const invoiceData = {
             invCustid: parseInt(row.CustomerId),
-            invNumber: generateInvoiceNumber(),
+            invNumber,
             invDate,
             invDuedate,
             invValue: Number(row.Value) || 0,
@@ -77,13 +84,13 @@ export function ExcelUpload() {
             invMessage2: row.Message2 || '',
             invMessage3: row.Message3 || ''
           };
-        });
 
-        const { error } = await supabase
-          .from('invoiceTable')
-          .insert(validatedSales);
+          const { error } = await supabase
+            .from('invoiceTable')
+            .insert(invoiceData);
 
-        if (error) throw error;
+          if (error) throw error;
+        }
 
         toast({
           title: "Success",

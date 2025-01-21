@@ -2,6 +2,7 @@ import { ExcelUpload } from "@/components/dashboard/ExcelUpload";
 import { PaymentMetrics } from "@/components/dashboard/PaymentMetrics";
 import { PaymentReminders } from "@/components/dashboard/PaymentReminders";
 import { SalesOverview } from "@/components/dashboard/SalesOverview";
+import { PaymentTracking } from "@/components/dashboard/PaymentTracking";
 import { NewSaleForm } from "@/components/dashboard/NewSaleForm";
 
 const Dashboard = () => {
@@ -25,8 +26,10 @@ const Dashboard = () => {
           <PaymentReminders />
         </div>
       </div>
+
+      <PaymentTracking />
     </div>
   );
-}
+};
 
 export default Dashboard;

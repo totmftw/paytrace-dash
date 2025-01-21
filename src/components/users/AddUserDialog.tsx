@@ -41,15 +41,15 @@ const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
     setIsLoading(true);
     try {
       const { data, error } = await supabase.rpc("create_new_user_with_profile", {
-        email: values.email,
-        password: values.password,
-        full_name: values.full_name,
-        role: values.role,
-        phone: values.phone_number,
-        designation: values.designation,
-        department: values.department,
-        emergency_contact: values.emergency_contact,
-        address: values.address,
+        user_email: values.email,
+        user_password: values.password,
+        user_full_name: values.full_name,
+        user_role: values.role,
+        user_phone: values.phone_number,
+        user_designation: values.designation,
+        user_department: values.department,
+        user_emergency_contact: values.emergency_contact,
+        user_address: values.address,
       });
 
       if (error) throw error;

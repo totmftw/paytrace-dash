@@ -17,6 +17,11 @@ export function ExcelUpload() {
     return d.toISOString().split('T')[0];
   };
 
+  const formatNumber = (num: number | string): number => {
+    const parsed = typeof num === 'string' ? parseFloat(num) : num;
+    return Math.round(parsed || 0);
+  };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -44,16 +49,22 @@ export function ExcelUpload() {
             throw new Error('Invalid or missing Date format');
           }
 
+          const value = formatNumber(row.Value);
+          const gst = formatNumber(row.GST);
+          const additionalAmount = formatNumber(row.AdditionalAmount);
+          const subtractAmount = formatNumber(row.SubtractAmount);
+          const total = formatNumber(row.Total);
+
           return {
             invCustid: parseInt(row.CustomerId),
             invNumber: [Date.now()], // Generate unique invoice number
             invDate,
             invDuedate,
-            invValue: Number(row.Value) || 0,
-            invGst: Number(row.GST) || 0,
-            invAddamount: Number(row.AdditionalAmount) || 0,
-            invSubamount: Number(row.SubtractAmount) || 0,
-            invTotal: Number(row.Total) || 0,
+            invValue: value,
+            invGst: gst,
+            invAddamount: additionalAmount,
+            invSubamount: subtractAmount,
+            invTotal: total,
             invMarkcleared: false,
             invMessage1: row.Message1 || '',
             invMessage2: row.Message2 || '',

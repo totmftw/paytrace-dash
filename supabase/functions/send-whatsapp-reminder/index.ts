@@ -37,16 +37,17 @@ serve(async (req) => {
     );
 
     // Send WhatsApp message using the WhatsApp Business API
-    const response = await fetch("https://api.whatsapp.com/v1/messages", {
+    const response = await fetch("https://graph.facebook.com/v17.0/FROM_PHONE_NUMBER_ID/messages", {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${WHATSAPP_API_KEY}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
+        messaging_product: "whatsapp",
         to: phone,
+        type: "template",
         template: {
-          namespace: WHATSAPP_TEMPLATE_NAMESPACE,
           name: WHATSAPP_TEMPLATE_NAME,
           language: {
             code: "en",
@@ -92,6 +93,7 @@ serve(async (req) => {
       }
     );
   } catch (error) {
+    console.error('Error in send-whatsapp-reminder:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {

@@ -5,10 +5,12 @@ import { Upload, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import * as XLSX from 'xlsx';
+import { useQueryClient } from "@tanstack/react-query";
 
 export function CustomerExcelUpload() {
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -16,45 +18,82 @@ export function CustomerExcelUpload() {
 
     setUploading(true);
     try {
+      console.log("Starting file upload process...");
       const reader = new FileReader();
+      
       reader.onload = async (e) => {
-        const data = e.target?.result;
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        try {
+          const data = e.target?.result;
+          const workbook = XLSX.read(data, { type: 'array' });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-        // Process and validate each row
-        const customers = jsonData.map((row: any) => ({
-          custBusinessname: row.BusinessName ?? '',
-          custOwnername: row.OwnerName ?? '',
-          custPhone: Number(row.Phone) || 0,
-          custWhatsapp: Number(row.WhatsApp) || 0,
-          custOwnerphone: Number(row.OwnerPhone) || 0,
-          custOwnerwhatsapp: Number(row.OwnerWhatsApp) || 0,
-          custEmail: row.Email ?? '',
-          custOwneremail: row.OwnerEmail ?? '',
-          custType: row.Type ?? 'retail',
-          custAddress: row.Address ?? '',
-          custProvince: row.Province ?? '',
-          custCity: row.City ?? '',
-          custPincode: Number(row.Pincode) || null,
-          custGST: row.GST ?? '0',
-          custCreditperiod: Number(row.CreditPeriod) || 0,
-          custRemarks: row.Remarks ?? '',
-          custStatus: row.Status ?? 'active'
-        }));
+          console.log("Parsed Excel data:", jsonData);
 
-        // Insert data into Supabase
-        const { error } = await supabase
-          .from('customerMaster')
-          .insert(customers);
+          if (!Array.isArray(jsonData) || jsonData.length === 0) {
+            throw new Error("No valid data found in the Excel file");
+          }
 
-        if (error) throw error;
+          // Process and validate each row
+          const customers = jsonData.map((row: any) => ({
+            custBusinessname: row.BusinessName || '',
+            custOwnername: row.OwnerName || '',
+            custPhone: Number(row.Phone) || 0,
+            custWhatsapp: Number(row.WhatsApp) || 0,
+            custOwnerphone: Number(row.OwnerPhone) || 0,
+            custOwnerwhatsapp: Number(row.OwnerWhatsApp) || 0,
+            custEmail: row.Email || '',
+            custOwneremail: row.OwnerEmail || '',
+            custType: row.Type || 'retail',
+            custAddress: row.Address || '',
+            custProvince: row.Province || '',
+            custCity: row.City || '',
+            custPincode: Number(row.Pincode) || null,
+            custGST: row.GST || '0',
+            custCreditperiod: Number(row.CreditPeriod) || 0,
+            custRemarks: row.Remarks || '',
+            custStatus: row.Status || 'active'
+          }));
 
+          console.log("Processed customer data:", customers);
+
+          // Insert data into Supabase
+          const { data: insertedData, error } = await supabase
+            .from('customerMaster')
+            .insert(customers)
+            .select();
+
+          if (error) {
+            console.error("Supabase insert error:", error);
+            throw error;
+          }
+
+          console.log("Successfully inserted data:", insertedData);
+          
+          // Invalidate and refetch customers query
+          await queryClient.invalidateQueries({ queryKey: ["customers"] });
+
+          toast({
+            title: "Success",
+            description: `Successfully uploaded ${customers.length} customer records`,
+          });
+        } catch (error) {
+          console.error("Processing error:", error);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: error.message || "Failed to process customer data",
+          });
+        }
+      };
+
+      reader.onerror = (error) => {
+        console.error("FileReader error:", error);
         toast({
-          title: "Success",
-          description: "Customer data uploaded successfully",
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to read the Excel file",
         });
       };
 
@@ -68,6 +107,8 @@ export function CustomerExcelUpload() {
       });
     } finally {
       setUploading(false);
+      // Reset the input
+      event.target.value = '';
     }
   };
 
@@ -95,28 +136,10 @@ export function CustomerExcelUpload() {
     ];
 
     const ws = XLSX.utils.json_to_sheet(template);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Template");
     
-    // Add column descriptions
-    const columnDescriptions = {
-      A1: { v: 'BusinessName', t: 's', w: 'BusinessName' },
-      B1: { v: 'OwnerName', t: 's', w: 'OwnerName' },
-      C1: { v: 'Phone', t: 's', w: 'Phone' },
-      D1: { v: 'WhatsApp', t: 's', w: 'WhatsApp' },
-      E1: { v: 'OwnerPhone', t: 's', w: 'OwnerPhone' },
-      F1: { v: 'OwnerWhatsApp', t: 's', w: 'OwnerWhatsApp' },
-      G1: { v: 'Email', t: 's', w: 'Email' },
-      H1: { v: 'OwnerEmail', t: 's', w: 'OwnerEmail' },
-      I1: { v: 'Type', t: 's', w: 'Type' },
-      J1: { v: 'Address', t: 's', w: 'Address' },
-      K1: { v: 'Province', t: 's', w: 'Province' },
-      L1: { v: 'City', t: 's', w: 'City' },
-      M1: { v: 'Pincode', t: 's', w: 'Pincode' },
-      N1: { v: 'GST', t: 's', w: 'GST' },
-      O1: { v: 'CreditPeriod', t: 's', w: 'CreditPeriod' },
-      P1: { v: 'Remarks', t: 's', w: 'Remarks' },
-      Q1: { v: 'Status', t: 's', w: 'Status' }
-    };
-
+    // Add column widths for better readability
     ws['!cols'] = [
       { wch: 20 }, // BusinessName
       { wch: 15 }, // OwnerName
@@ -137,10 +160,6 @@ export function CustomerExcelUpload() {
       { wch: 10 }  // Status
     ];
 
-    Object.assign(ws, columnDescriptions);
-
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Template");
     XLSX.writeFile(wb, "customer-template.xlsx");
   };
 

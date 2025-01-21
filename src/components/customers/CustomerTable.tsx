@@ -32,11 +32,6 @@ export function CustomerTable() {
         
         if (error) {
           console.error("Supabase error:", error);
-          toast({
-            variant: "destructive",
-            title: "Error fetching customers",
-            description: error.message || "An unknown error occurred"
-          });
           throw error;
         }
         
@@ -47,14 +42,15 @@ export function CustomerTable() {
         const error = err as Error | PostgrestError;
         toast({
           variant: "destructive",
-          title: "Network Error",
+          title: "Error fetching customers",
           description: error.message || "Failed to connect to the server. Please check your internet connection and try again."
         });
-        throw err;
+        throw error;
       }
     },
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    refetchOnWindowFocus: false,
   });
 
   const handleEdit = (customer: any) => {
@@ -64,8 +60,13 @@ export function CustomerTable() {
   if (error) {
     return (
       <div className="text-center p-4">
-        <p className="text-red-500 mb-4">Error loading customers</p>
-        <Button onClick={() => refetch()}>Try Again</Button>
+        <p className="text-red-500 mb-4">Unable to load customers</p>
+        <Button 
+          onClick={() => refetch()}
+          className="bg-primary hover:bg-primary/90"
+        >
+          Try Again
+        </Button>
       </div>
     );
   }

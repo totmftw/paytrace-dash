@@ -35,7 +35,7 @@ export function CustomerTable() {
           toast({
             variant: "destructive",
             title: "Error fetching customers",
-            description: error.message
+            description: error.message || "An unknown error occurred"
           });
           throw error;
         }

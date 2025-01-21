@@ -9,15 +9,13 @@ export const supabase = createClient<Database>(
   SUPABASE_ANON_KEY,
   {
     auth: {
-      persistSession: true,
       autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true
     },
     global: {
       headers: {
         'apikey': SUPABASE_ANON_KEY,
-        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-        'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json',
       },
     },
   }

@@ -10,17 +10,28 @@ const Invoices = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   
-  // Check authentication status
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error("Session error:", sessionError);
+        toast({
+          variant: "destructive",
+          title: "Authentication error",
+          description: "There was a problem checking your authentication status",
+        });
         navigate("/login");
+        return;
+      }
+      
+      if (!session) {
         toast({
           variant: "destructive",
           title: "Authentication required",
           description: "Please log in to view invoices",
         });
+        navigate("/login");
       }
     };
     
@@ -38,9 +49,9 @@ const Invoices = () => {
   const { data: invoices, isLoading, error } = useQuery({
     queryKey: ["invoices"],
     queryFn: async () => {
-      const { data: session } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      if (!session.session) {
+      if (sessionError || !session) {
         throw new Error("No authenticated session");
       }
 

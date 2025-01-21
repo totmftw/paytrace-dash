@@ -13,10 +13,18 @@ export const supabase = createClient<Database>(
       autoRefreshToken: true,
     },
     global: {
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+      fetch: async (url, options = {}) => {
+        const response = await fetch(url, {
+          ...options,
+          headers: {
+            ...options.headers,
+            'X-Client-Info': 'lovable-app',
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          },
+          credentials: 'include',
+        });
+        return response;
       },
     },
   }

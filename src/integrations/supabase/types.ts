@@ -75,7 +75,7 @@ export type Database = {
       invoiceTable: {
         Row: {
           invAddamount: number | null
-          invAlert: string[] | null
+          invAlert: string | null
           invCustid: number
           invDate: string | null
           invDuedate: string | null
@@ -95,7 +95,7 @@ export type Database = {
         }
         Insert: {
           invAddamount?: number | null
-          invAlert?: string[] | null
+          invAlert?: string | null
           invCustid: number
           invDate?: string | null
           invDuedate?: string | null
@@ -115,7 +115,7 @@ export type Database = {
         }
         Update: {
           invAddamount?: number | null
-          invAlert?: string[] | null
+          invAlert?: string | null
           invCustid?: number
           invDate?: string | null
           invDuedate?: string | null

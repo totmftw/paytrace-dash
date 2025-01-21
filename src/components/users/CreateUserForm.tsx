@@ -56,18 +56,14 @@ export function CreateUserForm() {
   const onSubmit = async (data: FormValues) => {
     setIsLoading(true);
     try {
-      const { error } = await supabase.rpc('create_user_with_profile', {
+      const { error } = await supabase.rpc('create_new_user_with_profile', {
         email: data.email,
         password: data.password,
         full_name: data.full_name,
         role: data.role,
-        phone: data.phone || '', // Ensure phone is always sent
+        phone: data.phone || '', 
         designation: data.designation,
         department: data.department,
-        employee_id: data.employee_id,
-        team: data.team,
-        location: data.location,
-        bio: data.bio || '', // Ensure bio is always sent
         emergency_contact: data.emergency_contact,
         address: data.address,
       });

@@ -13,18 +13,9 @@ export const supabase = createClient<Database>(
       autoRefreshToken: true,
     },
     global: {
-      fetch: async (url: string, options: RequestInit = {}) => {
-        const response = await fetch(url, {
-          ...options,
-          headers: {
-            ...options.headers,
-            'X-Client-Info': 'lovable-app',
-            'apikey': SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-          },
-          credentials: 'include',
-        });
-        return response;
+      headers: {
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
       },
     },
   }

@@ -2,15 +2,59 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { ExcelUpload } from "@/components/dashboard/ExcelUpload";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { Check, X } from "lucide-react";
 import type { PostgrestError } from "@supabase/supabase-js";
 
 const Invoices = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  
+  // Check if user has permission to clear invoices
+  const { data: permissions } = useQuery({
+    queryKey: ["permissions", "invoice_clearing"],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.user?.id) return null;
+
+      const { data, error } = await supabase.rpc('get_user_permissions', {
+        user_id: session.user.id
+      });
+
+      if (error) throw error;
+      return data.find(p => p.resource === 'invoice_clearing');
+    }
+  });
+
+  const clearInvoiceMutation = useMutation({
+    mutationFn: async (invId: number) => {
+      const { error } = await supabase
+        .from('invoiceTable')
+        .update({ invMarkcleared: true })
+        .eq('invId', invId);
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["invoices"] });
+      toast({
+        title: "Invoice cleared",
+        description: "The invoice has been marked as cleared successfully.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to clear invoice. Please try again.",
+      });
+      console.error("Error clearing invoice:", error);
+    },
+  });
   
   useEffect(() => {
     const checkAuth = async () => {
@@ -67,7 +111,8 @@ const Invoices = () => {
               custBusinessname,
               custOwnername
             )
-          `);
+          `)
+          .order('invDuedate', { ascending: true });
         
         if (error) {
           console.error("Supabase error:", error);
@@ -128,12 +173,13 @@ const Invoices = () => {
               <TableHead>Due Date</TableHead>
               <TableHead>Amount</TableHead>
               <TableHead>Status</TableHead>
+              {permissions?.can_edit && <TableHead>Actions</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={6} className="text-center">
+                <TableCell colSpan={permissions?.can_edit ? 7 : 6} className="text-center">
                   Loading invoices...
                 </TableCell>
               </TableRow>
@@ -148,8 +194,29 @@ const Invoices = () => {
                   <TableCell>{invoice.invDuedate}</TableCell>
                   <TableCell>₹{invoice.invTotal}</TableCell>
                   <TableCell>
-                    {invoice.invMarkcleared ? "Paid" : "Pending"}
+                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                      invoice.invMarkcleared 
+                        ? "bg-green-100 text-green-800" 
+                        : "bg-yellow-100 text-yellow-800"
+                    }`}>
+                      {invoice.invMarkcleared ? "Paid" : "Pending"}
+                    </span>
                   </TableCell>
+                  {permissions?.can_edit && (
+                    <TableCell>
+                      {!invoice.invMarkcleared && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => clearInvoiceMutation.mutate(invoice.invId)}
+                          className="hover:bg-green-100 hover:text-green-800"
+                        >
+                          <Check className="h-4 w-4" />
+                          <span className="sr-only">Mark as cleared</span>
+                        </Button>
+                      )}
+                    </TableCell>
+                  )}
                 </TableRow>
               ))
             )}

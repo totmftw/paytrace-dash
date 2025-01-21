@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CustomerFilters } from "./CustomerFilters";
 import { CustomerEditDialog } from "./CustomerEditDialog";
 import { useToast } from "@/hooks/use-toast";
+import { PostgrestError } from "@supabase/supabase-js";
 
 export function CustomerTable() {
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
@@ -41,12 +42,13 @@ export function CustomerTable() {
         
         console.log("Customers fetched successfully:", data);
         return data;
-      } catch (err: any) {
+      } catch (err) {
         console.error("Fetch error:", err);
+        const error = err as Error | PostgrestError;
         toast({
           variant: "destructive",
           title: "Network Error",
-          description: "Failed to connect to the server. Please check your internet connection and try again."
+          description: error.message || "Failed to connect to the server. Please check your internet connection and try again."
         });
         throw err;
       }

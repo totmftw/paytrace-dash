@@ -23,9 +23,11 @@ export function CustomerTable() {
     queryKey: ["customers"],
     queryFn: async () => {
       try {
+        console.log("Fetching customers...");
         const { data, error } = await supabase
           .from("customerMaster")
-          .select("*");
+          .select("*")
+          .throwOnError();
         
         if (error) {
           console.error("Supabase error:", error);
@@ -37,6 +39,7 @@ export function CustomerTable() {
           throw error;
         }
         
+        console.log("Customers fetched successfully:", data);
         return data;
       } catch (err: any) {
         console.error("Fetch error:", err);

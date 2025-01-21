@@ -2,33 +2,73 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, ArrowRight } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
-
-interface PaymentMetric {
-  title: string;
-  amount: number;
-  status: "warning" | "danger" | "success";
-  count: number;
-}
-
-const metrics: PaymentMetric[] = [
-  {
-    title: "Pending Payments",
-    amount: 125000,
-    status: "warning",
-    count: 23,
-  },
-  {
-    title: "Overdue Payments",
-    amount: 45000,
-    status: "danger",
-    count: 8,
-  },
-];
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export function PaymentMetrics() {
+  const { data: metrics } = useQuery({
+    queryKey: ["payment-metrics"],
+    queryFn: async () => {
+      const today = new Date();
+      
+      // Get all unpaid invoices
+      const { data: invoices, error } = await supabase
+        .from("invoiceTable")
+        .select(`
+          *,
+          customerMaster (
+            custBusinessname,
+            custCreditperiod
+          )
+        `)
+        .eq("invMarkcleared", false);
+
+      if (error) throw error;
+
+      const pendingPayments = {
+        amount: 0,
+        count: 0
+      };
+
+      const overduePayments = {
+        amount: 0,
+        count: 0
+      };
+
+      invoices?.forEach(invoice => {
+        const dueDate = new Date(invoice.invDuedate);
+        const amount = invoice.invTotal;
+
+        if (dueDate < today) {
+          overduePayments.amount += Number(amount);
+          overduePayments.count++;
+        } else {
+          pendingPayments.amount += Number(amount);
+          pendingPayments.count++;
+        }
+      });
+
+      return [
+        {
+          title: "Pending Payments",
+          amount: pendingPayments.amount,
+          status: "warning",
+          count: pendingPayments.count,
+        },
+        {
+          title: "Overdue Payments",
+          amount: overduePayments.amount,
+          status: "danger",
+          count: overduePayments.count,
+        },
+      ];
+    },
+    refetchInterval: 300000, // Refetch every 5 minutes
+  });
+
   return (
     <div className="grid gap-4 md:grid-cols-2">
-      {metrics.map((metric) => (
+      {metrics?.map((metric) => (
         <Card key={metric.title}>
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium">

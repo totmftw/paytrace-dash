@@ -1,22 +1,54 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer, ChartTooltip } from "@/components/ui/chart";
+import { ChartContainer } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { formatCurrency } from "@/lib/utils";
-
-interface SalesData {
-  month: string;
-  sales: number;
-  pending: number;
-  overdue: number;
-}
-
-const data: SalesData[] = [
-  { month: "Jan", sales: 45000, pending: 12000, overdue: 4500 },
-  { month: "Feb", sales: 52000, pending: 15000, overdue: 3800 },
-  { month: "Mar", sales: 48000, pending: 10000, overdue: 5200 },
-];
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export function SalesOverview() {
+  const { data: salesData } = useQuery({
+    queryKey: ["sales-overview"],
+    queryFn: async () => {
+      const { data: invoices, error } = await supabase
+        .from("invoiceTable")
+        .select("*")
+        .gte("invDate", new Date(new Date().setMonth(new Date().getMonth() - 3)).toISOString());
+
+      if (error) throw error;
+
+      const monthlyData = {};
+      
+      invoices?.forEach(invoice => {
+        const date = new Date(invoice.invDate);
+        const monthKey = date.toLocaleString('default', { month: 'short' });
+        
+        if (!monthlyData[monthKey]) {
+          monthlyData[monthKey] = {
+            month: monthKey,
+            sales: 0,
+            pending: 0,
+            overdue: 0
+          };
+        }
+
+        const amount = Number(invoice.invTotal);
+        const dueDate = new Date(invoice.invDuedate);
+        const today = new Date();
+
+        if (invoice.invMarkcleared) {
+          monthlyData[monthKey].sales += amount;
+        } else if (dueDate < today) {
+          monthlyData[monthKey].overdue += amount;
+        } else {
+          monthlyData[monthKey].pending += amount;
+        }
+      });
+
+      return Object.values(monthlyData);
+    },
+    refetchInterval: 300000, // Refetch every 5 minutes
+  });
+
   return (
     <Card className="col-span-3">
       <CardHeader>
@@ -32,7 +64,7 @@ export function SalesOverview() {
             }}
           >
             <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={data}>
+              <BarChart data={salesData || []}>
                 <XAxis dataKey="month" />
                 <YAxis tickFormatter={(value) => `₹${value / 1000}k`} />
                 <Tooltip content={({ active, payload }) => {

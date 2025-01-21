@@ -9,6 +9,47 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      custom_permissions: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          permission_name: string
+          permission_value: boolean | null
+          resource: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          permission_name: string
+          permission_value?: boolean | null
+          resource: string
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          permission_name?: string
+          permission_value?: boolean | null
+          resource?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_permissions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_management"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customerMaster: {
         Row: {
           custAddress: string | null
@@ -306,14 +347,51 @@ export type Database = {
           role?: Database["public"]["Enums"]["app_role"]
           updated_at?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "user_profiles_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "user_management"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
-      [_ in never]: never
+      user_management: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          full_name: string | null
+          id: string | null
+          role: Database["public"]["Enums"]["app_role"] | null
+          updated_at: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      get_user_permissions: {
+        Args: {
+          user_id: string
+        }
+        Returns: {
+          resource: string
+          can_view: boolean
+          can_create: boolean
+          can_edit: boolean
+          can_delete: boolean
+          custom_permissions: Json
+        }[]
+      }
+      update_user_role: {
+        Args: {
+          user_id: string
+          new_role: Database["public"]["Enums"]["app_role"]
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role:
@@ -321,6 +399,7 @@ export type Database = {
         | "business_manager"
         | "order_manager"
         | "it_admin"
+        | "team_member"
     }
     CompositeTypes: {
       [_ in never]: never

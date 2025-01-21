@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -25,25 +25,37 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 
-interface NewSaleFormData {
-  customerId: string;
-  productId: string;
-  quantity: number;
-  amount: number;
-  gst: number;
-  dueDate: string;
-}
+// Form validation schema
+const formSchema = z.object({
+  customerId: z.string().min(1, "Customer is required"),
+  productId: z.string().min(1, "Product is required"),
+  quantity: z.number().min(1, "Quantity must be at least 1"),
+  amount: z.number().min(0, "Amount cannot be negative"),
+  gst: z.number().min(0, "GST cannot be negative"),
+  dueDate: z.string().min(1, "Due date is required"),
+});
+
+type FormData = z.infer<typeof formSchema>;
 
 export function NewSaleForm() {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
-  const form = useForm<NewSaleFormData>();
+  
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      quantity: 1,
+      amount: 0,
+      gst: 0,
+    },
+  });
 
-  const { data: customers } = useQuery({
+  const { data: customers, isError: isCustomersError } = useQuery({
     queryKey: ["customers"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -52,9 +64,10 @@ export function NewSaleForm() {
       if (error) throw error;
       return data;
     },
+    retry: 3,
   });
 
-  const { data: products } = useQuery({
+  const { data: products, isError: isProductsError } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -63,19 +76,28 @@ export function NewSaleForm() {
       if (error) throw error;
       return data;
     },
+    retry: 3,
   });
 
-  const onSubmit = async (data: NewSaleFormData) => {
+  if (isCustomersError || isProductsError) {
+    toast({
+      variant: "destructive",
+      title: "Error",
+      description: "Failed to load required data. Please try again.",
+    });
+  }
+
+  const onSubmit = async (data: FormData) => {
     try {
       const { error } = await supabase.from("invoiceTable").insert({
         invCustid: parseInt(data.customerId),
-        invNumber: [new Date().getTime()], // Generate unique invoice number
+        invNumber: [Date.now()], // Generate unique invoice number
         invDate: new Date().toISOString(),
         invDuedate: data.dueDate,
         invValue: data.amount,
         invGst: data.gst,
         invTotal: data.amount + data.gst,
-        invMessage1: "Payment reminder will be sent via WhatsApp",
+        invMessage1: "New sale entry",
       });
 
       if (error) throw error;
@@ -87,6 +109,7 @@ export function NewSaleForm() {
       setOpen(false);
       form.reset();
     } catch (error) {
+      console.error("Sale creation error:", error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -248,7 +271,9 @@ export function NewSaleForm() {
               )}
             />
 
-            <Button type="submit">Create Sale Entry</Button>
+            <Button type="submit" disabled={!customers || !products}>
+              Create Sale Entry
+            </Button>
           </form>
         </Form>
       </DialogContent>

@@ -24,26 +24,32 @@ export function ExcelUpload() {
         const worksheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-        // Process and validate each row
-        const sales = jsonData.map((row: any) => ({
-          invCustid: row.CustomerId,
-          invNumber: [row.InvoiceNumber],
-          invDate: row.Date,
-          invDuedate: row.DueDate,
-          invValue: Number(row.Value) || 0,
-          invGst: Number(row.GST) || 0,
-          invAddamount: Number(row.AdditionalAmount) || 0,
-          invSubamount: Number(row.SubtractAmount) || 0,
-          invTotal: Number(row.Total) || 0,
-          invMarkcleared: false,
-          invMessage1: row.Message1 ?? '',
-          invMessage2: row.Message2 ?? '',
-          invMessage3: row.Message3 ?? ''
-        }));
+        // Validate required fields before processing
+        const validatedSales = jsonData.map((row: any) => {
+          if (!row.CustomerId) {
+            throw new Error('CustomerId is required for all entries');
+          }
+
+          return {
+            invCustid: parseInt(row.CustomerId),
+            invNumber: [Date.now()], // Generate unique invoice number
+            invDate: row.Date || new Date().toISOString(),
+            invDuedate: row.DueDate,
+            invValue: Number(row.Value) || 0,
+            invGst: Number(row.GST) || 0,
+            invAddamount: Number(row.AdditionalAmount) || 0,
+            invSubamount: Number(row.SubtractAmount) || 0,
+            invTotal: Number(row.Total) || 0,
+            invMarkcleared: false,
+            invMessage1: row.Message1 || '',
+            invMessage2: row.Message2 || '',
+            invMessage3: row.Message3 || ''
+          };
+        });
 
         const { error } = await supabase
           .from('invoiceTable')
-          .insert(sales);
+          .insert(validatedSales);
 
         if (error) throw error;
 
@@ -54,12 +60,12 @@ export function ExcelUpload() {
       };
 
       reader.readAsArrayBuffer(file);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload error:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to upload sales data",
+        description: error.message || "Failed to upload sales data",
       });
     } finally {
       setUploading(false);

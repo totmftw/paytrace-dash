@@ -28,7 +28,7 @@ const formSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
   full_name: z.string().min(2),
-  role: z.enum(["business_manager", "business_owner", "it_admin", "sales_manager"]),
+  role: z.enum(["business_owner", "business_manager", "order_manager", "it_admin", "team_member"]),
   phone: z.string().optional(),
   designation: z.string(),
   department: z.string(),
@@ -155,10 +155,11 @@ export function CreateUserForm() {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="business_manager">Business Manager</SelectItem>
                       <SelectItem value="business_owner">Business Owner</SelectItem>
+                      <SelectItem value="business_manager">Business Manager</SelectItem>
+                      <SelectItem value="order_manager">Order Manager</SelectItem>
                       <SelectItem value="it_admin">IT Admin</SelectItem>
-                      <SelectItem value="sales_manager">Sales Manager</SelectItem>
+                      <SelectItem value="team_member">Team Member</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />

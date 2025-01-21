@@ -30,11 +30,17 @@ export default function UserProfiles() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("user_profiles")
-        .select("*")
+        .select(`
+          *,
+          user_management(email)
+        `)
         .order("full_name");
 
       if (error) throw error;
-      return data;
+      return data.map(user => ({
+        ...user,
+        email: user.user_management?.email
+      }));
     },
   });
 
@@ -46,8 +52,10 @@ export default function UserProfiles() {
         return "bg-purple-100 text-purple-800";
       case "business_manager":
         return "bg-blue-100 text-blue-800";
-      case "sales_manager":
+      case "order_manager":
         return "bg-green-100 text-green-800";
+      case "team_member":
+        return "bg-gray-100 text-gray-800";
       default:
         return "bg-gray-100 text-gray-800";
     }
@@ -126,7 +134,7 @@ export default function UserProfiles() {
                     </div>
                     <div className="flex items-center space-x-2 text-sm">
                       <Clock className="h-4 w-4 opacity-70" />
-                      <span>Joined: {formatDate(user.joining_date)}</span>
+                      <span>Joined: {formatDate(user.created_at)}</span>
                     </div>
                     {user.bio && (
                       <div className="pt-2">

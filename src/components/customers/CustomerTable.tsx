@@ -28,6 +28,7 @@ export function CustomerTable() {
           .select("*");
         
         if (error) {
+          console.error("Supabase error:", error);
           toast({
             variant: "destructive",
             title: "Error fetching customers",
@@ -37,7 +38,7 @@ export function CustomerTable() {
         }
         
         return data;
-      } catch (err) {
+      } catch (err: any) {
         console.error("Fetch error:", err);
         toast({
           variant: "destructive",

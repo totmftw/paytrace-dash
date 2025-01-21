@@ -34,15 +34,15 @@ export function CustomerExcelUpload() {
           custOwnerwhatsapp: Number(row.OwnerWhatsApp) || 0,
           custEmail: row.Email ?? '',
           custOwneremail: row.OwnerEmail ?? '',
-          custType: [row.Type ?? 'retail'],
+          custType: row.Type ?? 'retail',
           custAddress: row.Address ?? '',
           custProvince: row.Province ?? '',
           custCity: row.City ?? '',
           custPincode: Number(row.Pincode) || null,
-          custGST: Number(row.GST) || 0,
-          custCreditperiod: [Number(row.CreditPeriod) || 0],
+          custGST: row.GST ?? '0',
+          custCreditperiod: Number(row.CreditPeriod) || 0,
           custRemarks: row.Remarks ?? '',
-          custStatus: [row.Status ?? 'active']
+          custStatus: row.Status ?? 'active'
         }));
 
         // Insert data into Supabase

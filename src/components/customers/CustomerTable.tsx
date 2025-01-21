@@ -47,8 +47,8 @@ export function CustomerTable() {
         throw err;
       }
     },
-    retry: 3, // Retry failed requests 3 times
-    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
   const handleEdit = (customer: any) => {
@@ -94,8 +94,8 @@ export function CustomerTable() {
                 <TableCell>{customer.custOwnername}</TableCell>
                 <TableCell>{customer.custPhone}</TableCell>
                 <TableCell>{customer.custEmail}</TableCell>
-                <TableCell>{customer.custType.join(", ")}</TableCell>
-                <TableCell>{customer.custStatus.join(", ")}</TableCell>
+                <TableCell>{customer.custType}</TableCell>
+                <TableCell>{customer.custStatus}</TableCell>
                 <TableCell>
                   <Button 
                     variant="ghost" 

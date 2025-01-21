@@ -66,7 +66,8 @@ export function NewSaleForm() {
       try {
         const { data, error } = await supabase
           .from("customerMaster")
-          .select("id, custBusinessname");
+          .select("id, custBusinessname")
+          .throwOnError();
         
         if (error) {
           console.error("Supabase error:", error);

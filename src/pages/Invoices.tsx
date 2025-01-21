@@ -54,16 +54,19 @@ const Invoices = () => {
     retry: false,
     meta: {
       errorMessage: "Error checking permissions"
-    },
-    onError: (error) => {
-      console.error("Permissions query error:", error);
+    }
+  });
+
+  // Handle permissions query error
+  useEffect(() => {
+    if (permissionsError) {
       toast({
         variant: "destructive",
         title: "Error checking permissions",
         description: "Please try refreshing the page"
       });
     }
-  });
+  }, [permissionsError, toast]);
 
   const clearInvoiceMutation = useMutation({
     mutationFn: async (invId: number) => {

@@ -58,31 +58,31 @@ export function NewSaleForm() {
     try {
       // Get the current year and month
       const now = new Date();
-      const year = now.getFullYear().toString().slice(-2); // Get last 2 digits of year
-      const month = (now.getMonth() + 1).toString().padStart(2, '0');
+      const yearStr = now.getFullYear().toString();
+      const year = parseInt(yearStr.substring(yearStr.length - 2)); // Get last 2 digits of year as number
+      const month = now.getMonth() + 1; // Get month as number
       
       // Get the latest invoice number for this month
       const { data: latestInvoice } = await supabase
         .from('invoiceTable')
         .select('invNumber')
-        .like('invNumber[1]', `${year}${month}%`)
         .order('invNumber', { ascending: false })
         .limit(1);
 
       let sequence = 1;
       if (latestInvoice && latestInvoice.length > 0) {
         // Extract the sequence number from the latest invoice
-        const lastSequence = parseInt(latestInvoice[0].invNumber[1].slice(4));
-        sequence = lastSequence + 1;
+        const lastNumber = latestInvoice[0].invNumber[1];
+        if (typeof lastNumber === 'number') {
+          sequence = lastNumber + 1;
+        }
       }
 
-      // Format: [timestamp, YYMM####]
-      // Example: [1642744800000, "24010001"]
+      // Format: [timestamp, sequence]
       const timestamp = Date.now();
-      const formattedSequence = sequence.toString().padStart(4, '0');
-      const invoiceNumber = `${year}${month}${formattedSequence}`;
+      const monthlySequence = (year * 100 + month) * 10000 + sequence;
       
-      return [timestamp, invoiceNumber];
+      return [timestamp, monthlySequence];
     } catch (error) {
       console.error("Error generating invoice number:", error);
       throw error;

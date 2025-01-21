@@ -328,51 +328,90 @@ export type Database = {
       user_profiles: {
         Row: {
           address: string | null
+          avatar_url: string | null
+          bio: string | null
+          contact_preferences: Json | null
           created_at: string
           department: string | null
           designation: string | null
           emergency_contact: string | null
+          employee_id: string | null
           full_name: string | null
           id: string
           joining_date: string | null
+          last_active: string | null
           last_login: string | null
+          location: string | null
           phone_number: string | null
+          preferences: Json | null
           profile_image_url: string | null
+          reports_to: string | null
           role: Database["public"]["Enums"]["app_role"]
+          skills: string[] | null
+          social_links: Json | null
           status: string | null
+          team: string | null
+          timezone: string | null
           updated_at: string
+          work_schedule: Json | null
         }
         Insert: {
           address?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          contact_preferences?: Json | null
           created_at?: string
           department?: string | null
           designation?: string | null
           emergency_contact?: string | null
+          employee_id?: string | null
           full_name?: string | null
           id: string
           joining_date?: string | null
+          last_active?: string | null
           last_login?: string | null
+          location?: string | null
           phone_number?: string | null
+          preferences?: Json | null
           profile_image_url?: string | null
+          reports_to?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+          skills?: string[] | null
+          social_links?: Json | null
           status?: string | null
+          team?: string | null
+          timezone?: string | null
           updated_at?: string
+          work_schedule?: Json | null
         }
         Update: {
           address?: string | null
+          avatar_url?: string | null
+          bio?: string | null
+          contact_preferences?: Json | null
           created_at?: string
           department?: string | null
           designation?: string | null
           emergency_contact?: string | null
+          employee_id?: string | null
           full_name?: string | null
           id?: string
           joining_date?: string | null
+          last_active?: string | null
           last_login?: string | null
+          location?: string | null
           phone_number?: string | null
+          preferences?: Json | null
           profile_image_url?: string | null
+          reports_to?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+          skills?: string[] | null
+          social_links?: Json | null
           status?: string | null
+          team?: string | null
+          timezone?: string | null
           updated_at?: string
+          work_schedule?: Json | null
         }
         Relationships: [
           {
@@ -380,6 +419,13 @@ export type Database = {
             columns: ["id"]
             isOneToOne: true
             referencedRelation: "user_management"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_profiles_reports_to_fkey"
+            columns: ["reports_to"]
+            isOneToOne: false
+            referencedRelation: "user_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -408,6 +454,24 @@ export type Database = {
           phone: string
           designation: string
           department: string
+          emergency_contact: string
+          address: string
+        }
+        Returns: string
+      }
+      create_user_with_profile: {
+        Args: {
+          email: string
+          password: string
+          full_name: string
+          role: Database["public"]["Enums"]["app_role"]
+          phone: string
+          designation: string
+          department: string
+          employee_id: string
+          team: string
+          location: string
+          bio: string
           emergency_contact: string
           address: string
         }

@@ -16,20 +16,22 @@ const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <SidebarProvider>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route element={<AppLayout />}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/products" element={<Products />} />
-              <Route path="/customers" element={<Customers />} />
-              <Route path="/invoices" element={<Invoices />} />
-              <Route path="/users" element={<UserProfiles />} />
-            </Route>
-            <Route path="/" element={<Navigate to="/login" replace />} />
-          </Routes>
-        </SidebarProvider>
-        <Toaster />
+        <div className="min-h-screen flex w-full bg-background">
+          <SidebarProvider>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route element={<AppLayout />}>
+                <Route path="/dashboard" element={<Dashboard />} />
+                <Route path="/products" element={<Products />} />
+                <Route path="/customers" element={<Customers />} />
+                <Route path="/invoices" element={<Invoices />} />
+                <Route path="/users" element={<UserProfiles />} />
+              </Route>
+              <Route path="/" element={<Navigate to="/login" replace />} />
+            </Routes>
+          </SidebarProvider>
+          <Toaster />
+        </div>
       </BrowserRouter>
     </QueryClientProvider>
   );

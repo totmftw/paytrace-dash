@@ -17,10 +17,11 @@ export const supabase = createClient<Database>(
     global: {
       headers: {
         'apikey': SUPABASE_ANON_KEY,
-        'X-Client-Info': 'supabase-js-web/2.1.0',
         'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*',
-        'Content-Type': 'application/json'
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+        'Access-Control-Allow-Headers': 'apikey, Authorization, Content-Type'
       },
     },
     db: {

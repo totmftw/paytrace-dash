@@ -430,8 +430,55 @@ export type Database = {
           },
         ]
       }
+      whatsapp_config: {
+        Row: {
+          api_key: string
+          created_at: string | null
+          from_phone_number_id: string
+          id: number
+          template_name: string
+          template_namespace: string
+          updated_at: string | null
+        }
+        Insert: {
+          api_key: string
+          created_at?: string | null
+          from_phone_number_id: string
+          id?: number
+          template_name: string
+          template_namespace: string
+          updated_at?: string | null
+        }
+        Update: {
+          api_key?: string
+          created_at?: string | null
+          from_phone_number_id?: string
+          id?: number
+          template_name?: string
+          template_namespace?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
+      invoice_reminder_status: {
+        Row: {
+          custBusinessname: string | null
+          custWhatsapp: number | null
+          invDuedate: string | null
+          invId: number | null
+          invMessage1: string | null
+          invMessage2: string | null
+          invMessage3: string | null
+          invNumber: number[] | null
+          invRemainder2: boolean | null
+          invRemainder3: boolean | null
+          invReminder1: boolean | null
+          reminder_status: string | null
+        }
+        Relationships: []
+      }
       user_management: {
         Row: {
           created_at: string | null

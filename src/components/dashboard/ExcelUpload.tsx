@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Upload, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import * as XLSX from 'xlsx';
 
 export function ExcelUpload() {
   const [uploading, setUploading] = useState(false);
@@ -15,13 +16,46 @@ export function ExcelUpload() {
 
     setUploading(true);
     try {
-      // TODO: Implement file upload to Supabase storage
-      // and process Excel data to insert into invoiceTable
-      toast({
-        title: "Success",
-        description: "Sales data uploaded successfully",
-      });
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const data = e.target?.result;
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+        // Process and validate each row
+        const sales = jsonData.map((row: any) => ({
+          invCustid: row.CustomerId,
+          invNumber: [row.InvoiceNumber],
+          invDate: row.Date,
+          invDuedate: row.DueDate,
+          invValue: Number(row.Value) || 0,
+          invGst: Number(row.GST) || 0,
+          invAddamount: Number(row.AdditionalAmount) || 0,
+          invSubamount: Number(row.SubtractAmount) || 0,
+          invTotal: Number(row.Total) || 0,
+          invMarkcleared: false,
+          invMessage1: row.Message1 ?? '',
+          invMessage2: row.Message2 ?? '',
+          invMessage3: row.Message3 ?? ''
+        }));
+
+        const { error } = await supabase
+          .from('invoiceTable')
+          .insert(sales);
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Sales data uploaded successfully",
+        });
+      };
+
+      reader.readAsArrayBuffer(file);
     } catch (error) {
+      console.error('Upload error:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -33,14 +67,27 @@ export function ExcelUpload() {
   };
 
   const downloadTemplate = () => {
-    // TODO: Implement template download
-    const templateUrl = "/templates/sales-template.xlsx";
-    const link = document.createElement("a");
-    link.href = templateUrl;
-    link.download = "sales-template.xlsx";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+    const template = [
+      {
+        CustomerId: '1',
+        InvoiceNumber: 'INV001',
+        Date: '2024-01-21',
+        DueDate: '2024-02-21',
+        Value: '1000',
+        GST: '180',
+        AdditionalAmount: '0',
+        SubtractAmount: '0',
+        Total: '1180',
+        Message1: 'Initial invoice',
+        Message2: '',
+        Message3: ''
+      }
+    ];
+
+    const ws = XLSX.utils.json_to_sheet(template);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Template");
+    XLSX.writeFile(wb, "sales-template.xlsx");
   };
 
   return (
@@ -58,10 +105,10 @@ export function ExcelUpload() {
           id="excel-upload"
           disabled={uploading}
         />
-        <Button asChild>
+        <Button asChild disabled={uploading}>
           <label htmlFor="excel-upload" className="cursor-pointer">
             <Upload className="mr-2 h-4 w-4" />
-            Upload Sales Data
+            {uploading ? "Uploading..." : "Upload Sales Data"}
           </label>
         </Button>
       </div>

@@ -10,6 +10,13 @@ export function ExcelUpload() {
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
 
+  const formatDate = (date: string | number | Date) => {
+    if (!date) return null;
+    const d = new Date(date);
+    if (isNaN(d.getTime())) return null;
+    return d.toISOString().split('T')[0];
+  };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -24,17 +31,24 @@ export function ExcelUpload() {
         const worksheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-        // Validate required fields before processing
+        // Validate and format data before processing
         const validatedSales = jsonData.map((row: any) => {
           if (!row.CustomerId) {
             throw new Error('CustomerId is required for all entries');
           }
 
+          const invDate = formatDate(row.Date);
+          const invDuedate = formatDate(row.DueDate);
+
+          if (!invDate) {
+            throw new Error('Invalid or missing Date format');
+          }
+
           return {
             invCustid: parseInt(row.CustomerId),
             invNumber: [Date.now()], // Generate unique invoice number
-            invDate: row.Date || new Date().toISOString(),
-            invDuedate: row.DueDate,
+            invDate,
+            invDuedate,
             invValue: Number(row.Value) || 0,
             invGst: Number(row.GST) || 0,
             invAddamount: Number(row.AdditionalAmount) || 0,
@@ -76,7 +90,6 @@ export function ExcelUpload() {
     const template = [
       {
         CustomerId: '1',
-        InvoiceNumber: 'INV001',
         Date: '2024-01-21',
         DueDate: '2024-02-21',
         Value: '1000',

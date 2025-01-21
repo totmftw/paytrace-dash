@@ -26,23 +26,23 @@ export function CustomerExcelUpload() {
 
         // Process and validate each row
         const customers = jsonData.map((row: any) => ({
-          custBusinessname: row.BusinessName || '',
-          custOwnername: row.OwnerName || '',
+          custBusinessname: row.BusinessName ?? '',
+          custOwnername: row.OwnerName ?? '',
           custPhone: Number(row.Phone) || 0,
           custWhatsapp: Number(row.WhatsApp) || 0,
           custOwnerphone: Number(row.OwnerPhone) || 0,
           custOwnerwhatsapp: Number(row.OwnerWhatsApp) || 0,
-          custEmail: row.Email || '',
-          custOwneremail: row.OwnerEmail || '',
-          custType: [row.Type] || [],
-          custAddress: row.Address || '',
-          custProvince: row.Province || '',
-          custCity: row.City || '',
+          custEmail: row.Email ?? '',
+          custOwneremail: row.OwnerEmail ?? '',
+          custType: [row.Type ?? 'retail'],
+          custAddress: row.Address ?? '',
+          custProvince: row.Province ?? '',
+          custCity: row.City ?? '',
           custPincode: Number(row.Pincode) || null,
           custGST: Number(row.GST) || 0,
-          custCreditperiod: [Number(row.CreditPeriod)] || [0],
-          custRemarks: row.Remarks || '',
-          custStatus: [row.Status] || ['active']
+          custCreditperiod: [Number(row.CreditPeriod) || 0],
+          custRemarks: row.Remarks ?? '',
+          custStatus: [row.Status ?? 'active']
         }));
 
         // Insert data into Supabase

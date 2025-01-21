@@ -55,14 +55,13 @@ const Invoices = () => {
     meta: {
       errorMessage: "Error checking permissions"
     },
-    onSettled: (data, error) => {
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Error checking permissions",
-          description: "Please try refreshing the page"
-        });
-      }
+    onError: (error) => {
+      console.error("Permissions query error:", error);
+      toast({
+        variant: "destructive",
+        title: "Error checking permissions",
+        description: "Please try refreshing the page"
+      });
     }
   });
 

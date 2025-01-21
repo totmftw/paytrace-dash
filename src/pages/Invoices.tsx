@@ -15,32 +15,51 @@ const Invoices = () => {
   const queryClient = useQueryClient();
   
   // Check if user has permission to clear invoices
-  const { data: permissions } = useQuery({
+  const { data: permissions, isLoading: permissionsLoading, error: permissionsError } = useQuery({
     queryKey: ["permissions", "invoice_clearing"],
     queryFn: async () => {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        console.error("Session error:", sessionError);
-        throw sessionError;
-      }
-      
-      if (!session?.user?.id) {
-        throw new Error("No authenticated session");
-      }
+      try {
+        console.log("Fetching user permissions...");
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error("Session error:", sessionError);
+          throw sessionError;
+        }
+        
+        if (!session?.user?.id) {
+          console.error("No authenticated session");
+          throw new Error("No authenticated session");
+        }
 
-      const { data, error } = await supabase.rpc('get_user_permissions', {
-        user_id: session.user.id
-      });
+        console.log("Calling get_user_permissions for user:", session.user.id);
+        const { data, error } = await supabase.rpc('get_user_permissions', {
+          user_id: session.user.id
+        });
 
-      if (error) {
-        console.error("Permissions error:", error);
+        if (error) {
+          console.error("Permissions error:", error);
+          throw error;
+        }
+
+        console.log("Permissions data received:", data);
+        const invoicePermissions = data?.find(p => p.resource === 'invoice_clearing');
+        console.log("Invoice clearing permissions:", invoicePermissions);
+        return invoicePermissions;
+      } catch (error) {
+        console.error("Error in permissions query:", error);
         throw error;
       }
-
-      return data?.find(p => p.resource === 'invoice_clearing');
     },
-    retry: false
+    retry: false,
+    onError: (error) => {
+      console.error("Permissions query error:", error);
+      toast({
+        variant: "destructive",
+        title: "Error checking permissions",
+        description: "Please try refreshing the page"
+      });
+    }
   });
 
   const clearInvoiceMutation = useMutation({
@@ -149,6 +168,20 @@ const Invoices = () => {
     retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     refetchOnWindowFocus: false,
   });
+
+  if (permissionsError) {
+    return (
+      <div className="text-center p-4">
+        <p className="text-red-500 mb-4">Unable to verify permissions</p>
+        <Button 
+          onClick={() => navigate(0)}
+          className="bg-primary hover:bg-primary/90"
+        >
+          Refresh Page
+        </Button>
+      </div>
+    );
+  }
 
   if (error) {
     return (

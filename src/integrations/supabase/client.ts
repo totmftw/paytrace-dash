@@ -13,11 +13,17 @@ export const supabase = createClient<Database>(
       autoRefreshToken: true,
     },
     global: {
-      headers: {
-        'X-Client-Info': 'lovable-app',
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-        'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+      fetch: (url, options) => {
+        const headers = new Headers(options?.headers);
+        headers.set('X-Client-Info', 'lovable-app');
+        headers.set('Access-Control-Allow-Origin', '*');
+        headers.set('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        headers.set('Access-Control-Allow-Headers', 'authorization, x-client-info, apikey, content-type');
+        
+        return fetch(url, {
+          ...options,
+          headers,
+        });
       },
     },
   }

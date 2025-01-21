@@ -14,9 +14,9 @@ export type Database = {
           custAddress: string | null
           custBusinessname: string
           custCity: string | null
-          custCreditperiod: number[]
+          custCreditperiod: number | null
           custEmail: string
-          custGST: number
+          custGST: string
           custOwneremail: string | null
           custOwnername: string
           custOwnerphone: number
@@ -25,8 +25,8 @@ export type Database = {
           custPincode: number | null
           custProvince: string | null
           custRemarks: string | null
-          custStatus: string[]
-          custType: string[]
+          custStatus: string
+          custType: string
           custWhatsapp: number
           id: number
         }
@@ -34,9 +34,9 @@ export type Database = {
           custAddress?: string | null
           custBusinessname?: string
           custCity?: string | null
-          custCreditperiod: number[]
+          custCreditperiod?: number | null
           custEmail?: string
-          custGST: number
+          custGST: string
           custOwneremail?: string | null
           custOwnername?: string
           custOwnerphone: number
@@ -45,8 +45,8 @@ export type Database = {
           custPincode?: number | null
           custProvince?: string | null
           custRemarks?: string | null
-          custStatus: string[]
-          custType: string[]
+          custStatus: string
+          custType: string
           custWhatsapp: number
           id?: number
         }
@@ -54,9 +54,9 @@ export type Database = {
           custAddress?: string | null
           custBusinessname?: string
           custCity?: string | null
-          custCreditperiod?: number[]
+          custCreditperiod?: number | null
           custEmail?: string
-          custGST?: number
+          custGST?: string
           custOwneremail?: string | null
           custOwnername?: string
           custOwnerphone?: number
@@ -65,8 +65,8 @@ export type Database = {
           custPincode?: number | null
           custProvince?: string | null
           custRemarks?: string | null
-          custStatus?: string[]
-          custType?: string[]
+          custStatus?: string
+          custType?: string
           custWhatsapp?: number
           id?: number
         }

@@ -19,20 +19,26 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const Products = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const { toast } = useToast();
 
-  const { data: products, refetch } = useQuery({
+  const { data: products, isError, error, refetch } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("productManagement")
         .select("*");
-      if (error) throw error;
+      
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
       return data;
     },
+    retry: 1,
   });
 
   const updatePricing = async (productId: string, prices: any) => {
@@ -57,6 +63,7 @@ const Products = () => {
       });
       refetch();
     } catch (error) {
+      console.error("Update error:", error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -64,6 +71,16 @@ const Products = () => {
       });
     }
   };
+
+  if (isError) {
+    return (
+      <Alert variant="destructive">
+        <AlertDescription>
+          Failed to load products. Please try again later.
+        </AlertDescription>
+      </Alert>
+    );
+  }
 
   return (
     <div className="space-y-6">

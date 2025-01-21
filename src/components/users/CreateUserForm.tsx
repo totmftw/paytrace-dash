@@ -61,13 +61,13 @@ export function CreateUserForm() {
         password: data.password,
         full_name: data.full_name,
         role: data.role,
-        phone: data.phone,
+        phone: data.phone || '', // Ensure phone is always sent
         designation: data.designation,
         department: data.department,
         employee_id: data.employee_id,
         team: data.team,
         location: data.location,
-        bio: data.bio,
+        bio: data.bio || '', // Ensure bio is always sent
         emergency_contact: data.emergency_contact,
         address: data.address,
       });

@@ -17,13 +17,18 @@ import { CustomerEditDialog } from "./CustomerEditDialog";
 export function CustomerTable() {
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
 
-  const { data: customers, isLoading, refetch } = useQuery({
+  const { data: customers, isLoading, error, refetch } = useQuery({
     queryKey: ["customers"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("customerMaster")
         .select("*");
-      if (error) throw error;
+      
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
+      
       return data;
     },
   });
@@ -31,6 +36,10 @@ export function CustomerTable() {
   const handleEdit = (customer: any) => {
     setSelectedCustomer(customer);
   };
+
+  if (error) {
+    return <div>Error loading customers: {(error as Error).message}</div>;
+  }
 
   if (isLoading) {
     return <div>Loading customers...</div>;

@@ -6,6 +6,20 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import * as XLSX from 'xlsx';
 
+interface ExcelRowData {
+  CustomerId: string;
+  Date: string;
+  DueDate: string;
+  Value: string;
+  GST: string;
+  AdditionalAmount: string;
+  SubtractAmount: string;
+  Total: string;
+  Message1: string;
+  Message2?: string;
+  Message3?: string;
+}
+
 export function ExcelUpload() {
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
@@ -40,10 +54,10 @@ export function ExcelUpload() {
         const workbook = XLSX.read(data, { type: 'array' });
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+        const jsonData = XLSX.utils.sheet_to_json(worksheet) as ExcelRowData[];
 
         // First, validate all customer IDs exist
-        const customerIds = jsonData.map((row: any) => parseInt(row.CustomerId));
+        const customerIds = jsonData.map(row => parseInt(row.CustomerId));
         const { data: existingCustomers, error: customerError } = await supabase
           .from('customerMaster')
           .select('id')
@@ -52,10 +66,10 @@ export function ExcelUpload() {
         if (customerError) throw customerError;
 
         const validCustomerIds = new Set(existingCustomers?.map(c => c.id));
-        const invalidRows = jsonData.filter((row: any) => !validCustomerIds.has(parseInt(row.CustomerId)));
+        const invalidRows = jsonData.filter(row => !validCustomerIds.has(parseInt(row.CustomerId)));
 
         if (invalidRows.length > 0) {
-          throw new Error(`Invalid customer IDs found in rows: ${invalidRows.map((row: any) => row.CustomerId).join(', ')}`);
+          throw new Error(`Invalid customer IDs found in rows: ${invalidRows.map(row => row.CustomerId).join(', ')}`);
         }
 
         // Process each row sequentially to ensure unique invoice numbers

@@ -6,7 +6,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
-import { Check, X } from "lucide-react";
+import { Check } from "lucide-react";
 import type { PostgrestError } from "@supabase/supabase-js";
 
 const Invoices = () => {
@@ -18,16 +18,29 @@ const Invoices = () => {
   const { data: permissions } = useQuery({
     queryKey: ["permissions", "invoice_clearing"],
     queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.user?.id) return null;
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error("Session error:", sessionError);
+        throw sessionError;
+      }
+      
+      if (!session?.user?.id) {
+        throw new Error("No authenticated session");
+      }
 
       const { data, error } = await supabase.rpc('get_user_permissions', {
         user_id: session.user.id
       });
 
-      if (error) throw error;
-      return data.find(p => p.resource === 'invoice_clearing');
-    }
+      if (error) {
+        console.error("Permissions error:", error);
+        throw error;
+      }
+
+      return data?.find(p => p.resource === 'invoice_clearing');
+    },
+    retry: false
   });
 
   const clearInvoiceMutation = useMutation({

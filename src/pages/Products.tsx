@@ -28,21 +28,31 @@ const Products = () => {
   const { data: products, isError, error, refetch } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("productManagement")
-        .select("*");
-      
-      if (error) {
-        console.error("Supabase error:", error);
-        throw error;
+      try {
+        console.log("Fetching products...");
+        const { data, error } = await supabase
+          .from("productManagement")
+          .select("*");
+        
+        if (error) {
+          console.error("Supabase error:", error);
+          throw error;
+        }
+
+        console.log("Products fetched successfully:", data);
+        return data;
+      } catch (err) {
+        console.error("Error fetching products:", err);
+        throw err;
       }
-      return data;
     },
-    retry: 1,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
   const updatePricing = async (productId: string, prices: any) => {
     try {
+      console.log("Updating pricing for product:", productId, prices);
       const { error } = await supabase
         .from("productManagement")
         .update({
@@ -55,8 +65,12 @@ const Products = () => {
         })
         .eq("prodId", productId);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Update error:", error);
+        throw error;
+      }
 
+      console.log("Product pricing updated successfully");
       toast({
         title: "Success",
         description: "Product pricing updated successfully",
@@ -73,10 +87,11 @@ const Products = () => {
   };
 
   if (isError) {
+    console.error("Query error:", error);
     return (
       <Alert variant="destructive">
         <AlertDescription>
-          Failed to load products. Please try again later.
+          Failed to load products. Please try again later. {error?.message}
         </AlertDescription>
       </Alert>
     );

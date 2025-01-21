@@ -30,7 +30,6 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 
-// Form validation schema
 const formSchema = z.object({
   customerId: z.string().min(1, "Customer is required"),
   productId: z.string().min(1, "Product is required"),
@@ -95,6 +94,17 @@ export function NewSaleForm() {
 
   const onSubmit = async (data: FormData) => {
     try {
+      // Verify customer exists before creating invoice
+      const { data: customerExists, error: customerError } = await supabase
+        .from("customerMaster")
+        .select("id")
+        .eq("id", parseInt(data.customerId))
+        .single();
+
+      if (customerError || !customerExists) {
+        throw new Error("Selected customer does not exist");
+      }
+
       const { error } = await supabase.from("invoiceTable").insert({
         invCustid: parseInt(data.customerId),
         invNumber: generateInvoiceNumber(),
@@ -114,12 +124,12 @@ export function NewSaleForm() {
       });
       setOpen(false);
       form.reset();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Sale creation error:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to create sale entry",
+        description: error.message || "Failed to create sale entry",
       });
     }
   };

@@ -37,12 +37,24 @@ export function ExcelUpload() {
         const worksheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
+        // First, validate all customer IDs exist
+        const customerIds = jsonData.map((row: any) => parseInt(row.CustomerId));
+        const { data: existingCustomers, error: customerError } = await supabase
+          .from('customerMaster')
+          .select('id')
+          .in('id', customerIds);
+
+        if (customerError) throw customerError;
+
+        const validCustomerIds = new Set(existingCustomers?.map(c => c.id));
+        const invalidRows = jsonData.filter((row: any) => !validCustomerIds.has(parseInt(row.CustomerId)));
+
+        if (invalidRows.length > 0) {
+          throw new Error(`Invalid customer IDs found in rows: ${invalidRows.map((row: any) => row.CustomerId).join(', ')}`);
+        }
+
         // Validate and format data before processing
         const validatedSales = jsonData.map((row: any) => {
-          if (!row.CustomerId) {
-            throw new Error('CustomerId is required for all entries');
-          }
-
           const invDate = formatDate(row.Date);
           const invDuedate = formatDate(row.DueDate);
 

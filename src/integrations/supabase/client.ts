@@ -13,7 +13,7 @@ export const supabase = createClient<Database>(
       autoRefreshToken: true,
     },
     global: {
-      fetch: async (url, options = {}) => {
+      fetch: async (url: string, options: RequestInit = {}) => {
         const response = await fetch(url, {
           ...options,
           headers: {

@@ -74,7 +74,7 @@ export function CustomerExcelUpload() {
   const downloadTemplate = () => {
     const template = [
       {
-        BusinessName: 'Example Business',
+        BusinessName: 'Example Business Name',
         OwnerName: 'John Doe',
         Phone: '1234567890',
         WhatsApp: '1234567890',
@@ -95,6 +95,50 @@ export function CustomerExcelUpload() {
     ];
 
     const ws = XLSX.utils.json_to_sheet(template);
+    
+    // Add column descriptions
+    const columnDescriptions = {
+      A1: { v: 'BusinessName', t: 's', w: 'BusinessName' },
+      B1: { v: 'OwnerName', t: 's', w: 'OwnerName' },
+      C1: { v: 'Phone', t: 's', w: 'Phone' },
+      D1: { v: 'WhatsApp', t: 's', w: 'WhatsApp' },
+      E1: { v: 'OwnerPhone', t: 's', w: 'OwnerPhone' },
+      F1: { v: 'OwnerWhatsApp', t: 's', w: 'OwnerWhatsApp' },
+      G1: { v: 'Email', t: 's', w: 'Email' },
+      H1: { v: 'OwnerEmail', t: 's', w: 'OwnerEmail' },
+      I1: { v: 'Type', t: 's', w: 'Type' },
+      J1: { v: 'Address', t: 's', w: 'Address' },
+      K1: { v: 'Province', t: 's', w: 'Province' },
+      L1: { v: 'City', t: 's', w: 'City' },
+      M1: { v: 'Pincode', t: 's', w: 'Pincode' },
+      N1: { v: 'GST', t: 's', w: 'GST' },
+      O1: { v: 'CreditPeriod', t: 's', w: 'CreditPeriod' },
+      P1: { v: 'Remarks', t: 's', w: 'Remarks' },
+      Q1: { v: 'Status', t: 's', w: 'Status' }
+    };
+
+    ws['!cols'] = [
+      { wch: 20 }, // BusinessName
+      { wch: 15 }, // OwnerName
+      { wch: 12 }, // Phone
+      { wch: 12 }, // WhatsApp
+      { wch: 12 }, // OwnerPhone
+      { wch: 12 }, // OwnerWhatsApp
+      { wch: 25 }, // Email
+      { wch: 25 }, // OwnerEmail
+      { wch: 10 }, // Type
+      { wch: 30 }, // Address
+      { wch: 15 }, // Province
+      { wch: 15 }, // City
+      { wch: 10 }, // Pincode
+      { wch: 15 }, // GST
+      { wch: 12 }, // CreditPeriod
+      { wch: 30 }, // Remarks
+      { wch: 10 }  // Status
+    ];
+
+    Object.assign(ws, columnDescriptions);
+
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Template");
     XLSX.writeFile(wb, "customer-template.xlsx");

@@ -2,9 +2,12 @@ import { ExcelUpload } from "@/components/dashboard/ExcelUpload";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const Invoices = () => {
-  const { data: invoices, isLoading } = useQuery({
+  const { toast } = useToast();
+  
+  const { data: invoices, isLoading, error } = useQuery({
     queryKey: ["invoices"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -16,10 +19,23 @@ const Invoices = () => {
             custOwnername
           )
         `);
-      if (error) throw error;
+      
+      if (error) {
+        console.error("Supabase error:", error);
+        toast({
+          variant: "destructive",
+          title: "Error fetching invoices",
+          description: error.message,
+        });
+        throw error;
+      }
       return data;
     },
   });
+
+  if (error) {
+    console.error("Query error:", error);
+  }
 
   return (
     <div className="space-y-6">
@@ -44,6 +60,12 @@ const Invoices = () => {
               <TableRow>
                 <TableCell colSpan={6} className="text-center">
                   Loading invoices...
+                </TableCell>
+              </TableRow>
+            ) : error ? (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center text-red-500">
+                  Error loading invoices. Please try again.
                 </TableCell>
               </TableRow>
             ) : (

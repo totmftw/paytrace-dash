@@ -32,7 +32,8 @@ const Products = () => {
         console.log("Fetching products...");
         const { data, error } = await supabase
           .from("productManagement")
-          .select("*");
+          .select("*")
+          .throwOnError();
         
         if (error) {
           console.error("Supabase error:", error);
@@ -41,8 +42,13 @@ const Products = () => {
 
         console.log("Products fetched successfully:", data);
         return data;
-      } catch (err) {
+      } catch (err: any) {
         console.error("Error fetching products:", err);
+        toast({
+          variant: "destructive",
+          title: "Error loading products",
+          description: "Please check your connection and try again"
+        });
         throw err;
       }
     },
@@ -63,7 +69,8 @@ const Products = () => {
           prodSlabprice4: prices.slab4,
           prodSlabprice5: prices.slab5,
         })
-        .eq("prodId", productId);
+        .eq("prodId", productId)
+        .throwOnError();
 
       if (error) {
         console.error("Update error:", error);
@@ -76,12 +83,12 @@ const Products = () => {
         description: "Product pricing updated successfully",
       });
       refetch();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Update error:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to update product pricing",
+        description: "Failed to update product pricing. Please try again."
       });
     }
   };
@@ -91,7 +98,7 @@ const Products = () => {
     return (
       <Alert variant="destructive">
         <AlertDescription>
-          Failed to load products. Please try again later. {error?.message}
+          Failed to load products. Please try again later.
         </AlertDescription>
       </Alert>
     );

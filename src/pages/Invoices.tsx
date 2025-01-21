@@ -52,13 +52,17 @@ const Invoices = () => {
       }
     },
     retry: false,
-    onError: (error) => {
-      console.error("Permissions query error:", error);
-      toast({
-        variant: "destructive",
-        title: "Error checking permissions",
-        description: "Please try refreshing the page"
-      });
+    meta: {
+      errorMessage: "Error checking permissions"
+    },
+    onSettled: (data, error) => {
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error checking permissions",
+          description: "Please try refreshing the page"
+        });
+      }
     }
   });
 
@@ -123,7 +127,7 @@ const Invoices = () => {
 
     return () => subscription.unsubscribe();
   }, [navigate, toast]);
-  
+
   const { data: invoices, isLoading, error, refetch } = useQuery({
     queryKey: ["invoices"],
     queryFn: async () => {

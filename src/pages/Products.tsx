@@ -31,6 +31,21 @@ const Products = () => {
     queryFn: async () => {
       try {
         console.log("Fetching products...");
+        const {
+          data: { session },
+          error: authError,
+        } = await supabase.auth.getSession();
+
+        if (authError) {
+          console.error("Auth error:", authError);
+          throw new Error("Authentication error. Please log in again.");
+        }
+
+        if (!session) {
+          console.error("No session found");
+          throw new Error("Please log in to view products.");
+        }
+
         const { data, error } = await supabase
           .from("productManagement")
           .select("*")
@@ -61,6 +76,15 @@ const Products = () => {
 
   const updatePricing = async (productId: string, prices: any) => {
     try {
+      const {
+        data: { session },
+        error: authError,
+      } = await supabase.auth.getSession();
+
+      if (authError || !session) {
+        throw new Error("Authentication error. Please log in again.");
+      }
+
       console.log("Updating pricing for product:", productId, prices);
       const { error } = await supabase
         .from("productManagement")
@@ -91,7 +115,7 @@ const Products = () => {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to update product pricing. Please try again."
+        description: error.message || "Failed to update product pricing. Please try again."
       });
     }
   };

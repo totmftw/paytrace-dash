@@ -13,24 +13,42 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CustomerFilters } from "./CustomerFilters";
 import { CustomerEditDialog } from "./CustomerEditDialog";
+import { useToast } from "@/hooks/use-toast";
 
 export function CustomerTable() {
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+  const { toast } = useToast();
 
   const { data: customers, isLoading, error, refetch } = useQuery({
     queryKey: ["customers"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("customerMaster")
-        .select("*");
-      
-      if (error) {
-        console.error("Supabase error:", error);
-        throw error;
+      try {
+        const { data, error } = await supabase
+          .from("customerMaster")
+          .select("*");
+        
+        if (error) {
+          toast({
+            variant: "destructive",
+            title: "Error fetching customers",
+            description: error.message
+          });
+          throw error;
+        }
+        
+        return data;
+      } catch (err) {
+        console.error("Fetch error:", err);
+        toast({
+          variant: "destructive",
+          title: "Network Error",
+          description: "Failed to connect to the server. Please check your internet connection and try again."
+        });
+        throw err;
       }
-      
-      return data;
     },
+    retry: 3, // Retry failed requests 3 times
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff
   });
 
   const handleEdit = (customer: any) => {
@@ -38,11 +56,20 @@ export function CustomerTable() {
   };
 
   if (error) {
-    return <div>Error loading customers: {(error as Error).message}</div>;
+    return (
+      <div className="text-center p-4">
+        <p className="text-red-500 mb-4">Error loading customers</p>
+        <Button onClick={() => refetch()}>Try Again</Button>
+      </div>
+    );
   }
 
   if (isLoading) {
-    return <div>Loading customers...</div>;
+    return (
+      <div className="text-center p-4">
+        <p>Loading customers...</p>
+      </div>
+    );
   }
 
   return (

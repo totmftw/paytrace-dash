@@ -17,6 +17,12 @@ export function ExcelUpload() {
     return d.toISOString().split('T')[0];
   };
 
+  const generateInvoiceNumber = () => {
+    const timestamp = Date.now();
+    const random = Math.floor(Math.random() * 1000);
+    return [timestamp, random];
+  };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -46,7 +52,7 @@ export function ExcelUpload() {
 
           return {
             invCustid: parseInt(row.CustomerId),
-            invNumber: [Date.now()], // Generate unique invoice number
+            invNumber: generateInvoiceNumber(),
             invDate,
             invDuedate,
             invValue: Number(row.Value) || 0,

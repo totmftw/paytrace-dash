@@ -55,6 +55,12 @@ export function NewSaleForm() {
     },
   });
 
+  const generateInvoiceNumber = () => {
+    const timestamp = Date.now();
+    const random = Math.floor(Math.random() * 1000);
+    return [timestamp, random];
+  };
+
   const { data: customers, isError: isCustomersError } = useQuery({
     queryKey: ["customers"],
     queryFn: async () => {
@@ -91,7 +97,7 @@ export function NewSaleForm() {
     try {
       const { error } = await supabase.from("invoiceTable").insert({
         invCustid: parseInt(data.customerId),
-        invNumber: [Date.now()], // Generate unique invoice number
+        invNumber: generateInvoiceNumber(),
         invDate: new Date().toISOString(),
         invDuedate: data.dueDate,
         invValue: data.amount,

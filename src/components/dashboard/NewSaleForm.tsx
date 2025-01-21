@@ -63,13 +63,29 @@ export function NewSaleForm() {
   const { data: customers, isError: isCustomersError } = useQuery({
     queryKey: ["customers"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("customerMaster")
-        .select("id, custBusinessname");
-      if (error) throw error;
-      return data;
+      try {
+        const { data, error } = await supabase
+          .from("customerMaster")
+          .select("id, custBusinessname");
+        
+        if (error) {
+          console.error("Supabase error:", error);
+          throw error;
+        }
+        
+        return data;
+      } catch (err: any) {
+        console.error("Customer fetch error:", err);
+        toast({
+          variant: "destructive",
+          title: "Error loading customers",
+          description: "Please check your connection and try again"
+        });
+        throw err;
+      }
     },
     retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
   const { data: products, isError: isProductsError } = useQuery({

@@ -18,7 +18,8 @@ export const supabase = createClient<Database>(
       headers: {
         'apikey': SUPABASE_ANON_KEY,
         'X-Client-Info': 'supabase-js-web',
-        'Access-Control-Allow-Origin': '*'
+        'Access-Control-Allow-Origin': '*',
+        'Content-Type': 'application/json'
       },
     },
     db: {

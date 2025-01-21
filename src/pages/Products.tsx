@@ -26,7 +26,7 @@ const Products = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const { toast } = useToast();
 
-  const { data: products, isError, error, refetch } = useQuery({
+  const { data: products, isError, error, refetch, isLoading } = useQuery({
     queryKey: ["products"],
     queryFn: async () => {
       try {
@@ -138,13 +138,13 @@ const Products = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {!products ? (
+          {isLoading ? (
             <TableRow>
               <TableCell colSpan={5} className="text-center py-4">
                 Loading products...
               </TableCell>
             </TableRow>
-          ) : products.length === 0 ? (
+          ) : !products || products.length === 0 ? (
             <TableRow>
               <TableCell colSpan={5} className="text-center py-4">
                 No products found

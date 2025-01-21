@@ -56,33 +56,31 @@ export function NewSaleForm() {
 
   const generateInvoiceNumber = async () => {
     try {
-      // Get the current year and month
       const now = new Date();
-      const yearStr = now.getFullYear().toString();
-      const year = parseInt(yearStr.substring(yearStr.length - 2)); // Get last 2 digits of year as number
-      const month = now.getMonth() + 1; // Get month as number
+      const year = now.getFullYear() % 100; // Get last 2 digits of year
+      const month = (now.getMonth() + 1).toString().padStart(2, '0');
       
       // Get the latest invoice number for this month
-      const { data: latestInvoice } = await supabase
+      const { data: latestInvoices } = await supabase
         .from('invoiceTable')
         .select('invNumber')
         .order('invNumber', { ascending: false })
         .limit(1);
 
       let sequence = 1;
-      if (latestInvoice && latestInvoice.length > 0) {
-        // Extract the sequence number from the latest invoice
-        const lastNumber = latestInvoice[0].invNumber[1];
-        if (typeof lastNumber === 'number') {
-          sequence = lastNumber + 1;
+      if (latestInvoices && latestInvoices.length > 0 && Array.isArray(latestInvoices[0].invNumber)) {
+        const lastInvoiceNumber = latestInvoices[0].invNumber[1];
+        if (typeof lastInvoiceNumber === 'number') {
+          const lastSequence = lastInvoiceNumber % 10000;
+          sequence = lastSequence + 1;
         }
       }
 
-      // Format: [timestamp, sequence]
+      const sequenceStr = sequence.toString().padStart(4, '0');
       const timestamp = Date.now();
-      const monthlySequence = (year * 100 + month) * 10000 + sequence;
+      const monthlyNumber = parseInt(`${year}${month}${sequenceStr}`);
       
-      return [timestamp, monthlySequence];
+      return [timestamp, monthlyNumber];
     } catch (error) {
       console.error("Error generating invoice number:", error);
       throw error;
@@ -131,14 +129,6 @@ export function NewSaleForm() {
     },
     retry: 3,
   });
-
-  if (isCustomersError || isProductsError) {
-    toast({
-      variant: "destructive",
-      title: "Error",
-      description: "Failed to load required data. Please try again.",
-    });
-  }
 
   const onSubmit = async (data: FormData) => {
     try {

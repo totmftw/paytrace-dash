@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
 
 export function PaymentReminders() {
   const { toast } = useToast();
@@ -33,9 +34,7 @@ export function PaymentReminders() {
         const daysToDue = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
         const creditPeriod = invoice.customerMaster?.custCreditperiod || 30;
 
-        // Check if reminders need to be sent based on credit period
         if (creditPeriod <= 7) {
-          // For short credit periods, space reminders evenly
           const interval = Math.floor(creditPeriod / 3);
           return (
             (daysToDue <= creditPeriod && !invoice.invReminder1) ||
@@ -43,7 +42,6 @@ export function PaymentReminders() {
             (daysToDue <= creditPeriod - (2 * interval) && !invoice.invRemainder3)
           );
         } else {
-          // Standard reminder schedule
           return (
             (daysToDue <= 7 && !invoice.invReminder1) ||
             (daysToDue <= 15 && !invoice.invRemainder2) ||
@@ -52,7 +50,7 @@ export function PaymentReminders() {
         }
       });
     },
-    refetchInterval: 300000, // Refetch every 5 minutes
+    refetchInterval: 300000,
   });
 
   const sendReminderMutation = useMutation({
@@ -67,26 +65,17 @@ export function PaymentReminders() {
       message: string; 
       reminderNumber: 1 | 2 | 3;
     }) => {
-      const response = await fetch("/functions/v1/send-whatsapp-reminder", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.SUPABASE_ANON_KEY}`,
-        },
-        body: JSON.stringify({
+      const response = await supabase.functions.invoke('send-whatsapp-reminder', {
+        body: {
           invId,
           phone,
           message,
           reminderNumber,
-        }),
+        },
       });
 
-      if (!response.ok) {
-        const error = await response.text();
-        throw new Error(error);
-      }
-
-      return response.json();
+      if (response.error) throw response.error;
+      return response.data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["payment-reminders"] });
@@ -121,6 +110,21 @@ export function PaymentReminders() {
     }
   };
 
+  const getReminderStatus = (invoice: any) => {
+    const reminders = [];
+    if (invoice.invReminder1) reminders.push("1st");
+    if (invoice.invRemainder2) reminders.push("2nd");
+    if (invoice.invRemainder3) reminders.push("3rd");
+    
+    if (reminders.length === 0) return null;
+    
+    return (
+      <Badge variant="secondary">
+        Sent: {reminders.join(", ")}
+      </Badge>
+    );
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -136,7 +140,7 @@ export function PaymentReminders() {
 
             return (
               <div key={invoice.invId} className="flex items-center justify-between border-b pb-4">
-                <div>
+                <div className="space-y-1">
                   <p className="font-medium">{invoice.customerMaster?.custBusinessname}</p>
                   <p className="text-sm text-muted-foreground">
                     Due: {dueDate.toLocaleDateString()}
@@ -144,6 +148,7 @@ export function PaymentReminders() {
                   <p className="text-sm text-muted-foreground">
                     Amount: {formatCurrency(invoice.invTotal)}
                   </p>
+                  {getReminderStatus(invoice)}
                 </div>
                 <Button
                   onClick={() => {

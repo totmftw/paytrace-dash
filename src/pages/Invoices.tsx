@@ -1,3 +1,5 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { ExcelUpload } from "@/components/dashboard/ExcelUpload";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useQuery } from "@tanstack/react-query";
@@ -6,10 +8,42 @@ import { useToast } from "@/hooks/use-toast";
 
 const Invoices = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/login");
+        toast({
+          variant: "destructive",
+          title: "Authentication required",
+          description: "Please log in to view invoices",
+        });
+      }
+    };
+    
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_OUT") {
+        navigate("/login");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate, toast]);
   
   const { data: invoices, isLoading, error } = useQuery({
     queryKey: ["invoices"],
     queryFn: async () => {
+      const { data: session } = await supabase.auth.getSession();
+      
+      if (!session.session) {
+        throw new Error("No authenticated session");
+      }
+
       const { data, error } = await supabase
         .from("invoiceTable")
         .select(`

@@ -447,15 +447,15 @@ export type Database = {
     Functions: {
       create_new_user_with_profile: {
         Args: {
-          email: string
-          password: string
-          full_name: string
-          role: Database["public"]["Enums"]["app_role"]
-          phone: string
-          designation: string
-          department: string
-          emergency_contact: string
-          address: string
+          user_email: string
+          user_password: string
+          user_full_name: string
+          user_role: Database["public"]["Enums"]["app_role"]
+          user_phone: string
+          user_designation: string
+          user_department: string
+          user_emergency_contact: string
+          user_address: string
         }
         Returns: string
       }

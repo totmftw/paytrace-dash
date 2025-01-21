@@ -57,15 +57,15 @@ export function CreateUserForm() {
     setIsLoading(true);
     try {
       const { error } = await supabase.rpc('create_new_user_with_profile', {
-        email: data.email,
-        password: data.password,
-        full_name: data.full_name,
-        role: data.role,
-        phone: data.phone || '', 
-        designation: data.designation,
-        department: data.department,
-        emergency_contact: data.emergency_contact,
-        address: data.address,
+        user_email: data.email,
+        user_password: data.password,
+        user_full_name: data.full_name,
+        user_role: data.role,
+        user_phone: data.phone || '', 
+        user_designation: data.designation,
+        user_department: data.department,
+        user_emergency_contact: data.emergency_contact,
+        user_address: data.address,
       });
 
       if (error) throw error;

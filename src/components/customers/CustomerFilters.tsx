@@ -9,14 +9,20 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-export function CustomerFilters({ onFilterChange }: { onFilterChange: (filters: any) => void }) {
-  const [filters, setFilters] = useState({
+export type CustomerFilters = {
+  location: string;
+  type: string;
+  status: string;
+};
+
+export function CustomerFilters({ onFilterChange }: { onFilterChange: (filters: CustomerFilters) => void }) {
+  const [filters, setFilters] = useState<CustomerFilters>({
     location: "",
     type: "",
     status: "",
   });
 
-  const handleFilterChange = (key: string, value: string) => {
+  const handleFilterChange = (key: keyof CustomerFilters, value: string) => {
     const newFilters = { ...filters, [key]: value };
     setFilters(newFilters);
     onFilterChange(newFilters);
@@ -58,8 +64,9 @@ export function CustomerFilters({ onFilterChange }: { onFilterChange: (filters: 
       <Button
         variant="outline"
         onClick={() => {
-          setFilters({ location: "", type: "", status: "" });
-          onFilterChange({ location: "", type: "", status: "" });
+          const resetFilters = { location: "", type: "", status: "" };
+          setFilters(resetFilters);
+          onFilterChange(resetFilters);
         }}
       >
         Clear Filters

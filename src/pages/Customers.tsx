@@ -1,11 +1,18 @@
 import { CustomerExcelUpload } from "@/components/customers/CustomerExcelUpload";
-import { CustomerFilters } from "@/components/customers/CustomerFilters";
+import { CustomerFilters, type CustomerFilters as FilterType } from "@/components/customers/CustomerFilters";
 import { CustomerTable } from "@/components/customers/CustomerTable";
+import { useState } from "react";
 
 const Customers = () => {
-  const handleFilterChange = (filters: any) => {
-    console.log("Filters changed:", filters);
-    // TODO: Implement filter logic
+  const [activeFilters, setActiveFilters] = useState<FilterType>({
+    location: "",
+    type: "",
+    status: "",
+  });
+
+  const handleFilterChange = (filters: FilterType) => {
+    setActiveFilters(filters);
+    // The CustomerTable component will handle the filtering internally
   };
 
   return (

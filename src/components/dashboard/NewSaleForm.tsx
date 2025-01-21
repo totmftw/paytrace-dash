@@ -54,10 +54,39 @@ export function NewSaleForm() {
     },
   });
 
-  const generateInvoiceNumber = () => {
-    const timestamp = Date.now();
-    const random = Math.floor(Math.random() * 1000);
-    return [timestamp, random];
+  const generateInvoiceNumber = async () => {
+    try {
+      // Get the current year and month
+      const now = new Date();
+      const year = now.getFullYear().toString().slice(-2); // Get last 2 digits of year
+      const month = (now.getMonth() + 1).toString().padStart(2, '0');
+      
+      // Get the latest invoice number for this month
+      const { data: latestInvoice } = await supabase
+        .from('invoiceTable')
+        .select('invNumber')
+        .like('invNumber[1]', `${year}${month}%`)
+        .order('invNumber', { ascending: false })
+        .limit(1);
+
+      let sequence = 1;
+      if (latestInvoice && latestInvoice.length > 0) {
+        // Extract the sequence number from the latest invoice
+        const lastSequence = parseInt(latestInvoice[0].invNumber[1].slice(4));
+        sequence = lastSequence + 1;
+      }
+
+      // Format: [timestamp, YYMM####]
+      // Example: [1642744800000, "24010001"]
+      const timestamp = Date.now();
+      const formattedSequence = sequence.toString().padStart(4, '0');
+      const invoiceNumber = `${year}${month}${formattedSequence}`;
+      
+      return [timestamp, invoiceNumber];
+    } catch (error) {
+      console.error("Error generating invoice number:", error);
+      throw error;
+    }
   };
 
   const { data: customers, isError: isCustomersError } = useQuery({
@@ -124,9 +153,11 @@ export function NewSaleForm() {
         throw new Error("Selected customer does not exist");
       }
 
+      const invoiceNumber = await generateInvoiceNumber();
+      
       const { error } = await supabase.from("invoiceTable").insert({
         invCustid: parseInt(data.customerId),
-        invNumber: generateInvoiceNumber(),
+        invNumber: invoiceNumber,
         invDate: new Date().toISOString(),
         invDuedate: data.dueDate,
         invValue: data.amount,

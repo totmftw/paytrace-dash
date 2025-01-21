@@ -327,24 +327,51 @@ export type Database = {
       }
       user_profiles: {
         Row: {
+          address: string | null
           created_at: string
+          department: string | null
+          designation: string | null
+          emergency_contact: string | null
           full_name: string | null
           id: string
+          joining_date: string | null
+          last_login: string | null
+          phone_number: string | null
+          profile_image_url: string | null
           role: Database["public"]["Enums"]["app_role"]
+          status: string | null
           updated_at: string
         }
         Insert: {
+          address?: string | null
           created_at?: string
+          department?: string | null
+          designation?: string | null
+          emergency_contact?: string | null
           full_name?: string | null
           id: string
+          joining_date?: string | null
+          last_login?: string | null
+          phone_number?: string | null
+          profile_image_url?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+          status?: string | null
           updated_at?: string
         }
         Update: {
+          address?: string | null
           created_at?: string
+          department?: string | null
+          designation?: string | null
+          emergency_contact?: string | null
           full_name?: string | null
           id?: string
+          joining_date?: string | null
+          last_login?: string | null
+          phone_number?: string | null
+          profile_image_url?: string | null
           role?: Database["public"]["Enums"]["app_role"]
+          status?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -372,6 +399,20 @@ export type Database = {
       }
     }
     Functions: {
+      create_new_user_with_profile: {
+        Args: {
+          email: string
+          password: string
+          full_name: string
+          role: Database["public"]["Enums"]["app_role"]
+          phone: string
+          designation: string
+          department: string
+          emergency_contact: string
+          address: string
+        }
+        Returns: string
+      }
       get_user_permissions: {
         Args: {
           user_id: string

@@ -7,6 +7,7 @@ import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
 import Customers from "./pages/Customers";
 import Invoices from "./pages/Invoices";
+import UserProfiles from "./pages/UserProfiles";
 import AppLayout from "./components/AppLayout";
 
 const queryClient = new QueryClient();
@@ -23,6 +24,7 @@ const App = () => {
               <Route path="/products" element={<Products />} />
               <Route path="/customers" element={<Customers />} />
               <Route path="/invoices" element={<Invoices />} />
+              <Route path="/users" element={<UserProfiles />} />
             </Route>
             <Route path="/" element={<Navigate to="/login" replace />} />
           </Routes>

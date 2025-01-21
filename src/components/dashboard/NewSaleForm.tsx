@@ -64,6 +64,7 @@ export function NewSaleForm() {
     queryKey: ["customers"],
     queryFn: async () => {
       try {
+        console.log("Fetching customers...");
         const { data, error } = await supabase
           .from("customerMaster")
           .select("id, custBusinessname")
@@ -74,6 +75,7 @@ export function NewSaleForm() {
           throw error;
         }
         
+        console.log("Customers fetched successfully:", data);
         return data;
       } catch (err: any) {
         console.error("Customer fetch error:", err);
@@ -192,7 +194,7 @@ export function NewSaleForm() {
                 </FormItem>
               )}
             />
-
+            
             <FormField
               control={form.control}
               name="productId"
@@ -304,7 +306,7 @@ export function NewSaleForm() {
               )}
             />
 
-            <Button type="submit" disabled={!customers || !products}>
+            <Button type="submit" disabled={!customers}>
               Create Sale Entry
             </Button>
           </form>

@@ -8,6 +8,7 @@ import Products from "./pages/Products";
 import Customers from "./pages/Customers";
 import Invoices from "./pages/Invoices";
 import UserProfiles from "./pages/UserProfiles";
+import WhatsappReminders from "./pages/WhatsappReminders";
 import AppLayout from "./components/AppLayout";
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ const App = () => {
                 <Route path="/customers" element={<Customers />} />
                 <Route path="/invoices" element={<Invoices />} />
                 <Route path="/users" element={<UserProfiles />} />
+                <Route path="/whatsapp-reminders" element={<WhatsappReminders />} />
               </Route>
               <Route path="/" element={<Navigate to="/login" replace />} />
             </Routes>

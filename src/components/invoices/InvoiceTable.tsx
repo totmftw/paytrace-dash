@@ -26,7 +26,6 @@ import { PaymentForm } from "./PaymentForm";
 import { InvoiceForm } from "./InvoiceForm";
 import { WhatsAppReminder } from "./WhatsAppReminder";
 import { ColumnSettings } from "./ColumnSettings";
-import { ReminderMessageForm } from "./ReminderMessageForm";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -49,11 +48,8 @@ export function InvoiceTable<TData, TValue>({
   const [showInvoiceForm, setShowInvoiceForm] = useState(false);
   const [showReminderForm, setShowReminderForm] = useState(false);
   const [pageSize, setPageSize] = useState(10);
-  const [columnOrder, setColumnOrder] = useState<string[]>(
-    columns.map((column) => (column.id as string))
-  );
 
-  // Fetch user role to check permissions
+  // Check user permissions
   const { data: userProfile } = useQuery({
     queryKey: ['userProfile'],
     queryFn: async () => {
@@ -83,13 +79,11 @@ export function InvoiceTable<TData, TValue>({
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
-    onColumnOrderChange: setColumnOrder,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
       rowSelection,
-      columnOrder,
     },
     initialState: {
       pagination: {
@@ -101,8 +95,6 @@ export function InvoiceTable<TData, TValue>({
     },
   });
 
-  const selectedInvoices = table.getSelectedRowModel().rows.map(row => row.original);
-
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
@@ -113,7 +105,7 @@ export function InvoiceTable<TData, TValue>({
           >
             Add Invoice
           </Button>
-          {selectedInvoices.length > 0 && (
+          {table.getSelectedRowModel().rows.length > 0 && (
             <Button
               variant="outline"
               onClick={() => setShowReminderForm(true)}
@@ -141,68 +133,64 @@ export function InvoiceTable<TData, TValue>({
 
       <div className="rounded-md border">
         <ScrollArea className="h-[calc(100vh-300px)]">
-          <div className="relative w-full overflow-auto">
-            <Table>
-              <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <TableHead key={header.id} className="sticky top-0 bg-white">
-                        {header.isPlaceholder ? null : (
-                          <div>
-                            {flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                          </div>
-                        )}
-                      </TableHead>
-                    ))}
-                    {canManagePayments && <TableHead className="sticky top-0 bg-white">Actions</TableHead>}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody>
-                {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() && "selected"}
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
-                      ))}
-                      {canManagePayments && (
-                        <TableCell>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => setSelectedInvoice(row.original)}
-                          >
-                            Update Payment
-                          </Button>
-                        </TableCell>
+          <Table>
+            <TableHeader className="sticky top-0 bg-white z-10">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder ? null : (
+                        flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )
                       )}
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={columns.length + (canManagePayments ? 1 : 0)}
-                      className="h-24 text-center"
-                    >
-                      No results.
-                    </TableCell>
+                    </TableHead>
+                  ))}
+                  {canManagePayments && <TableHead>Actions</TableHead>}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                    {canManagePayments && (
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setSelectedInvoice(row.original)}
+                        >
+                          Update Payment
+                        </Button>
+                      </TableCell>
+                    )}
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length + (canManagePayments ? 1 : 0)}
+                    className="h-24 text-center"
+                  >
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
         </ScrollArea>
       </div>
 
@@ -244,7 +232,7 @@ export function InvoiceTable<TData, TValue>({
 
       {showReminderForm && (
         <WhatsAppReminder
-          selectedInvoices={selectedInvoices}
+          selectedInvoices={table.getSelectedRowModel().rows.map(row => row.original)}
           isOpen={true}
           onClose={() => setShowReminderForm(false)}
           onSuccess={onRefresh}

@@ -53,6 +53,7 @@ type PaymentFormProps = {
   invoice: {
     invId: number;
     invTotal: number;
+    invBalanceAmount: number;
   };
   isOpen: boolean;
   onClose: () => void;
@@ -65,13 +66,17 @@ export function PaymentForm({ invoice, isOpen, onClose, onSuccess }: PaymentForm
   const form = useForm<z.infer<typeof paymentSchema>>({
     resolver: zodResolver(paymentSchema),
     defaultValues: {
-      amount: invoice.invTotal.toString(),
+      amount: invoice.invBalanceAmount?.toString() || invoice.invTotal.toString(),
     },
   });
 
   const onSubmit = async (values: z.infer<typeof paymentSchema>) => {
     try {
       setIsSubmitting(true);
+      
+      const paymentAmount = parseFloat(values.amount);
+      const balanceAmount = invoice.invBalanceAmount || invoice.invTotal;
+      const paymentDifference = balanceAmount - paymentAmount;
       
       // Insert payment record
       const { error: paymentError } = await supabase
@@ -83,19 +88,37 @@ export function PaymentForm({ invoice, isOpen, onClose, onSuccess }: PaymentForm
           chequeNumber: values.chequeNumber,
           bankName: values.bankName,
           paymentDate: format(values.paymentDate, "yyyy-MM-dd"),
-          amount: parseFloat(values.amount),
+          amount: paymentAmount,
           remarks: values.remarks,
         });
 
       if (paymentError) throw paymentError;
 
-      // Update invoice status
+      // Update invoice payment status
       const { error: invoiceError } = await supabase
         .from("invoiceTable")
-        .update({ invMarkcleared: true })
+        .update({
+          invBalanceAmount: paymentDifference,
+          invPaymentDifference: paymentDifference,
+          invPaymentStatus: paymentDifference <= 0 ? 'paid' : 'partial',
+          invMarkcleared: paymentDifference <= 0,
+        })
         .eq("invId", invoice.invId);
 
       if (invoiceError) throw invoiceError;
+
+      // Create ledger entry
+      const { error: ledgerError } = await supabase
+        .from("paymentLedger")
+        .insert({
+          invId: invoice.invId,
+          transactionType: 'payment',
+          amount: paymentAmount,
+          runningBalance: paymentDifference,
+          description: `Payment received via ${values.paymentMode}`,
+        });
+
+      if (ledgerError) throw ledgerError;
 
       toast({
         title: "Payment recorded",

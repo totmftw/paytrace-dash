@@ -24,6 +24,7 @@ export type Invoice = {
   invMessage1: string;
   invMessage2: string | null;
   invMessage3: string | null;
+  invCustid: number;
   customerMaster: {
     custBusinessname: string;
     custOwnername: string;

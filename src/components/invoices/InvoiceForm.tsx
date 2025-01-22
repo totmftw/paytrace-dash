@@ -42,7 +42,7 @@ const invoiceSchema = z.object({
   invGst: z.string().min(1, "GST is required"),
   invAddamount: z.string().optional(),
   invSubamount: z.string().optional(),
-  custId: z.number().min(1, "Customer is required"),
+  invCustid: z.number().min(1, "Customer is required"),
 });
 
 type InvoiceFormProps = {
@@ -79,7 +79,7 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
           invSubamount: values.invSubamount ? parseFloat(values.invSubamount) : null,
           invTotal: total,
           invBalanceAmount: total,
-          custId: values.custId,
+          invCustid: values.invCustid,
         });
 
       if (error) throw error;
@@ -118,7 +118,16 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
                 <FormItem>
                   <FormLabel>Invoice Number</FormLabel>
                   <FormControl>
-                    <Input {...field} type="number" />
+                    <Input 
+                      {...field} 
+                      type="text" 
+                      value={field.value?.join('-') || ''} 
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const numbers = value.split('-').map(num => parseInt(num)).filter(num => !isNaN(num));
+                        field.onChange(numbers);
+                      }}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>

@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { ExcelUpload } from "@/components/dashboard/ExcelUpload";
 import { InvoiceTable } from "@/components/invoices/InvoiceTable";
-import { columns } from "@/components/invoices/InvoiceColumns";
+import { columns, type Invoice } from "@/components/invoices/InvoiceColumns";
 import type { PostgrestError } from "@supabase/supabase-js";
 
 const Invoices = () => {
@@ -30,7 +30,8 @@ const Invoices = () => {
             *,
             customerMaster (
               custBusinessname,
-              custOwnername
+              custOwnername,
+              custWhatsapp
             )
           `)
           .order('invDuedate', { ascending: true });
@@ -41,7 +42,7 @@ const Invoices = () => {
         }
 
         console.log("Invoices fetched successfully:", data);
-        return data;
+        return data as Invoice[];
       } catch (err) {
         console.error("Query error:", err);
         const error = err as Error | PostgrestError;

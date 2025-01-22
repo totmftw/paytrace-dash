@@ -117,6 +117,7 @@ export type Database = {
         Row: {
           invAddamount: number | null
           invAlert: string | null
+          invBalanceAmount: number | null
           invCustid: number
           invDate: string | null
           invDuedate: string | null
@@ -137,6 +138,7 @@ export type Database = {
         Insert: {
           invAddamount?: number | null
           invAlert?: string | null
+          invBalanceAmount?: number | null
           invCustid: number
           invDate?: string | null
           invDuedate?: string | null
@@ -157,6 +159,7 @@ export type Database = {
         Update: {
           invAddamount?: number | null
           invAlert?: string | null
+          invBalanceAmount?: number | null
           invCustid?: number
           invDate?: string | null
           invDuedate?: string | null
@@ -181,6 +184,64 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "customerMaster"
             referencedColumns: ["id"]
+          },
+        ]
+      }
+      paymentLedger: {
+        Row: {
+          amount: number
+          createdAt: string | null
+          custId: number | null
+          description: string | null
+          invId: number | null
+          ledgerId: number
+          runningBalance: number
+          transactionType: string
+          updatedAt: string | null
+        }
+        Insert: {
+          amount: number
+          createdAt?: string | null
+          custId?: number | null
+          description?: string | null
+          invId?: number | null
+          ledgerId?: number
+          runningBalance: number
+          transactionType: string
+          updatedAt?: string | null
+        }
+        Update: {
+          amount?: number
+          createdAt?: string | null
+          custId?: number | null
+          description?: string | null
+          invId?: number | null
+          ledgerId?: number
+          runningBalance?: number
+          transactionType?: string
+          updatedAt?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "paymentLedger_custId_fkey"
+            columns: ["custId"]
+            isOneToOne: false
+            referencedRelation: "customerMaster"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "paymentLedger_invId_fkey"
+            columns: ["invId"]
+            isOneToOne: false
+            referencedRelation: "invoice_reminder_status"
+            referencedColumns: ["invId"]
+          },
+          {
+            foreignKeyName: "paymentLedger_invId_fkey"
+            columns: ["invId"]
+            isOneToOne: false
+            referencedRelation: "invoiceTable"
+            referencedColumns: ["invId"]
           },
         ]
       }

@@ -27,6 +27,7 @@ export type Invoice = {
   customerMaster: {
     custBusinessname: string;
     custOwnername: string;
+    custWhatsapp: number;
   } | null;
 };
 
@@ -50,6 +51,7 @@ export const columns: ColumnDef<Invoice>[] = [
     enableSorting: false,
     enableHiding: false,
   },
+
   {
     accessorKey: "invNumber",
     header: ({ column }) => (
@@ -171,6 +173,30 @@ export const columns: ColumnDef<Invoice>[] = [
       </Button>
     ),
     cell: ({ row }) => formatCurrency(row.getValue("invBalanceAmount") || 0),
+  },
+
+  {
+    accessorKey: "reminderStatus",
+    header: "Reminder Status",
+    cell: ({ row }) => {
+      const reminder1 = row.original.invReminder1;
+      const reminder2 = row.original.invRemainder2;
+      const reminder3 = row.original.invRemainder3;
+      
+      return (
+        <div className="space-y-1">
+          <div className={`text-xs ${reminder1 ? 'text-green-600' : 'text-gray-400'}`}>
+            Reminder 1 {reminder1 ? '✓' : ''}
+          </div>
+          <div className={`text-xs ${reminder2 ? 'text-green-600' : 'text-gray-400'}`}>
+            Reminder 2 {reminder2 ? '✓' : ''}
+          </div>
+          <div className={`text-xs ${reminder3 ? 'text-green-600' : 'text-gray-400'}`}>
+            Reminder 3 {reminder3 ? '✓' : ''}
+          </div>
+        </div>
+      );
+    },
   },
   {
     accessorKey: "invMarkcleared",

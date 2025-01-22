@@ -26,6 +26,7 @@ import { PaymentForm } from "./PaymentForm";
 import { InvoiceForm } from "./InvoiceForm";
 import { WhatsAppReminder } from "./WhatsAppReminder";
 import { ColumnSettings } from "./ColumnSettings";
+import { ReminderMessageForm } from "./ReminderMessageForm";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -114,81 +115,57 @@ export function InvoiceTable<TData, TValue>({
         </div>
       </div>
 
-      <div className="rounded-md border overflow-hidden">
-        <ScrollArea className="h-[calc(100vh-300px)]">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder ? null : (
-                          <div>
-                            {flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                            {header.column.getCanFilter() && (
-                              <div className="mt-2">
-                                <Input
-                                  placeholder={`Filter ${header.column.id}...`}
-                                  value={(header.column.getFilterValue() as string) ?? ""}
-                                  onChange={(event) =>
-                                    header.column.setFilterValue(event.target.value)
-                                  }
-                                  className="max-w-sm"
-                                />
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </TableHead>
-                    ))}
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody>
-                {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() && "selected"}
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
+      <div className="rounded-md border">
+        <div className="relative w-full overflow-auto">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder ? null : (
+                        <div>
                           {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
+                            header.column.columnDef.header,
+                            header.getContext()
                           )}
-                        </TableCell>
-                      ))}
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          onClick={() => setSelectedInvoice(row.original)}
-                          disabled={(row.original as any).invMarkcleared}
-                        >
-                          Update
-                        </Button>
+                        </div>
+                      )}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
                       </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={columns.length + 1}
-                      className="h-24 text-center"
-                    >
-                      No results.
-                    </TableCell>
+                    ))}
                   </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
-        </ScrollArea>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
 
       <div className="flex items-center justify-end space-x-2">

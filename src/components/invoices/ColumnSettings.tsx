@@ -25,29 +25,44 @@ export function ColumnSettings<TData>({
   pageSize, 
   onPageSizeChange 
 }: ColumnSettingsProps<TData>) {
+  const [isOpen, setIsOpen] = useState(false);
   const [customPageSize, setCustomPageSize] = useState<string>(pageSize.toString());
+  const [tempColumnVisibility, setTempColumnVisibility] = useState(table.getState().columnVisibility);
+  const [tempColumnOrder, setTempColumnOrder] = useState(table.getState().columnOrder);
 
   const handlePageSizeChange = (value: string) => {
     const size = parseInt(value);
     if (!isNaN(size) && size > 0 && size <= 500) {
       setCustomPageSize(value);
-      onPageSizeChange(size);
     }
   };
 
   const handleDragEnd = (result: any) => {
     if (!result.destination) return;
 
-    const items = Array.from(table.getAllLeafColumns());
+    const items = Array.from(tempColumnOrder);
     const [reorderedItem] = items.splice(result.source.index, 1);
     items.splice(result.destination.index, 0, reorderedItem);
+    setTempColumnOrder(items);
+  };
 
-    // Update column order
-    table.setColumnOrder(items.map(column => column.id));
+  const handleReset = () => {
+    const defaultVisibility = {};
+    const defaultOrder = table.getAllLeafColumns().map(column => column.id);
+    setTempColumnVisibility(defaultVisibility);
+    setTempColumnOrder(defaultOrder);
+    setCustomPageSize("10");
+  };
+
+  const handleApply = () => {
+    table.setColumnVisibility(tempColumnVisibility);
+    table.setColumnOrder(tempColumnOrder);
+    onPageSizeChange(parseInt(customPageSize));
+    setIsOpen(false);
   };
 
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
         <Button variant="outline">Column Settings</Button>
       </DialogTrigger>
@@ -62,8 +77,8 @@ export function ColumnSettings<TData>({
               {[10, 20, 50, 100].map((size) => (
                 <Button
                   key={size}
-                  variant={pageSize === size ? "default" : "outline"}
-                  onClick={() => onPageSizeChange(size)}
+                  variant={parseInt(customPageSize) === size ? "default" : "outline"}
+                  onClick={() => setCustomPageSize(size.toString())}
                 >
                   {size}
                 </Button>
@@ -90,12 +105,13 @@ export function ColumnSettings<TData>({
                       ref={provided.innerRef}
                       className="space-y-2"
                     >
-                      {table.getAllLeafColumns().map((column, index) => {
-                        if (!column.getCanHide()) return null;
+                      {tempColumnOrder.map((columnId, index) => {
+                        const column = table.getColumn(columnId);
+                        if (!column || !column.getCanHide()) return null;
                         return (
                           <Draggable
-                            key={column.id}
-                            draggableId={column.id}
+                            key={columnId}
+                            draggableId={columnId}
                             index={index}
                           >
                             {(provided) => (
@@ -106,10 +122,13 @@ export function ColumnSettings<TData>({
                                 className="flex items-center space-x-2 rounded-md border p-2 hover:bg-muted"
                               >
                                 <Checkbox
-                                  checked={column.getIsVisible()}
-                                  onCheckedChange={(value) =>
-                                    column.toggleVisibility(!!value)
-                                  }
+                                  checked={!tempColumnVisibility[columnId]}
+                                  onCheckedChange={(value) => {
+                                    setTempColumnVisibility({
+                                      ...tempColumnVisibility,
+                                      [columnId]: !value,
+                                    });
+                                  }}
                                 />
                                 <span className="text-sm">
                                   {column.id}
@@ -125,6 +144,17 @@ export function ColumnSettings<TData>({
                 </Droppable>
               </DragDropContext>
             </ScrollArea>
+          </div>
+          <div className="flex justify-end space-x-2">
+            <Button variant="outline" onClick={handleReset}>
+              Reset
+            </Button>
+            <Button variant="outline" onClick={() => setIsOpen(false)}>
+              Close
+            </Button>
+            <Button onClick={handleApply}>
+              Apply
+            </Button>
           </div>
         </div>
       </DialogContent>

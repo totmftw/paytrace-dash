@@ -4,6 +4,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { formatCurrency } from "@/lib/utils";
 import { ArrowUpDown } from "lucide-react";
 import { format } from "date-fns";
+import { ReminderMessageForm } from "./ReminderMessageForm";
 
 export type Invoice = {
   invId: number;
@@ -181,23 +182,56 @@ export const columns: ColumnDef<Invoice>[] = [
     accessorKey: "reminderStatus",
     header: "Reminder Status",
     cell: ({ row }) => {
+      const [showReminderForm, setShowReminderForm] = useState(false);
+      const [selectedReminder, setSelectedReminder] = useState<1 | 2 | 3>(1);
+      
       const reminder1 = row.original.invReminder1;
       const reminder2 = row.original.invRemainder2;
       const reminder3 = row.original.invRemainder3;
       
+      const handleReminderClick = (reminderNumber: 1 | 2 | 3) => {
+        setSelectedReminder(reminderNumber);
+        setShowReminderForm(true);
+      };
+      
       return (
-        <div className="space-y-1">
-          <div className={`text-xs ${reminder1 ? 'text-green-600' : 'text-gray-400'}`}>
-            Reminder 1 {reminder1 ? '✓' : ''}
+        <>
+          <div className="space-y-1">
+            <button
+              onClick={() => handleReminderClick(1)}
+              className={`text-xs w-full text-left p-1 rounded ${
+                reminder1 ? 'text-green-600 bg-green-50' : 'text-gray-400 hover:bg-gray-50'
+              }`}
+            >
+              Reminder 1: {reminder1 ? 'Sent ✓' : 'Not Sent'}
+            </button>
+            <button
+              onClick={() => handleReminderClick(2)}
+              className={`text-xs w-full text-left p-1 rounded ${
+                reminder2 ? 'text-green-600 bg-green-50' : 'text-gray-400 hover:bg-gray-50'
+              }`}
+            >
+              Reminder 2: {reminder2 ? 'Sent ✓' : 'Not Sent'}
+            </button>
+            <button
+              onClick={() => handleReminderClick(3)}
+              className={`text-xs w-full text-left p-1 rounded ${
+                reminder3 ? 'text-green-600 bg-green-50' : 'text-gray-400 hover:bg-gray-50'
+              }`}
+            >
+              Reminder 3: {reminder3 ? 'Sent ✓' : 'Not Sent'}
+            </button>
           </div>
-          <div className={`text-xs ${reminder2 ? 'text-green-600' : 'text-gray-400'}`}>
-            Reminder 2 {reminder2 ? '✓' : ''}
-          </div>
-          <div className={`text-xs ${reminder3 ? 'text-green-600' : 'text-gray-400'}`}>
-            Reminder 3 {reminder3 ? '✓' : ''}
-          </div>
-        </div>
-      );
+          {showReminderForm && (
+            <ReminderMessageForm
+              invoice={row.original}
+              isOpen={showReminderForm}
+              onClose={() => setShowReminderForm(false)}
+              onSuccess={() => row.table.options.meta?.refetch()}
+              reminderNumber={selectedReminder}
+            />
+          )}
+        </>
     },
   },
   {

@@ -6,7 +6,7 @@ import { ArrowUpDown } from "lucide-react";
 
 export type Invoice = {
   invId: number;
-  invNumber: number[];
+  invNumber: number[];  // Explicitly typing as number array
   invDate: string | null;
   invDuedate: string | null;
   invValue: number;
@@ -59,7 +59,10 @@ export const columns: ColumnDef<Invoice>[] = [
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
-    cell: ({ row }) => row.getValue("invNumber").join("-"),
+    cell: ({ row }) => {
+      const invNumber = row.getValue("invNumber") as number[];
+      return invNumber.join("-");
+    },
   },
   {
     accessorKey: "customerMaster.custBusinessname",

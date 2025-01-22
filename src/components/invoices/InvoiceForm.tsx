@@ -49,13 +49,24 @@ type InvoiceFormProps = {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  invoice?: any; // Add this line to accept invoice prop for editing
 };
 
-export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
+export function InvoiceForm({ isOpen, onClose, onSuccess, invoice }: InvoiceFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const form = useForm<z.infer<typeof invoiceSchema>>({
     resolver: zodResolver(invoiceSchema),
+    defaultValues: invoice ? {
+      invNumber: invoice.invNumber,
+      invDate: invoice.invDate ? new Date(invoice.invDate) : undefined,
+      invDuedate: invoice.invDuedate ? new Date(invoice.invDuedate) : undefined,
+      invValue: invoice.invValue?.toString(),
+      invGst: invoice.invGst?.toString(),
+      invAddamount: invoice.invAddamount?.toString(),
+      invSubamount: invoice.invSubamount?.toString(),
+      invCustid: invoice.invCustid,
+    } : undefined,
   });
 
   const onSubmit = async (values: z.infer<typeof invoiceSchema>) => {
@@ -67,36 +78,61 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
                     (values.invAddamount ? parseFloat(values.invAddamount) : 0) - 
                     (values.invSubamount ? parseFloat(values.invSubamount) : 0);
 
-      const { error } = await supabase
-        .from("invoiceTable")
-        .insert({
-          invNumber: values.invNumber,
-          invDate: format(values.invDate, "yyyy-MM-dd"),
-          invDuedate: format(values.invDuedate, "yyyy-MM-dd"),
-          invValue: parseFloat(values.invValue),
-          invGst: parseFloat(values.invGst),
-          invAddamount: values.invAddamount ? parseFloat(values.invAddamount) : null,
-          invSubamount: values.invSubamount ? parseFloat(values.invSubamount) : null,
-          invTotal: total,
-          invBalanceAmount: total,
-          invCustid: values.invCustid,
+      if (invoice) {
+        // Update existing invoice
+        const { error } = await supabase
+          .from("invoiceTable")
+          .update({
+            invNumber: values.invNumber,
+            invDate: format(values.invDate, "yyyy-MM-dd"),
+            invDuedate: format(values.invDuedate, "yyyy-MM-dd"),
+            invValue: parseFloat(values.invValue),
+            invGst: parseFloat(values.invGst),
+            invAddamount: values.invAddamount ? parseFloat(values.invAddamount) : null,
+            invSubamount: values.invSubamount ? parseFloat(values.invSubamount) : null,
+            invTotal: total,
+          })
+          .eq("invId", invoice.invId);
+
+        if (error) throw error;
+
+        toast({
+          title: "Invoice updated",
+          description: "The invoice has been successfully updated.",
         });
+      } else {
+        // Create new invoice
+        const { error } = await supabase
+          .from("invoiceTable")
+          .insert({
+            invNumber: values.invNumber,
+            invDate: format(values.invDate, "yyyy-MM-dd"),
+            invDuedate: format(values.invDuedate, "yyyy-MM-dd"),
+            invValue: parseFloat(values.invValue),
+            invGst: parseFloat(values.invGst),
+            invAddamount: values.invAddamount ? parseFloat(values.invAddamount) : null,
+            invSubamount: values.invSubamount ? parseFloat(values.invSubamount) : null,
+            invTotal: total,
+            invBalanceAmount: total,
+            invCustid: values.invCustid,
+          });
 
-      if (error) throw error;
+        if (error) throw error;
 
-      toast({
-        title: "Invoice created",
-        description: "The invoice has been successfully created.",
-      });
+        toast({
+          title: "Invoice created",
+          description: "The invoice has been successfully created.",
+        });
+      }
       
       onSuccess();
       onClose();
     } catch (error) {
-      console.error("Error creating invoice:", error);
+      console.error("Error saving invoice:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to create invoice. Please try again.",
+        description: "Failed to save invoice. Please try again.",
       });
     } finally {
       setIsSubmitting(false);
@@ -107,7 +143,7 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Create Invoice</DialogTitle>
+          <DialogTitle>{invoice ? "Edit Invoice" : "Create Invoice"}</DialogTitle>
         </DialogHeader>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -272,7 +308,7 @@ export function InvoiceForm({ isOpen, onClose, onSuccess }: InvoiceFormProps) {
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Creating..." : "Create Invoice"}
+                {isSubmitting ? (invoice ? "Updating..." : "Creating...") : (invoice ? "Update Invoice" : "Create Invoice")}
               </Button>
             </div>
           </form>

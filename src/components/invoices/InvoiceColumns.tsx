@@ -180,7 +180,7 @@ export const columns: ColumnDef<Invoice>[] = [
   {
     accessorKey: "reminderStatus",
     header: "Reminder Status",
-    cell: ({ row }) => {
+    cell: ({ row, table }) => {
       const [showReminderForm, setShowReminderForm] = useState(false);
       const [selectedReminder, setSelectedReminder] = useState<1 | 2 | 3>(1);
       
@@ -226,7 +226,12 @@ export const columns: ColumnDef<Invoice>[] = [
               invoice={row.original}
               isOpen={showReminderForm}
               onClose={() => setShowReminderForm(false)}
-              onSuccess={() => row.table.options.meta?.refetch()}
+              onSuccess={() => {
+                const meta = table.options.meta as { refetch?: () => void };
+                if (meta?.refetch) {
+                  meta.refetch();
+                }
+              }}
               reminderNumber={selectedReminder}
             />
           )}

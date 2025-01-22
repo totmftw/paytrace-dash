@@ -37,7 +37,7 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Checkbox } from "@/components/ui/checkbox";
-import { DragDropContext, Droppable, Draggable } from '@tanstack/react-table';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -77,22 +77,17 @@ export function InvoiceTable<TData, TValue>({
       rowSelection,
       columnOrder,
     },
-    onColumnOrderChange: setColumnOrder,
   });
 
-  const reorderColumn = useCallback(
-    (draggedColumnId: string, targetColumnId: string) => {
-      const newColumnOrder = [...columnOrder];
-      const currentPosition = newColumnOrder.indexOf(draggedColumnId);
-      const newPosition = newColumnOrder.indexOf(targetColumnId);
-      
-      newColumnOrder.splice(currentPosition, 1);
-      newColumnOrder.splice(newPosition, 0, draggedColumnId);
-      
-      setColumnOrder(newColumnOrder);
-    },
-    [columnOrder]
-  );
+  const handleDragEnd = useCallback((result: any) => {
+    if (!result.destination) return;
+    
+    const newColumnOrder = Array.from(columnOrder);
+    const [removed] = newColumnOrder.splice(result.source.index, 1);
+    newColumnOrder.splice(result.destination.index, 0, removed);
+    
+    setColumnOrder(newColumnOrder);
+  }, [columnOrder]);
 
   return (
     <div className="space-y-4">
@@ -139,64 +134,87 @@ export function InvoiceTable<TData, TValue>({
 
       <div className="rounded-md border">
         <ScrollArea className="h-[calc(100vh-300px)]">
-          <div className="w-full">
-            <Table>
-              <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                      </TableHead>
-                    ))}
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody>
-                {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() && "selected"}
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
+          <DragDropContext onDragEnd={handleDragEnd}>
+            <Droppable droppableId="columns" direction="horizontal">
+              {(provided) => (
+                <div 
+                  ref={provided.innerRef}
+                  {...provided.droppableProps}
+                  className="w-full"
+                >
+                  <Table>
+                    <TableHeader>
+                      {table.getHeaderGroups().map((headerGroup) => (
+                        <TableRow key={headerGroup.id}>
+                          {headerGroup.headers.map((header, index) => (
+                            <Draggable
+                              key={header.id}
+                              draggableId={header.id}
+                              index={index}
+                            >
+                              {(provided) => (
+                                <TableHead
+                                  ref={provided.innerRef}
+                                  {...provided.draggableProps}
+                                  {...provided.dragHandleProps}
+                                >
+                                  {header.isPlaceholder
+                                    ? null
+                                    : flexRender(
+                                        header.column.columnDef.header,
+                                        header.getContext()
+                                      )}
+                                </TableHead>
+                              )}
+                            </Draggable>
+                          ))}
+                          <TableHead>Actions</TableHead>
+                        </TableRow>
                       ))}
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          onClick={() => setSelectedInvoice(row.original)}
-                          disabled={(row.original as any).invMarkcleared}
-                        >
-                          Update
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={columns.length + 1}
-                      className="h-24 text-center"
-                    >
-                      No results.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                    </TableHeader>
+                    <TableBody>
+                      {table.getRowModel().rows?.length ? (
+                        table.getRowModel().rows.map((row) => (
+                          <TableRow
+                            key={row.id}
+                            data-state={row.getIsSelected() && "selected"}
+                          >
+                            {row.getVisibleCells().map((cell) => (
+                              <TableCell key={cell.id}>
+                                {flexRender(
+                                  cell.column.columnDef.cell,
+                                  cell.getContext()
+                                )}
+                              </TableCell>
+                            ))}
+                            <TableCell>
+                              <Button
+                                variant="ghost"
+                                onClick={() => setSelectedInvoice(row.original)}
+                                disabled={(row.original as any).invMarkcleared}
+                              >
+                                Update
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      ) : (
+                        <TableRow>
+                          <TableCell
+                            colSpan={columns.length + 1}
+                            className="h-24 text-center"
+                          >
+                            No results.
+                          </TableCell>
+                        </TableRow>
+                      )}
+                    </TableBody>
+                  </Table>
+                  {provided.placeholder}
+                </div>
+              )}
+            </Droppable>
+          </DragDropContext>
         </ScrollArea>
       </div>
 

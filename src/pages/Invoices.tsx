@@ -42,7 +42,7 @@ const Invoices = () => {
         }
 
         console.log("Invoices fetched successfully:", data);
-        return data as Invoice[];
+        return data as unknown as Invoice[];
       } catch (err) {
         console.error("Query error:", err);
         const error = err as Error | PostgrestError;

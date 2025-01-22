@@ -7,7 +7,6 @@ import { ArrowUpDown, Edit } from "lucide-react";
 import { format } from "date-fns";
 import { ReminderMessageForm } from "./ReminderMessageForm";
 import { useToast } from "@/hooks/use-toast";
-import { Input } from "@/components/ui/input";
 
 export type Invoice = {
   invId: number;
@@ -137,7 +136,6 @@ export const columns: ColumnDef<Invoice>[] = [
           Value
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
-      );
     },
     cell: ({ row }) => formatCurrency(row.getValue("invValue")),
   },
@@ -213,7 +211,7 @@ export const columns: ColumnDef<Invoice>[] = [
   {
     accessorKey: "reminderStatus",
     header: "Reminder Status",
-    cell: ({ row }) => {
+    cell: ({ row, table }) => {
       const [showReminderForm, setShowReminderForm] = useState(false);
       const [selectedReminder, setSelectedReminder] = useState<1 | 2 | 3>(1);
       const { toast } = useToast();

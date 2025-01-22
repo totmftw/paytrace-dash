@@ -28,6 +28,13 @@ import { InvoiceTableToolbar } from "./InvoiceTableToolbar";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+interface UserPreferences {
+  invoiceTable?: {
+    columnVisibility?: VisibilityState;
+    pageSize?: number;
+  };
+}
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
@@ -55,16 +62,18 @@ export function InvoiceTable<TData, TValue>({
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      const { data: preferences } = await supabase
+      const { data: userProfile } = await supabase
         .from('user_profiles')
         .select('preferences')
         .eq('id', session.user.id)
         .single();
 
-      if (preferences?.preferences?.invoiceTable) {
-        const tablePrefs = preferences.preferences.invoiceTable;
-        setColumnVisibility(tablePrefs.columnVisibility || {});
-        setPageSize(tablePrefs.pageSize || 10);
+      if (userProfile?.preferences) {
+        const prefs = userProfile.preferences as UserPreferences;
+        if (prefs.invoiceTable) {
+          setColumnVisibility(prefs.invoiceTable.columnVisibility || {});
+          setPageSize(prefs.invoiceTable.pageSize || 10);
+        }
       }
     };
 
@@ -76,7 +85,7 @@ export function InvoiceTable<TData, TValue>({
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
-    const preferences = {
+    const preferences: UserPreferences = {
       invoiceTable: {
         columnVisibility,
         pageSize,

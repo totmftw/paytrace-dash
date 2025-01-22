@@ -23,6 +23,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/lib/utils";
 import { format } from "date-fns";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const reminderSchema = z.object({
   contacts: z.array(z.string()),
@@ -92,16 +93,19 @@ export function WhatsAppReminder({
         
         if (!customerData.customer?.custWhatsapp) continue;
         
-        const { error } = await supabase.functions.invoke('send-whatsapp-reminder', {
-          body: {
-            phone: customerData.customer.custWhatsapp.toString(),
-            message,
-            reminderNumber: 1, // Default to 1 for bulk messages
-            invId: customerData.invoices[0].invId // Use first invoice ID for tracking
-          },
-        });
+        // Send message for each invoice of the customer
+        for (const invoice of customerData.invoices) {
+          const { error } = await supabase.functions.invoke('send-whatsapp-reminder', {
+            body: {
+              invId: invoice.invId,
+              phone: customerData.customer.custWhatsapp.toString(),
+              message,
+              reminderNumber: 1 // Default to 1 for bulk messages
+            },
+          });
 
-        if (error) throw error;
+          if (error) throw error;
+        }
       }
 
       toast({
@@ -150,27 +154,29 @@ export function WhatsAppReminder({
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="customMessage"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Message Preview</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      {...field} 
-                      rows={10} 
-                      readOnly={!isCustomMessage}
-                      className={!isCustomMessage ? "bg-gray-100" : ""}
-                      value={isCustomMessage ? field.value : Object.values(customerInvoices).map(
-                        (customerData: any) => getTemplateMessage(customerData)
-                      ).join("\n\n---\n\n")}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <ScrollArea className="h-[400px] w-full rounded-md border p-4">
+              <FormField
+                control={form.control}
+                name="customMessage"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Message Preview</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        {...field} 
+                        rows={10} 
+                        readOnly={!isCustomMessage}
+                        className={!isCustomMessage ? "bg-gray-100" : ""}
+                        value={isCustomMessage ? field.value : Object.values(customerInvoices).map(
+                          (customerData: any) => getTemplateMessage(customerData)
+                        ).join("\n\n---\n\n")}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </ScrollArea>
 
             <div className="flex justify-end space-x-2">
               <Button type="button" variant="outline" onClick={onClose}>

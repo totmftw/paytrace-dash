@@ -95,6 +95,10 @@ export function InvoiceTable<TData, TValue>({
     },
   });
 
+  const getSelectedInvoices = useCallback(() => {
+    return table.getSelectedRowModel().rows.map(row => row.original);
+  }, [table]);
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
@@ -252,7 +256,7 @@ export function InvoiceTable<TData, TValue>({
 
       {showReminderForm && (
         <WhatsAppReminder
-          selectedInvoices={table.getSelectedRowModel().rows.map(row => row.original)}
+          selectedInvoices={getSelectedInvoices()}
           isOpen={true}
           onClose={() => setShowReminderForm(false)}
           onSuccess={onRefresh}

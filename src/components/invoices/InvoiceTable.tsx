@@ -178,75 +178,76 @@ export function InvoiceTable<TData, TValue>({
 
       <div className="rounded-md border">
         <ScrollArea className="h-[calc(100vh-300px)]">
-          <div className="overflow-x-auto min-w-max">
-            <Table>
-              <TableHeader className="sticky top-0 bg-white z-10">
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => (
-                      <TableHead key={header.id}>
-                        {header.isPlaceholder ? null : (
-                          flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )
-                        )}
-                      </TableHead>
-                    ))}
-                    {canManagePayments && <TableHead>Actions</TableHead>}
-                  </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody>
-                {table.getRowModel().rows?.length ? (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      data-state={row.getIsSelected() && "selected"}
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
-                      ))}
-                      {canManagePayments && (
-                        <TableCell>
-                          <div className="flex gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setSelectedInvoice(row.original)}
-                            >
-                              Update Payment
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => setEditInvoice(row.original)}
-                            >
-                              Edit Invoice
-                            </Button>
-                          </div>
-                        </TableCell>
-                      )}
-                    </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell
-                      colSpan={columns.length + (canManagePayments ? 1 : 0)}
-                      className="h-24 text-center"
-                    >
-                      No results.
-                    </TableCell>
-                  </TableRow>
+          <div className="overflow-x-auto min-w-max scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200">
+  <Table>
+    <TableHeader className="sticky top-0 bg-white z-10">
+      {table.getHeaderGroups().map((headerGroup) => (
+        <TableRow key={headerGroup.id}>
+          {headerGroup.headers.map((header) => (
+            <TableHead key={header.id}>
+              {header.isPlaceholder ? null : (
+                flexRender(
+                  header.column.columnDef.header,
+                  header.getContext()
+                )
+              )}
+            </TableHead>
+          ))}
+          {canManagePayments && <TableHead>Actions</TableHead>}
+        </TableRow>
+      ))}
+    </TableHeader>
+    <TableBody>
+      {table.getRowModel().rows?.length ? (
+        table.getRowModel().rows.map((row) => (
+          <TableRow
+            key={row.id}
+            data-state={row.getIsSelected() && "selected"}
+          >
+            {row.getVisibleCells().map((cell) => (
+              <TableCell key={cell.id}>
+                {flexRender(
+                  cell.column.columnDef.cell,
+                  cell.getContext()
                 )}
-              </TableBody>
-            </Table>
-          </div>
+              </TableCell>
+            ))}
+            {canManagePayments && (
+              <TableCell>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setSelectedInvoice(row.original)}
+                  >
+                    Update Payment
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setEditInvoice(row.original)}
+                  >
+                    Edit Invoice
+                  </Button>
+                </div>
+              </TableCell>
+            )}
+          </TableRow>
+        ))
+      ) : (
+        <TableRow>
+          <TableCell
+            colSpan={columns.length + (canManagePayments ? 1 : 0)}
+            className="h-24 text-center"
+          >
+            No results.
+          </TableCell>
+        </TableRow>
+      )}
+    </TableBody>
+  </Table>
+</div>
+
         </ScrollArea>
       </div>
 

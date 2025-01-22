@@ -136,6 +136,7 @@ export const columns: ColumnDef<Invoice>[] = [
           Value
           <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
+      );
     },
     cell: ({ row }) => formatCurrency(row.getValue("invValue")),
   },

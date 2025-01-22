@@ -1,9 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { LucideIcon, LayoutDashboard, Users, Package, LogOut, Menu, FileText, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SidebarItem {
   icon: LucideIcon;
@@ -21,8 +20,20 @@ const sidebarItems: SidebarItem[] = [
 
 const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
   const navigate = useNavigate();
-  const isMobile = useIsMobile();
-  const [isCollapsed, setIsCollapsed] = useState(isMobile);
+  const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileView, setIsMobileView] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobileView(window.innerWidth < 768);
+      setIsCollapsed(window.innerWidth < 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   return (
     <div className="min-h-screen flex">
@@ -99,7 +110,7 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       </main>
 
       {/* Mobile overlay */}
-      {isMobile && !isCollapsed && (
+      {isMobileView && !isCollapsed && (
         <div 
           className="fixed inset-0 bg-black/50 z-40"
           onClick={() => setIsCollapsed(true)}

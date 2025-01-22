@@ -128,6 +128,8 @@ export type Database = {
           invMessage2: string | null
           invMessage3: string | null
           invNumber: number[]
+          invPaymentDifference: number | null
+          invPaymentStatus: string | null
           invRemainder2: boolean | null
           invRemainder3: boolean | null
           invReminder1: boolean | null
@@ -149,6 +151,8 @@ export type Database = {
           invMessage2?: string | null
           invMessage3?: string | null
           invNumber: number[]
+          invPaymentDifference?: number | null
+          invPaymentStatus?: string | null
           invRemainder2?: boolean | null
           invRemainder3?: boolean | null
           invReminder1?: boolean | null
@@ -170,6 +174,8 @@ export type Database = {
           invMessage2?: string | null
           invMessage3?: string | null
           invNumber?: number[]
+          invPaymentDifference?: number | null
+          invPaymentStatus?: string | null
           invRemainder2?: boolean | null
           invRemainder3?: boolean | null
           invReminder1?: boolean | null

@@ -24,12 +24,13 @@ export type Invoice = {
   invMessage1: string;
   invMessage2: string | null;
   invMessage3: string | null;
-  invCustid: number;
+  invPaymentDifference: number;
+  invPaymentStatus: string;
   customerMaster: {
     custBusinessname: string;
     custOwnername: string;
     custWhatsapp: number;
-  } | null;
+  };
 };
 
 export const columns: ColumnDef<Invoice>[] = [
@@ -200,7 +201,27 @@ export const columns: ColumnDef<Invoice>[] = [
     },
   },
   {
-    accessorKey: "invMarkcleared",
+    accessorKey: "invPaymentDifference",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Payment Difference
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => {
+      const difference = row.getValue("invPaymentDifference") as number;
+      return (
+        <span className={difference !== 0 ? "text-red-500" : "text-green-500"}>
+          {formatCurrency(difference)}
+        </span>
+      );
+    },
+  },
+  {
+    accessorKey: "invPaymentStatus",
     header: "Status",
     cell: ({ row }) => (
       <span
@@ -210,7 +231,7 @@ export const columns: ColumnDef<Invoice>[] = [
             : "bg-yellow-100 text-yellow-800"
         }`}
       >
-        {row.getValue("invMarkcleared") ? "Paid" : "Pending"}
+        {row.getValue("invPaymentStatus")}
       </span>
     ),
   },

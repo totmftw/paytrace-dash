@@ -189,6 +189,24 @@ export const columns: ColumnDef<Invoice>[] = [
       const reminder3 = row.original.invRemainder3;
       
       const handleReminderClick = (reminderNumber: 1 | 2 | 3) => {
+        // Check if previous reminders are sent
+        if (reminderNumber === 2 && !reminder1) {
+          toast({
+            variant: "destructive",
+            title: "Cannot send Reminder 2",
+            description: "Please send Reminder 1 first.",
+          });
+          return;
+        }
+        if (reminderNumber === 3 && !reminder2) {
+          toast({
+            variant: "destructive",
+            title: "Cannot send Reminder 3",
+            description: "Please send Reminder 2 first.",
+          });
+          return;
+        }
+        
         setSelectedReminder(reminderNumber);
         setShowReminderForm(true);
       };
@@ -198,27 +216,36 @@ export const columns: ColumnDef<Invoice>[] = [
           <div className="space-y-1">
             <button
               onClick={() => handleReminderClick(1)}
+              disabled={reminder1}
               className={`text-xs w-full text-left p-1 rounded ${
-                reminder1 ? 'text-green-600 bg-green-50' : 'text-gray-400 hover:bg-gray-50'
+                reminder1 
+                  ? 'text-green-600 bg-green-50 cursor-default' 
+                  : 'text-red-500 hover:bg-gray-50'
               }`}
             >
-              Reminder 1: {reminder1 ? 'Sent ✓' : 'Not Sent'}
+              Reminder 1
             </button>
             <button
               onClick={() => handleReminderClick(2)}
+              disabled={reminder2 || !reminder1}
               className={`text-xs w-full text-left p-1 rounded ${
-                reminder2 ? 'text-green-600 bg-green-50' : 'text-gray-400 hover:bg-gray-50'
+                reminder2 
+                  ? 'text-green-600 bg-green-50 cursor-default' 
+                  : 'text-red-500 hover:bg-gray-50'
               }`}
             >
-              Reminder 2: {reminder2 ? 'Sent ✓' : 'Not Sent'}
+              Reminder 2
             </button>
             <button
               onClick={() => handleReminderClick(3)}
+              disabled={reminder3 || !reminder2}
               className={`text-xs w-full text-left p-1 rounded ${
-                reminder3 ? 'text-green-600 bg-green-50' : 'text-gray-400 hover:bg-gray-50'
+                reminder3 
+                  ? 'text-green-600 bg-green-50 cursor-default' 
+                  : 'text-red-500 hover:bg-gray-50'
               }`}
             >
-              Reminder 3: {reminder3 ? 'Sent ✓' : 'Not Sent'}
+              Reminder 3
             </button>
           </div>
           {showReminderForm && (
@@ -236,7 +263,7 @@ export const columns: ColumnDef<Invoice>[] = [
             />
           )}
         </>
-      );
+    );
     }
   },
   {

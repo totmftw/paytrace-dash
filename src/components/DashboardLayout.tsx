@@ -29,9 +29,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
       {/* Sidebar */}
       <aside 
         className={cn(
-          "bg-gray-900 text-white transition-all duration-300",
-          isCollapsed ? "w-16" : "w-64",
-          isMobile && !isCollapsed && "fixed inset-y-0 z-50"
+          "bg-gray-900 text-white transition-all duration-300 fixed h-full z-50",
+          isCollapsed ? "w-16" : "w-64"
         )}
       >
         <div className="flex flex-col h-full">
@@ -91,8 +90,8 @@ const DashboardLayout = ({ children }: { children: React.ReactNode }) => {
 
       {/* Main content */}
       <main className={cn(
-        "flex-1 bg-gray-50 overflow-auto transition-all duration-300",
-        isMobile && !isCollapsed && "ml-64"
+        "flex-1 bg-gray-50 min-h-screen transition-all duration-300",
+        isCollapsed ? "ml-16" : "ml-64"
       )}>
         <div className="p-8">
           {children}

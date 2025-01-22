@@ -29,7 +29,6 @@ const reminderSchema = z.object({
   contacts: z.array(z.string()),
   customMessage: z.string().optional(),
   isCustomMessage: z.boolean().default(false),
-  sendToAll: z.boolean().default(false),
 });
 
 type ReminderMessageFormProps = {
@@ -57,14 +56,12 @@ export function ReminderMessageForm({
     defaultValues: {
       contacts: [String(invoice.customerMaster?.custOwnerwhatsapp)],
       isCustomMessage: false,
-      sendToAll: false,
     },
   });
 
   const getTemplateMessage = () => {
     const dueDate = format(new Date(invoice.invDuedate), "dd/MM/yyyy");
     const invoiceNumber = invoice.invNumber.join("-");
-
     return `Your Payment for Invoice Number ${invoiceNumber} is due on ${dueDate}`;
   };
 
@@ -84,11 +81,8 @@ export function ReminderMessageForm({
       setIsSubmitting(true);
       
       const message = values.isCustomMessage ? values.customMessage : getTemplateMessage();
-      const contactsToSend = values.sendToAll 
-        ? [String(invoice.customerMaster?.custWhatsapp), String(invoice.customerMaster?.custOwnerwhatsapp)]
-        : values.contacts;
       
-      for (const contact of contactsToSend) {
+      for (const contact of values.contacts) {
         if (!contact || contact === "null" || contact === "undefined") continue;
         
         const { error } = await supabase.functions.invoke('send-whatsapp-reminder', {
@@ -138,7 +132,7 @@ export function ReminderMessageForm({
       <Dialog open={isOpen} onOpenChange={onClose}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Send Reminder</DialogTitle>
+            <DialogTitle>Send {`Reminder ${reminderNumber}`}</DialogTitle>
           </DialogHeader>
           <div className={customerNameStyle}>
             {invoice.customerMaster?.custBusinessname}
@@ -166,62 +160,34 @@ export function ReminderMessageForm({
 
               <FormField
                 control={form.control}
-                name="sendToAll"
-                render={({ field }) => (
-                  <FormItem className="flex items-center space-x-2">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={(checked) => {
-                          field.onChange(checked);
-                          if (checked) {
-                            form.setValue("contacts", [
-                              String(invoice.customerMaster?.custWhatsapp),
-                              String(invoice.customerMaster?.custOwnerwhatsapp)
-                            ]);
-                          } else {
-                            form.setValue("contacts", [String(invoice.customerMaster?.custOwnerwhatsapp)]);
-                          }
-                        }}
-                      />
-                    </FormControl>
-                    <FormLabel className="!mt-0">Send to all contacts</FormLabel>
+                name="contacts"
+                render={() => (
+                  <FormItem>
+                    <FormLabel>Send To</FormLabel>
+                    <div className="space-y-2">
+                      {[
+                        { label: "Business Contact", value: String(invoice.customerMaster?.custWhatsapp) },
+                        { label: "Owner Contact", value: String(invoice.customerMaster?.custOwnerwhatsapp) }
+                      ].filter(contact => contact.value !== "null" && contact.value !== "undefined").map((contact) => (
+                        <div key={contact.value} className="flex items-center space-x-2">
+                          <Checkbox
+                            checked={form.getValues("contacts").includes(contact.value)}
+                            onCheckedChange={(checked) => {
+                              const currentContacts = form.getValues("contacts");
+                              const newContacts = checked
+                                ? [...currentContacts, contact.value]
+                                : currentContacts.filter((c) => c !== contact.value);
+                              form.setValue("contacts", newContacts);
+                            }}
+                          />
+                          <span>{contact.label}: {contact.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
-
-              {!form.watch("sendToAll") && (
-                <FormField
-                  control={form.control}
-                  name="contacts"
-                  render={() => (
-                    <FormItem>
-                      <FormLabel>Send To</FormLabel>
-                      <div className="space-y-2">
-                        {[
-                          { label: "Business Contact", value: String(invoice.customerMaster?.custWhatsapp) },
-                          { label: "Owner Contact", value: String(invoice.customerMaster?.custOwnerwhatsapp) }
-                        ].filter(contact => contact.value !== "null" && contact.value !== "undefined").map((contact) => (
-                          <div key={contact.value} className="flex items-center space-x-2">
-                            <Checkbox
-                              checked={form.getValues("contacts").includes(contact.value)}
-                              onCheckedChange={(checked) => {
-                                const currentContacts = form.getValues("contacts");
-                                const newContacts = checked
-                                  ? [...currentContacts, contact.value]
-                                  : currentContacts.filter((c) => c !== contact.value);
-                                form.setValue("contacts", newContacts);
-                              }}
-                            />
-                            <span>{contact.label}: {contact.value}</span>
-                          </div>
-                        ))}
-                      </div>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
 
               <FormField
                 control={form.control}

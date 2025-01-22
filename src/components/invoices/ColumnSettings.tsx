@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Table } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +28,15 @@ export function ColumnSettings<TData>({
   const [isOpen, setIsOpen] = useState(false);
   const [customPageSize, setCustomPageSize] = useState<string>(pageSize.toString());
   const [tempColumnVisibility, setTempColumnVisibility] = useState(table.getState().columnVisibility);
-  const [tempColumnOrder, setTempColumnOrder] = useState(table.getState().columnOrder);
+  const [tempColumnOrder, setTempColumnOrder] = useState<string[]>([]);
+
+  useEffect(() => {
+    // Initialize column order with all available columns
+    const allColumns = table.getAllLeafColumns()
+      .filter(column => column.getCanHide())
+      .map(column => column.id);
+    setTempColumnOrder(allColumns);
+  }, [table]);
 
   const handlePageSizeChange = (value: string) => {
     const size = parseInt(value);
@@ -48,7 +56,9 @@ export function ColumnSettings<TData>({
 
   const handleReset = () => {
     const defaultVisibility = {};
-    const defaultOrder = table.getAllLeafColumns().map(column => column.id);
+    const defaultOrder = table.getAllLeafColumns()
+      .filter(column => column.getCanHide())
+      .map(column => column.id);
     setTempColumnVisibility(defaultVisibility);
     setTempColumnOrder(defaultOrder);
     setCustomPageSize("10");
@@ -108,6 +118,7 @@ export function ColumnSettings<TData>({
                       {tempColumnOrder.map((columnId, index) => {
                         const column = table.getColumn(columnId);
                         if (!column || !column.getCanHide()) return null;
+                        
                         return (
                           <Draggable
                             key={columnId}

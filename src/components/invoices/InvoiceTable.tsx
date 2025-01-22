@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -49,6 +49,58 @@ export function InvoiceTable<TData, TValue>({
   const [editInvoice, setEditInvoice] = useState<any>(null);
   const [pageSize, setPageSize] = useState(10);
 
+  // Load user preferences
+  useEffect(() => {
+    const loadUserPreferences = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
+      const { data: preferences } = await supabase
+        .from('user_profiles')
+        .select('preferences')
+        .eq('id', session.user.id)
+        .single();
+
+      if (preferences?.preferences?.invoiceTable) {
+        const tablePrefs = preferences.preferences.invoiceTable;
+        setColumnVisibility(tablePrefs.columnVisibility || {});
+        setPageSize(tablePrefs.pageSize || 10);
+      }
+    };
+
+    loadUserPreferences();
+  }, []);
+
+  // Save user preferences
+  const saveUserPreferences = useCallback(async () => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) return;
+
+    const preferences = {
+      invoiceTable: {
+        columnVisibility,
+        pageSize,
+      }
+    };
+
+    await supabase
+      .from('user_profiles')
+      .update({ 
+        preferences,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', session.user.id);
+  }, [columnVisibility, pageSize]);
+
+  // Save preferences when they change
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      saveUserPreferences();
+    }, 1000);
+
+    return () => clearTimeout(timeoutId);
+  }, [columnVisibility, pageSize, saveUserPreferences]);
+
   const { data: userProfile } = useQuery({
     queryKey: ['userProfile'],
     queryFn: async () => {
@@ -76,7 +128,9 @@ export function InvoiceTable<TData, TValue>({
     getFilteredRowModel: getFilteredRowModel(),
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
+    onColumnVisibilityChange: (visibility) => {
+      setColumnVisibility(visibility);
+    },
     onRowSelectionChange: setRowSelection,
     state: {
       sorting,
@@ -103,7 +157,10 @@ export function InvoiceTable<TData, TValue>({
       <InvoiceTableToolbar
         table={table}
         pageSize={pageSize}
-        onPageSizeChange={setPageSize}
+        onPageSizeChange={(size) => {
+          setPageSize(size);
+          table.setPageSize(size);
+        }}
         onAddInvoice={() => setShowInvoiceForm(true)}
         onSendMessage={() => setShowReminderForm(true)}
         selectedCount={table.getSelectedRowModel().rows.length}
@@ -111,7 +168,7 @@ export function InvoiceTable<TData, TValue>({
 
       <div className="rounded-md border">
         <ScrollArea className="h-[calc(100vh-300px)]">
-          <div className="w-full min-w-max">
+          <div className="overflow-x-auto min-w-max">
             <Table>
               <TableHeader className="sticky top-0 bg-white z-10">
                 {table.getHeaderGroups().map((headerGroup) => (

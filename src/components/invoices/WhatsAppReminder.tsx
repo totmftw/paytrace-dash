@@ -44,16 +44,16 @@ export function WhatsAppReminder({
   const { toast } = useToast();
   const [isCustomMessage, setIsCustomMessage] = useState(false);
 
-  // Group invoices by customer
+  // Group invoices by business name
   const customerInvoices = selectedInvoices.reduce((acc, invoice) => {
-    const custId = invoice.customerMaster?.id;
-    if (!acc[custId]) {
-      acc[custId] = {
+    const businessName = invoice.customerMaster?.custBusinessname;
+    if (!acc[businessName]) {
+      acc[businessName] = {
         customer: invoice.customerMaster,
         invoices: []
       };
     }
-    acc[custId].invoices.push(invoice);
+    acc[businessName].invoices.push(invoice);
     return acc;
   }, {});
   
@@ -61,8 +61,8 @@ export function WhatsAppReminder({
     resolver: zodResolver(reminderSchema),
     defaultValues: {
       isCustomMessage: false,
-      customerMessages: Object.keys(customerInvoices).reduce((acc, custId) => {
-        acc[custId] = "";
+      customerMessages: Object.keys(customerInvoices).reduce((acc, businessName) => {
+        acc[businessName] = "";
         return acc;
       }, {}),
     },
@@ -72,11 +72,12 @@ export function WhatsAppReminder({
     try {
       setIsSubmitting(true);
       
-      for (const custId in customerInvoices) {
-        const customerData = customerInvoices[custId];
+      // Send messages for each business separately
+      for (const businessName in customerInvoices) {
+        const customerData = customerInvoices[businessName];
         const message = values.isCustomMessage 
-          ? values.customerMessages[custId]
-          : form.getValues().customerMessages[custId];
+          ? values.customerMessages[businessName]
+          : form.getValues().customerMessages[businessName];
         
         if (!customerData.customer?.custWhatsapp) continue;
         
@@ -143,11 +144,11 @@ export function WhatsAppReminder({
 
             <ScrollArea className="h-[500px] w-full">
               <div className="space-y-6 p-4">
-                {Object.entries(customerInvoices).map(([custId, data]: [string, any]) => (
+                {Object.entries(customerInvoices).map(([businessName, data]: [string, any]) => (
                   <FormField
-                    key={custId}
+                    key={businessName}
                     control={form.control}
-                    name={`customerMessages.${custId}`}
+                    name={`customerMessages.${businessName}`}
                     render={({ field }) => (
                       <CustomerMessagePreview
                         customer={data.customer}

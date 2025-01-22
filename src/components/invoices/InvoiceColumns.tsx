@@ -3,10 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { formatCurrency } from "@/lib/utils";
 import { ArrowUpDown } from "lucide-react";
+import { format } from "date-fns";
 
 export type Invoice = {
   invId: number;
-  invNumber: number[];  // Explicitly typing as number array
+  invNumber: number[];
   invDate: string | null;
   invDuedate: string | null;
   invValue: number;
@@ -14,6 +15,7 @@ export type Invoice = {
   invAddamount: number | null;
   invSubamount: number | null;
   invTotal: number;
+  invBalanceAmount: number | null;
   invReminder1: boolean | null;
   invRemainder2: boolean | null;
   invRemainder3: boolean | null;
@@ -66,30 +68,109 @@ export const columns: ColumnDef<Invoice>[] = [
   },
   {
     accessorKey: "customerMaster.custBusinessname",
-    header: "Business Name",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Business Name
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
   },
   {
     accessorKey: "invDate",
-    header: "Date",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Date
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => {
+      const date = row.getValue("invDate");
+      return date ? format(new Date(date as string), "dd/MM/yyyy") : "-";
+    },
   },
   {
     accessorKey: "invDuedate",
-    header: "Due Date",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Due Date
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => {
+      const date = row.getValue("invDuedate");
+      return date ? format(new Date(date as string), "dd/MM/yyyy") : "-";
+    },
   },
   {
     accessorKey: "invValue",
-    header: "Value",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Value
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
     cell: ({ row }) => formatCurrency(row.getValue("invValue")),
   },
   {
     accessorKey: "invGst",
-    header: "GST",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        GST
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
     cell: ({ row }) => formatCurrency(row.getValue("invGst")),
   },
   {
+    accessorKey: "invAddamount",
+    header: "Additional Amount",
+    cell: ({ row }) => formatCurrency(row.getValue("invAddamount") || 0),
+  },
+  {
+    accessorKey: "invSubamount",
+    header: "Subtracted Amount",
+    cell: ({ row }) => formatCurrency(row.getValue("invSubamount") || 0),
+  },
+  {
     accessorKey: "invTotal",
-    header: "Total",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Total
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
     cell: ({ row }) => formatCurrency(row.getValue("invTotal")),
+  },
+  {
+    accessorKey: "invBalanceAmount",
+    header: ({ column }) => (
+      <Button
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Balance
+        <ArrowUpDown className="ml-2 h-4 w-4" />
+      </Button>
+    ),
+    cell: ({ row }) => formatCurrency(row.getValue("invBalanceAmount") || 0),
   },
   {
     accessorKey: "invMarkcleared",

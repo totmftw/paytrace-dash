@@ -184,6 +184,73 @@ export type Database = {
           },
         ]
       }
+      paymentTransactions: {
+        Row: {
+          amount: number
+          bankName: string | null
+          chequeNumber: string | null
+          createdAt: string | null
+          createdBy: string | null
+          invId: number
+          paymentDate: string
+          paymentId: number
+          paymentMode: string
+          remarks: string | null
+          transactionId: string
+          updatedAt: string | null
+        }
+        Insert: {
+          amount: number
+          bankName?: string | null
+          chequeNumber?: string | null
+          createdAt?: string | null
+          createdBy?: string | null
+          invId: number
+          paymentDate: string
+          paymentId?: number
+          paymentMode: string
+          remarks?: string | null
+          transactionId: string
+          updatedAt?: string | null
+        }
+        Update: {
+          amount?: number
+          bankName?: string | null
+          chequeNumber?: string | null
+          createdAt?: string | null
+          createdBy?: string | null
+          invId?: number
+          paymentDate?: string
+          paymentId?: number
+          paymentMode?: string
+          remarks?: string | null
+          transactionId?: string
+          updatedAt?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "paymentTransactions_createdBy_fkey"
+            columns: ["createdBy"]
+            isOneToOne: false
+            referencedRelation: "user_management"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "paymentTransactions_invId_fkey"
+            columns: ["invId"]
+            isOneToOne: false
+            referencedRelation: "invoice_reminder_status"
+            referencedColumns: ["invId"]
+          },
+          {
+            foreignKeyName: "paymentTransactions_invId_fkey"
+            columns: ["invId"]
+            isOneToOne: false
+            referencedRelation: "invoiceTable"
+            referencedColumns: ["invId"]
+          },
+        ]
+      }
       productManagement: {
         Row: {
           prodBasePrice: number | null

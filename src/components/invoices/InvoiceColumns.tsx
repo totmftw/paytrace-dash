@@ -294,7 +294,7 @@ export const columns: ColumnDef<Invoice>[] = [
             />
           )}
         </>
-      );
+    );
     },
   },
   {

@@ -31,7 +31,8 @@ const Invoices = () => {
             customerMaster (
               custBusinessname,
               custOwnername,
-              custWhatsapp
+              custWhatsapp,
+              custOwnerwhatsapp
             )
           `)
           .order('invDuedate', { ascending: true });

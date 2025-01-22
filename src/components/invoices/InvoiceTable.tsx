@@ -27,6 +27,8 @@ import { InvoiceForm } from "./InvoiceForm";
 import { WhatsAppReminder } from "./WhatsAppReminder";
 import { ColumnSettings } from "./ColumnSettings";
 import { ReminderMessageForm } from "./ReminderMessageForm";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -51,6 +53,25 @@ export function InvoiceTable<TData, TValue>({
     columns.map((column) => (column.id as string))
   );
 
+  // Fetch user role to check permissions
+  const { data: userProfile } = useQuery({
+    queryKey: ['userProfile'],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return null;
+      
+      const { data } = await supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .single();
+      
+      return data;
+    }
+  });
+
+  const canManagePayments = userProfile?.role && ['it_admin', 'business_owner', 'business_manager'].includes(userProfile.role);
+
   const table = useReactTable({
     data,
     columns,
@@ -74,6 +95,9 @@ export function InvoiceTable<TData, TValue>({
       pagination: {
         pageSize: pageSize,
       },
+    },
+    meta: {
+      refetch: onRefresh,
     },
   });
 
@@ -116,56 +140,70 @@ export function InvoiceTable<TData, TValue>({
       </div>
 
       <div className="rounded-md border">
-        <div className="relative w-full overflow-auto">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <TableHead key={header.id}>
-                      {header.isPlaceholder ? null : (
-                        <div>
-                          {flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                        </div>
-                      )}
-                    </TableHead>
-                  ))}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
+        <ScrollArea className="h-[calc(100vh-300px)]">
+          <div className="relative w-full overflow-auto">
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => (
+                      <TableHead key={header.id} className="sticky top-0 bg-white">
+                        {header.isPlaceholder ? null : (
+                          <div>
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                          </div>
                         )}
-                      </TableCell>
+                      </TableHead>
                     ))}
+                    {canManagePayments && <TableHead className="sticky top-0 bg-white">Actions</TableHead>}
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="h-24 text-center"
-                  >
-                    No results.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        </div>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows?.length ? (
+                  table.getRowModel().rows.map((row) => (
+                    <TableRow
+                      key={row.id}
+                      data-state={row.getIsSelected() && "selected"}
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
+                      ))}
+                      {canManagePayments && (
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedInvoice(row.original)}
+                          >
+                            Update Payment
+                          </Button>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))
+                ) : (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length + (canManagePayments ? 1 : 0)}
+                      className="h-24 text-center"
+                    >
+                      No results.
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        </ScrollArea>
       </div>
 
       <div className="flex items-center justify-end space-x-2">

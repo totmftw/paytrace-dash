@@ -85,17 +85,17 @@ export function InvoiceTable<TData, TValue>({
     const { data: { session } } = await supabase.auth.getSession();
     if (!session) return;
 
-    const preferences: UserPreferences = {
+    const preferencesJson = {
       invoiceTable: {
         columnVisibility,
         pageSize,
       }
-    };
+    } as Json;
 
     await supabase
       .from('user_profiles')
       .update({ 
-        preferences,
+        preferences: preferencesJson,
         updated_at: new Date().toISOString()
       })
       .eq('id', session.user.id);

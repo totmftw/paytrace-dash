@@ -15,20 +15,16 @@ import {
   FormField,
   FormItem,
   FormLabel,
-  FormMessage,
 } from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { formatCurrency } from "@/lib/utils";
-import { format } from "date-fns";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { CustomerMessagePreview } from "./CustomerMessagePreview";
 
 const reminderSchema = z.object({
-  contacts: z.array(z.string()),
-  customMessage: z.string().optional(),
   isCustomMessage: z.boolean().default(false),
+  customerMessages: z.record(z.string(), z.string()),
 });
 
 type WhatsAppReminderProps = {
@@ -64,24 +60,13 @@ export function WhatsAppReminder({
   const form = useForm<z.infer<typeof reminderSchema>>({
     resolver: zodResolver(reminderSchema),
     defaultValues: {
-      contacts: Object.values(customerInvoices).map(
-        ({ customer }: any) => String(customer?.custOwnerwhatsapp)
-      ),
       isCustomMessage: false,
+      customerMessages: Object.keys(customerInvoices).reduce((acc, custId) => {
+        acc[custId] = "";
+        return acc;
+      }, {}),
     },
   });
-
-  const getTemplateMessage = (customerData: any) => {
-    const { customer, invoices } = customerData;
-    let totalPending = 0;
-    const invoiceDetails = invoices.map(invoice => {
-      const pending = invoice.invBalanceAmount || 0;
-      totalPending += pending;
-      return `Invoice ${invoice.invNumber.join("-")} dated ${format(new Date(invoice.invDate), "dd/MM/yyyy")} - Amount Due: ${formatCurrency(pending)}`;
-    }).join("\n");
-
-    return `Dear ${customer.custBusinessname},\n\nThis is a reminder for the following pending payment(s):\n\n${invoiceDetails}\n\nTotal Amount Due: ${formatCurrency(totalPending)}\n\nKindly arrange for the payment at your earliest convenience.`;
-  };
 
   const onSubmit = async (values: z.infer<typeof reminderSchema>) => {
     try {
@@ -89,7 +74,9 @@ export function WhatsAppReminder({
       
       for (const custId in customerInvoices) {
         const customerData = customerInvoices[custId];
-        const message = values.isCustomMessage ? values.customMessage : getTemplateMessage(customerData);
+        const message = values.isCustomMessage 
+          ? values.customerMessages[custId]
+          : form.getValues().customerMessages[custId];
         
         if (!customerData.customer?.custWhatsapp) continue;
         
@@ -129,7 +116,7 @@ export function WhatsAppReminder({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[800px]">
         <DialogHeader>
           <DialogTitle>Send Payment Reminders</DialogTitle>
         </DialogHeader>
@@ -149,33 +136,30 @@ export function WhatsAppReminder({
                       }}
                     />
                   </FormControl>
-                  <FormLabel className="!mt-0">Use Custom Message</FormLabel>
+                  <FormLabel className="!mt-0">Use Custom Messages</FormLabel>
                 </FormItem>
               )}
             />
 
-            <ScrollArea className="h-[400px] w-full rounded-md border p-4">
-              <FormField
-                control={form.control}
-                name="customMessage"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Message Preview</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        {...field} 
-                        rows={10} 
-                        readOnly={!isCustomMessage}
-                        className={!isCustomMessage ? "bg-gray-100" : ""}
-                        value={isCustomMessage ? field.value : Object.values(customerInvoices).map(
-                          (customerData: any) => getTemplateMessage(customerData)
-                        ).join("\n\n---\n\n")}
+            <ScrollArea className="h-[500px] w-full">
+              <div className="space-y-6 p-4">
+                {Object.entries(customerInvoices).map(([custId, data]: [string, any]) => (
+                  <FormField
+                    key={custId}
+                    control={form.control}
+                    name={`customerMessages.${custId}`}
+                    render={({ field }) => (
+                      <CustomerMessagePreview
+                        customer={data.customer}
+                        invoices={data.invoices}
+                        isCustomMessage={isCustomMessage}
+                        value={field.value}
+                        onChange={field.onChange}
                       />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                    )}
+                  />
+                ))}
+              </div>
             </ScrollArea>
 
             <div className="flex justify-end space-x-2">

@@ -20,12 +20,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { PaymentForm } from "./PaymentForm";
 import { InvoiceForm } from "./InvoiceForm";
 import { WhatsAppReminder } from "./WhatsAppReminder";
-import { ColumnSettings } from "./ColumnSettings";
+import { InvoiceTableToolbar } from "./InvoiceTableToolbar";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -101,39 +100,14 @@ export function InvoiceTable<TData, TValue>({
 
   return (
     <div className="space-y-4">
-      <div className="flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            onClick={() => setShowInvoiceForm(true)}
-          >
-            Add Invoice
-          </Button>
-          {table.getSelectedRowModel().rows.length > 0 && (
-            <Button
-              variant="outline"
-              onClick={() => setShowReminderForm(true)}
-            >
-              Send Message
-            </Button>
-          )}
-        </div>
-        <div className="flex flex-wrap gap-2 items-center">
-          <Input
-            placeholder="Filter invoices..."
-            value={(table.getColumn("invNumber")?.getFilterValue() as string) ?? ""}
-            onChange={(event) =>
-              table.getColumn("invNumber")?.setFilterValue(event.target.value)
-            }
-            className="max-w-sm"
-          />
-          <ColumnSettings 
-            table={table}
-            pageSize={pageSize}
-            onPageSizeChange={setPageSize}
-          />
-        </div>
-      </div>
+      <InvoiceTableToolbar
+        table={table}
+        pageSize={pageSize}
+        onPageSizeChange={setPageSize}
+        onAddInvoice={() => setShowInvoiceForm(true)}
+        onSendMessage={() => setShowReminderForm(true)}
+        selectedCount={table.getSelectedRowModel().rows.length}
+      />
 
       <div className="rounded-md border">
         <ScrollArea className="h-[calc(100vh-300px)]">

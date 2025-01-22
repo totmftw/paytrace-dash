@@ -18,13 +18,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
@@ -33,10 +26,10 @@ import { formatCurrency } from "@/lib/utils";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 const reminderSchema = z.object({
-  messageTemplate: z.string(),
   contacts: z.array(z.string()),
   customMessage: z.string().optional(),
   isCustomMessage: z.boolean().default(false),
+  sendToAll: z.boolean().default(false),
 });
 
 type ReminderMessageFormProps = {
@@ -64,39 +57,22 @@ export function ReminderMessageForm({
     defaultValues: {
       contacts: [String(invoice.customerMaster?.custOwnerwhatsapp)],
       isCustomMessage: false,
+      sendToAll: false,
     },
   });
 
-  const getTemplateMessage = (template: string) => {
+  const getTemplateMessage = () => {
     const dueDate = format(new Date(invoice.invDuedate), "dd/MM/yyyy");
-    const amount = formatCurrency(invoice.invTotal);
     const invoiceNumber = invoice.invNumber.join("-");
-    const outstandingAmount = formatCurrency(invoice.invBalanceAmount || 0);
 
-    switch (template) {
-      case "due":
-        return `Your payment is due by ${dueDate}`;
-      case "first":
-        return `Your First payment reminder for ${invoiceNumber} and ${amount}`;
-      case "second":
-        return `Your Second payment reminder for ${invoiceNumber} and ${amount}`;
-      case "final":
-        return `Your Final payment reminder for ${invoiceNumber} and ${amount}`;
-      case "custom":
-        return `Outstanding amount: ${outstandingAmount}`;
-      default:
-        return "";
-    }
+    return `Your Payment for Invoice Number ${invoiceNumber} is due on ${dueDate}`;
   };
 
   useEffect(() => {
     if (!isCustomMessage) {
-      const template = form.getValues("messageTemplate");
-      if (template) {
-        form.setValue("customMessage", getTemplateMessage(template));
-      }
+      form.setValue("customMessage", getTemplateMessage());
     }
-  }, [form.watch("messageTemplate"), isCustomMessage]);
+  }, [form.watch("isCustomMessage"), isCustomMessage]);
 
   const onSubmit = async (values: z.infer<typeof reminderSchema>) => {
     if (invoice.invBalanceAmount > 0 && !showAlert) {
@@ -107,9 +83,14 @@ export function ReminderMessageForm({
     try {
       setIsSubmitting(true);
       
-      const message = values.isCustomMessage ? values.customMessage : getTemplateMessage(values.messageTemplate);
+      const message = values.isCustomMessage ? values.customMessage : getTemplateMessage();
+      const contactsToSend = values.sendToAll 
+        ? [String(invoice.customerMaster?.custWhatsapp), String(invoice.customerMaster?.custOwnerwhatsapp)]
+        : values.contacts;
       
-      for (const contact of values.contacts) {
+      for (const contact of contactsToSend) {
+        if (!contact || contact === "null" || contact === "undefined") continue;
+        
         const { error } = await supabase.functions.invoke('send-whatsapp-reminder', {
           body: {
             invId: invoice.invId,
@@ -146,17 +127,6 @@ export function ReminderMessageForm({
     form.reset();
     setIsCustomMessage(false);
   };
-
-  const contacts = [
-    {
-      label: "Business Contact",
-      value: String(invoice.customerMaster?.custWhatsapp),
-    },
-    {
-      label: "Owner Contact",
-      value: String(invoice.customerMaster?.custOwnerwhatsapp),
-    },
-  ].filter(contact => contact.value !== "null" && contact.value !== "undefined");
 
   const hasOutstandingPayment = invoice.invBalanceAmount > 0;
   const customerNameStyle = hasOutstandingPayment ? 
@@ -196,74 +166,62 @@ export function ReminderMessageForm({
 
               <FormField
                 control={form.control}
-                name="messageTemplate"
+                name="sendToAll"
                 render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Message Template</FormLabel>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      disabled={isCustomMessage}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a template" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="due">Payment Due Reminder</SelectItem>
-                        <SelectItem 
-                          value="first" 
-                          disabled={invoice.invReminder1}
-                        >
-                          First Reminder
-                        </SelectItem>
-                        <SelectItem 
-                          value="second"
-                          disabled={invoice.invRemainder2}
-                        >
-                          Second Reminder
-                        </SelectItem>
-                        <SelectItem 
-                          value="final"
-                          disabled={invoice.invRemainder3}
-                        >
-                          Final Reminder
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
+                  <FormItem className="flex items-center space-x-2">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={(checked) => {
+                          field.onChange(checked);
+                          if (checked) {
+                            form.setValue("contacts", [
+                              String(invoice.customerMaster?.custWhatsapp),
+                              String(invoice.customerMaster?.custOwnerwhatsapp)
+                            ]);
+                          } else {
+                            form.setValue("contacts", [String(invoice.customerMaster?.custOwnerwhatsapp)]);
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <FormLabel className="!mt-0">Send to all contacts</FormLabel>
                   </FormItem>
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="contacts"
-                render={() => (
-                  <FormItem>
-                    <FormLabel>Send To</FormLabel>
-                    <div className="space-y-2">
-                      {contacts.map((contact) => (
-                        <div key={contact.value} className="flex items-center space-x-2">
-                          <Checkbox
-                            checked={form.getValues("contacts").includes(contact.value)}
-                            onCheckedChange={(checked) => {
-                              const currentContacts = form.getValues("contacts");
-                              const newContacts = checked
-                                ? [...currentContacts, contact.value]
-                                : currentContacts.filter((c) => c !== contact.value);
-                              form.setValue("contacts", newContacts);
-                            }}
-                          />
-                          <span>{contact.label}: {contact.value}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {!form.watch("sendToAll") && (
+                <FormField
+                  control={form.control}
+                  name="contacts"
+                  render={() => (
+                    <FormItem>
+                      <FormLabel>Send To</FormLabel>
+                      <div className="space-y-2">
+                        {[
+                          { label: "Business Contact", value: String(invoice.customerMaster?.custWhatsapp) },
+                          { label: "Owner Contact", value: String(invoice.customerMaster?.custOwnerwhatsapp) }
+                        ].filter(contact => contact.value !== "null" && contact.value !== "undefined").map((contact) => (
+                          <div key={contact.value} className="flex items-center space-x-2">
+                            <Checkbox
+                              checked={form.getValues("contacts").includes(contact.value)}
+                              onCheckedChange={(checked) => {
+                                const currentContacts = form.getValues("contacts");
+                                const newContacts = checked
+                                  ? [...currentContacts, contact.value]
+                                  : currentContacts.filter((c) => c !== contact.value);
+                                form.setValue("contacts", newContacts);
+                              }}
+                            />
+                            <span>{contact.label}: {contact.value}</span>
+                          </div>
+                        ))}
+                      </div>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               <FormField
                 control={form.control}

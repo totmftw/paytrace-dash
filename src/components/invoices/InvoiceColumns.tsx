@@ -71,6 +71,7 @@ export const columns: ColumnDef<Invoice>[] = [
       const invNumber = row.getValue("invNumber") as number[];
       return invNumber.join("-");
     },
+    enableSorting: true,
   },
   {
     accessorKey: "customerMaster.custBusinessname",
@@ -83,6 +84,7 @@ export const columns: ColumnDef<Invoice>[] = [
         <ArrowUpDown className="ml-2 h-4 w-4" />
       </Button>
     ),
+    enableSorting: true,
   },
   {
     accessorKey: "invDate",
@@ -99,6 +101,7 @@ export const columns: ColumnDef<Invoice>[] = [
       const date = row.getValue("invDate");
       return date ? format(new Date(date as string), "dd/MM/yyyy") : "-";
     },
+    enableSorting: true,
   },
   {
     accessorKey: "invDuedate",
@@ -115,6 +118,7 @@ export const columns: ColumnDef<Invoice>[] = [
       const date = row.getValue("invDuedate");
       return date ? format(new Date(date as string), "dd/MM/yyyy") : "-";
     },
+    enableSorting: true,
   },
   {
     accessorKey: "invValue",
@@ -128,6 +132,7 @@ export const columns: ColumnDef<Invoice>[] = [
       </Button>
     ),
     cell: ({ row }) => formatCurrency(row.getValue("invValue")),
+    enableSorting: true,
   },
   {
     accessorKey: "invGst",
@@ -141,6 +146,7 @@ export const columns: ColumnDef<Invoice>[] = [
       </Button>
     ),
     cell: ({ row }) => formatCurrency(row.getValue("invGst")),
+    enableSorting: true,
   },
   {
     accessorKey: "invAddamount",
@@ -164,6 +170,7 @@ export const columns: ColumnDef<Invoice>[] = [
       </Button>
     ),
     cell: ({ row }) => formatCurrency(row.getValue("invTotal")),
+    enableSorting: true,
   },
   {
     accessorKey: "invBalanceAmount",
@@ -177,10 +184,12 @@ export const columns: ColumnDef<Invoice>[] = [
       </Button>
     ),
     cell: ({ row }) => formatCurrency(row.getValue("invBalanceAmount") || 0),
+    enableSorting: true,
   },
   {
     accessorKey: "reminderStatus",
     header: "Reminder Status",
+    enableSorting: false,
     cell: ({ row, table }) => {
       const [showReminderForm, setShowReminderForm] = useState(false);
       const [selectedReminder, setSelectedReminder] = useState<1 | 2 | 3>(1);
@@ -191,7 +200,6 @@ export const columns: ColumnDef<Invoice>[] = [
       const reminder3 = row.original.invRemainder3;
       
       const handleReminderClick = (reminderNumber: 1 | 2 | 3) => {
-        // Check if previous reminders are sent
         if (reminderNumber === 2 && !reminder1) {
           toast({
             variant: "destructive",
@@ -265,42 +273,7 @@ export const columns: ColumnDef<Invoice>[] = [
             />
           )}
         </>
-      );
+    );
     }
-  },
-  {
-    accessorKey: "invPaymentDifference",
-    header: ({ column }) => (
-      <Button
-        variant="ghost"
-        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-      >
-        Payment Difference
-        <ArrowUpDown className="ml-2 h-4 w-4" />
-      </Button>
-    ),
-    cell: ({ row }) => {
-      const difference = row.getValue("invPaymentDifference") as number;
-      return (
-        <span className={difference !== 0 ? "text-red-500" : "text-green-500"}>
-          {formatCurrency(difference)}
-        </span>
-      );
-    },
-  },
-  {
-    accessorKey: "invPaymentStatus",
-    header: "Status",
-    cell: ({ row }) => (
-      <span
-        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-          row.getValue("invMarkcleared")
-            ? "bg-green-100 text-green-800"
-            : "bg-yellow-100 text-yellow-800"
-        }`}
-      >
-        {row.getValue("invPaymentStatus")}
-      </span>
-    ),
   },
 ];

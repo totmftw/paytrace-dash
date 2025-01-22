@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -54,7 +55,6 @@ export const columns: ColumnDef<Invoice>[] = [
     enableSorting: false,
     enableHiding: false,
   },
-
   {
     accessorKey: "invNumber",
     header: ({ column }) => (
@@ -177,7 +177,6 @@ export const columns: ColumnDef<Invoice>[] = [
     ),
     cell: ({ row }) => formatCurrency(row.getValue("invBalanceAmount") || 0),
   },
-
   {
     accessorKey: "reminderStatus",
     header: "Reminder Status",
@@ -232,7 +231,8 @@ export const columns: ColumnDef<Invoice>[] = [
             />
           )}
         </>
-    },
+      );
+    }
   },
   {
     accessorKey: "invPaymentDifference",

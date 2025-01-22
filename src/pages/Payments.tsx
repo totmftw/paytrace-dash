@@ -20,6 +20,7 @@ export default function Payments() {
             invNumber,
             invTotal,
             customerMaster (
+              id,
               custBusinessname,
               custWhatsapp
             )
@@ -37,9 +38,9 @@ export default function Payments() {
     console.log("Downloading template...");
   };
 
-  const sendLedgerToWhatsApp = async (customerId: number, whatsappNumber: string) => {
-    // Implementation for sending ledger to WhatsApp
-    console.log("Sending ledger to WhatsApp...", customerId, whatsappNumber);
+  const sendLedgerToWhatsApp = async (customerId: number, whatsappNumber: number) => {
+    // Convert whatsappNumber to string when sending
+    console.log("Sending ledger to WhatsApp...", customerId, whatsappNumber.toString());
   };
 
   return (
@@ -95,10 +96,14 @@ export default function Payments() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => sendLedgerToWhatsApp(
-                            payment.invoiceTable?.customerMaster?.id,
-                            payment.invoiceTable?.customerMaster?.custWhatsapp
-                          )}
+                          onClick={() => {
+                            if (payment.invoiceTable?.customerMaster) {
+                              sendLedgerToWhatsApp(
+                                payment.invoiceTable.customerMaster.id,
+                                payment.invoiceTable.customerMaster.custWhatsapp
+                              );
+                            }
+                          }}
                         >
                           <Send className="h-4 w-4" />
                         </Button>

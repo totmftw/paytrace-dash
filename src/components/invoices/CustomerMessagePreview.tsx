@@ -31,22 +31,25 @@ export function CustomerMessagePreview({
   };
 
   const insertField = (field: string) => {
-    const invoice = invoices[0];
-    let insertText = "";
+    const insertText = (() => {
+      switch(field) {
+        case "invoiceNumbers":
+          return invoices.map(inv => inv.invNumber.join("-")).join(", ");
+        case "invoiceDates":
+          return invoices.map(inv => format(new Date(inv.invDate), "dd/MM/yyyy")).join(", ");
+        case "amounts":
+          return invoices.map(inv => formatCurrency(inv.invBalanceAmount || 0)).join(", ");
+        default:
+          return "";
+      }
+    })();
     
-    switch(field) {
-      case "invoiceNumbers":
-        insertText = invoices.map(inv => inv.invNumber.join("-")).join(", ");
-        break;
-      case "invoiceDates":
-        insertText = invoices.map(inv => format(new Date(inv.invDate), "dd/MM/yyyy")).join(", ");
-        break;
-      case "amounts":
-        insertText = invoices.map(inv => formatCurrency(inv.invBalanceAmount || 0)).join(", ");
-        break;
-    }
+    const cursorPosition = document.activeElement instanceof HTMLTextAreaElement 
+      ? document.activeElement.selectionStart 
+      : value.length;
     
-    onChange(value + insertText);
+    const newValue = value.slice(0, cursorPosition) + insertText + value.slice(cursorPosition);
+    onChange(newValue);
   };
 
   return (

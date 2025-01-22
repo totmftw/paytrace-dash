@@ -111,7 +111,7 @@ export function InvoiceTable<TData, TValue>({
 
       <div className="rounded-md border">
         <ScrollArea className="h-[calc(100vh-300px)]">
-          <div className="overflow-x-auto">
+          <div className="w-full min-w-max">
             <Table>
               <TableHeader className="sticky top-0 bg-white z-10">
                 {table.getHeaderGroups().map((headerGroup) => (

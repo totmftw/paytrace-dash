@@ -5,12 +5,10 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>BI Suite</title>
-    <meta name="description" content="Business Intelligence Suite" />
-    <meta name="author" content="Lovable" />
-    <meta property="og:image" content="/og-image.png" />
-    <link rel="stylesheet" href="/src/index.css" />
+    <!-- Preload critical styles -->
+    <link rel="preload" href="/src/index.css" as="style">
+    <link rel="stylesheet" href="/src/index.css">
   </head>
-
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>

@@ -2,7 +2,7 @@ import { Outlet } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
 import { SidebarTrigger } from "./ui/sidebar";
 
-export function AppLayout() {
+export const AppLayout = () => {
   return (
     <div className="min-h-screen flex w-full bg-background">
       <AppSidebar />
@@ -17,4 +17,4 @@ export function AppLayout() {
       </main>
     </div>
   );
-}
+};

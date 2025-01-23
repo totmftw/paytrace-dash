@@ -8,7 +8,6 @@ import Customers from "@/pages/Customers";
 import Products from "@/pages/Products";
 import Invoices from "@/pages/Invoices";
 import Payments from "@/pages/Payments";
-import UploadPayments from "@/pages/UploadPayments";
 import WhatsappReminders from "@/pages/WhatsappReminders";
 import Login from "@/pages/Login";
 import UserProfiles from "@/pages/UserProfiles";
@@ -29,7 +28,6 @@ function App() {
               <Route path="/products" element={<Products />} />
               <Route path="/invoices" element={<Invoices />} />
               <Route path="/payments" element={<Payments />} />
-              <Route path="/upload-payments" element={<UploadPayments />} />
               <Route path="/whatsapp-reminders" element={<WhatsappReminders />} />
               <Route path="/user-profiles" element={<UserProfiles />} />
             </Route>

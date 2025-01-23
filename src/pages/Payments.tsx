@@ -99,11 +99,11 @@ export default function Payments() {
   };
 
   if (isLoadingBalances || isLoadingPayments) {
-    return <div className="p-4">Loading...</div>;
+    return <div className="p-8 flex items-center justify-center">Loading...</div>;
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-8">
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold tracking-tight">Payments</h2>
         <div className="flex gap-2">
@@ -123,7 +123,7 @@ export default function Payments() {
             <CardTitle>Customer Balances</CardTitle>
           </CardHeader>
           <CardContent>
-            <ScrollArea className="h-[300px]">
+            <ScrollArea className="h-[300px] w-full">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -169,7 +169,7 @@ export default function Payments() {
             <CardTitle>Payment History</CardTitle>
           </CardHeader>
           <CardContent>
-            <ScrollArea className="h-[300px]">
+            <ScrollArea className="h-[300px] w-full">
               <Table>
                 <TableHeader>
                   <TableRow>

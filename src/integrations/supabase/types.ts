@@ -570,6 +570,7 @@ export type Database = {
           created_at: string | null
           from_phone_number_id: string
           id: number
+          is_active: boolean | null
           template_name: string
           template_namespace: string
           updated_at: string | null
@@ -579,6 +580,7 @@ export type Database = {
           created_at?: string | null
           from_phone_number_id: string
           id?: number
+          is_active?: boolean | null
           template_name: string
           template_namespace: string
           updated_at?: string | null
@@ -588,6 +590,7 @@ export type Database = {
           created_at?: string | null
           from_phone_number_id?: string
           id?: number
+          is_active?: boolean | null
           template_name?: string
           template_namespace?: string
           updated_at?: string | null

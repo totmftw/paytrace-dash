@@ -22,31 +22,41 @@ serve(async (req) => {
   try {
     console.log('Starting WhatsApp reminder process...');
     
-    // Create Supabase client
-    const supabaseClient = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    // Create Supabase client with explicit error handling
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
-    // First, fetch WhatsApp configuration
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('Missing Supabase credentials');
+      throw new Error("Server configuration error");
+    }
+
+    const supabaseClient = createClient(supabaseUrl, supabaseKey);
+    
+    // First, fetch WhatsApp configuration with detailed error logging
     console.log('Fetching WhatsApp configuration...');
     const { data: whatsappConfig, error: configError } = await supabaseClient
       .from('whatsapp_config')
       .select('*')
+      .limit(1)
       .maybeSingle();
 
     if (configError) {
-      console.error('Error fetching WhatsApp config:', configError);
-      throw new Error("Failed to fetch WhatsApp configuration");
+      console.error('Database error fetching WhatsApp config:', configError);
+      throw new Error("Database error while fetching WhatsApp configuration");
     }
 
     if (!whatsappConfig) {
-      console.error('No WhatsApp configuration found');
+      console.error('No WhatsApp configuration found in database');
       throw new Error("WhatsApp configuration not found. Please configure WhatsApp settings first.");
     }
 
     if (!whatsappConfig.api_key || !whatsappConfig.template_name || !whatsappConfig.from_phone_number_id) {
-      console.error('Invalid WhatsApp configuration:', whatsappConfig);
+      console.error('Invalid WhatsApp configuration:', {
+        hasApiKey: !!whatsappConfig.api_key,
+        hasTemplateName: !!whatsappConfig.template_name,
+        hasPhoneNumberId: !!whatsappConfig.from_phone_number_id
+      });
       throw new Error("Incomplete WhatsApp configuration. Please ensure all required fields are filled.");
     }
 
@@ -89,7 +99,7 @@ serve(async (req) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('WhatsApp API error:', errorText);
+      console.error('WhatsApp API error response:', errorText);
       throw new Error(`WhatsApp API error: ${errorText}`);
     }
 
@@ -125,7 +135,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in send-whatsapp-reminder:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: error.toString()
+      }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 500,

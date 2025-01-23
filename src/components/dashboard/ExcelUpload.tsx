@@ -5,42 +5,23 @@ import { Upload, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import * as XLSX from 'xlsx';
+import { PaymentForm } from "@/components/invoices/PaymentForm";
 
 interface ExcelRowData {
-  CustomerId: string;
-  Date: string;
-  DueDate: string;
-  Value: string;
-  GST: string;
-  AdditionalAmount: string;
-  SubtractAmount: string;
-  Total: string;
-  Message1: string;
-  Message2?: string;
-  Message3?: string;
+  InvoiceNumber: string;
+  TransactionId: string;
+  PaymentMode: string;
+  ChequeNumber?: string;
+  BankName?: string;
+  PaymentDate: string;
+  Amount: string;
+  Remarks?: string;
 }
 
 export function ExcelUpload() {
   const [uploading, setUploading] = useState(false);
+  const [showPaymentForm, setShowPaymentForm] = useState(false);
   const { toast } = useToast();
-
-  const formatDate = (date: string | number | Date) => {
-    if (!date) return null;
-    const d = new Date(date);
-    if (isNaN(d.getTime())) return null;
-    return d.toISOString().split('T')[0];
-  };
-
-  const generateInvoiceNumber = async () => {
-    try {
-      const { data, error } = await supabase.rpc('generate_unique_invoice_number');
-      if (error) throw error;
-      return data;
-    } catch (error) {
-      console.error('Error generating invoice number:', error);
-      throw error;
-    }
-  };
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -56,59 +37,69 @@ export function ExcelUpload() {
         const worksheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json(worksheet) as ExcelRowData[];
 
-        // First, validate all customer IDs exist
-        const customerIds = jsonData.map(row => parseInt(row.CustomerId));
-        const { data: existingCustomers, error: customerError } = await supabase
-          .from('customerMaster')
-          .select('id')
-          .in('id', customerIds);
-
-        if (customerError) throw customerError;
-
-        const validCustomerIds = new Set(existingCustomers?.map(c => c.id));
-        const invalidRows = jsonData.filter(row => !validCustomerIds.has(parseInt(row.CustomerId)));
-
-        if (invalidRows.length > 0) {
-          throw new Error(`Invalid customer IDs found in rows: ${invalidRows.map(row => row.CustomerId).join(', ')}`);
-        }
-
-        // Process each row sequentially to ensure unique invoice numbers
         for (const row of jsonData) {
-          const invDate = formatDate(row.Date);
-          const invDuedate = formatDate(row.DueDate);
+          // First, verify the invoice exists and get its ID
+          const { data: invoices, error: invoiceError } = await supabase
+            .from('invoiceTable')
+            .select('invId, invTotal, invBalanceAmount')
+            .eq('invNumber', row.InvoiceNumber.split('-').map(Number))
+            .single();
 
-          if (!invDate) {
-            throw new Error('Invalid or missing Date format');
+          if (invoiceError || !invoices) {
+            throw new Error(`Invalid invoice number: ${row.InvoiceNumber}`);
           }
 
-          const invNumber = await generateInvoiceNumber();
+          const paymentAmount = Number(row.Amount);
+          const balanceAmount = invoices.invBalanceAmount || invoices.invTotal;
+          const paymentDifference = balanceAmount - paymentAmount;
 
-          const invoiceData = {
-            invCustid: parseInt(row.CustomerId),
-            invNumber,
-            invDate,
-            invDuedate,
-            invValue: Number(row.Value) || 0,
-            invGst: Number(row.GST) || 0,
-            invAddamount: Number(row.AdditionalAmount) || 0,
-            invSubamount: Number(row.SubtractAmount) || 0,
-            invTotal: Number(row.Total) || 0,
-            invMarkcleared: false,
-            invMessage1: row.Message1 || '',
-            invMessage2: row.Message2 || '',
-            invMessage3: row.Message3 || ''
-          };
+          // Insert payment record
+          const { error: paymentError } = await supabase
+            .from("paymentTransactions")
+            .insert({
+              invId: invoices.invId,
+              transactionId: row.TransactionId,
+              paymentMode: row.PaymentMode,
+              chequeNumber: row.ChequeNumber,
+              bankName: row.BankName,
+              paymentDate: row.PaymentDate,
+              amount: paymentAmount,
+              remarks: row.Remarks,
+            });
 
-          const { error } = await supabase
-            .from('invoiceTable')
-            .insert(invoiceData);
+          if (paymentError) throw paymentError;
 
-          if (error) throw error;
+          // Update invoice payment status
+          const { error: invoiceUpdateError } = await supabase
+            .from("invoiceTable")
+            .update({
+              invBalanceAmount: paymentDifference,
+              invPaymentDifference: paymentDifference,
+              invPaymentStatus: paymentDifference <= 0 ? 'paid' : 
+                              paymentDifference < balanceAmount ? 'partial' : 'pending',
+              invMarkcleared: paymentDifference <= 0,
+            })
+            .eq("invId", invoices.invId);
+
+          if (invoiceUpdateError) throw invoiceUpdateError;
+
+          // Create ledger entry
+          const { error: ledgerError } = await supabase
+            .from("paymentLedger")
+            .insert({
+              invId: invoices.invId,
+              transactionType: 'payment',
+              amount: paymentAmount,
+              runningBalance: paymentDifference,
+              description: `Payment received via ${row.PaymentMode}${row.Remarks ? ` - ${row.Remarks}` : ''}`,
+            });
+
+          if (ledgerError) throw ledgerError;
         }
 
         toast({
           title: "Success",
-          description: "Sales data uploaded successfully",
+          description: "Payment data uploaded successfully",
         });
       };
 
@@ -118,7 +109,7 @@ export function ExcelUpload() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to upload sales data",
+        description: error.message || "Failed to upload payment data",
       });
     } finally {
       setUploading(false);
@@ -128,48 +119,64 @@ export function ExcelUpload() {
   const downloadTemplate = () => {
     const template = [
       {
-        CustomerId: '1',
-        Date: '2024-01-21',
-        DueDate: '2024-02-21',
-        Value: '1000',
-        GST: '180',
-        AdditionalAmount: '0',
-        SubtractAmount: '0',
-        Total: '1180',
-        Message1: 'Initial invoice',
-        Message2: '',
-        Message3: ''
+        InvoiceNumber: '24-01-0001',
+        TransactionId: 'TXN123',
+        PaymentMode: 'cash',
+        ChequeNumber: '',
+        BankName: '',
+        PaymentDate: '2024-01-21',
+        Amount: '1000',
+        Remarks: 'Initial payment'
       }
     ];
 
     const ws = XLSX.utils.json_to_sheet(template);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Template");
-    XLSX.writeFile(wb, "sales-template.xlsx");
+    XLSX.writeFile(wb, "payment-template.xlsx");
   };
 
   return (
-    <div className="flex items-center gap-4">
-      <Button onClick={downloadTemplate} variant="outline">
-        <Download className="mr-2 h-4 w-4" />
-        Download Template
-      </Button>
-      <div className="relative">
-        <Input
-          type="file"
-          accept=".xlsx,.xls"
-          onChange={handleFileUpload}
-          className="hidden"
-          id="excel-upload"
-          disabled={uploading}
-        />
-        <Button asChild disabled={uploading}>
-          <label htmlFor="excel-upload" className="cursor-pointer">
-            <Upload className="mr-2 h-4 w-4" />
-            {uploading ? "Uploading..." : "Upload Sales Data"}
-          </label>
+    <div className="space-y-4">
+      <div className="flex items-center gap-4">
+        <Button onClick={downloadTemplate} variant="outline">
+          <Download className="mr-2 h-4 w-4" />
+          Download Template
+        </Button>
+        <div className="relative">
+          <Input
+            type="file"
+            accept=".xlsx,.xls"
+            onChange={handleFileUpload}
+            className="hidden"
+            id="excel-upload"
+            disabled={uploading}
+          />
+          <Button asChild disabled={uploading}>
+            <label htmlFor="excel-upload" className="cursor-pointer">
+              <Upload className="mr-2 h-4 w-4" />
+              {uploading ? "Uploading..." : "Upload Payment Data"}
+            </label>
+          </Button>
+        </div>
+        <Button onClick={() => setShowPaymentForm(true)}>
+          Add Single Payment
         </Button>
       </div>
+
+      {showPaymentForm && (
+        <PaymentForm
+          isOpen={showPaymentForm}
+          onClose={() => setShowPaymentForm(false)}
+          onSuccess={() => {
+            setShowPaymentForm(false);
+            toast({
+              title: "Success",
+              description: "Payment recorded successfully",
+            });
+          }}
+        />
+      )}
     </div>
   );
 }

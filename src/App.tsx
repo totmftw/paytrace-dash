@@ -1,42 +1,41 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { Toaster } from "@/components/ui/toaster";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import Login from "./pages/Login";
-import Dashboard from "./pages/Dashboard";
-import Products from "./pages/Products";
-import Customers from "./pages/Customers";
-import Invoices from "./pages/Invoices";
-import UserProfiles from "./pages/UserProfiles";
-import WhatsappReminders from "./pages/WhatsappReminders";
-import AppLayout from "./components/AppLayout";
+import { Toaster } from "@/components/ui/toaster";
+import { AppLayout } from "@/components/AppLayout";
+import Dashboard from "@/pages/Dashboard";
+import Customers from "@/pages/Customers";
+import Products from "@/pages/Products";
+import Invoices from "@/pages/Invoices";
+import Payments from "@/pages/Payments";
+import UploadPayments from "@/pages/UploadPayments";
+import WhatsappReminders from "@/pages/WhatsappReminders";
+import Login from "@/pages/Login";
+import UserProfiles from "@/pages/UserProfiles";
 
 const queryClient = new QueryClient();
 
-const App = () => {
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <div className="min-h-screen flex w-full bg-background">
-          <SidebarProvider>
-            <Routes>
-              <Route path="/login" element={<Login />} />
-              <Route element={<AppLayout />}>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/products" element={<Products />} />
-                <Route path="/customers" element={<Customers />} />
-                <Route path="/invoices" element={<Invoices />} />
-                <Route path="/users" element={<UserProfiles />} />
-                <Route path="/whatsapp-reminders" element={<WhatsappReminders />} />
-              </Route>
-              <Route path="/" element={<Navigate to="/login" replace />} />
-            </Routes>
-          </SidebarProvider>
-          <Toaster />
-        </div>
-      </BrowserRouter>
+      <Router>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route element={<AppLayout />}>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/customers" element={<Customers />} />
+            <Route path="/products" element={<Products />} />
+            <Route path="/invoices" element={<Invoices />} />
+            <Route path="/payments" element={<Payments />} />
+            <Route path="/upload-payments" element={<UploadPayments />} />
+            <Route path="/whatsapp-reminders" element={<WhatsappReminders />} />
+            <Route path="/user-profiles" element={<UserProfiles />} />
+          </Route>
+        </Routes>
+      </Router>
+      <Toaster />
     </QueryClientProvider>
   );
-};
+}
 
 export default App;

@@ -20,6 +20,8 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Starting WhatsApp reminder process...');
+    
     // Create Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -27,25 +29,29 @@ serve(async (req) => {
     );
 
     // First, fetch WhatsApp configuration
+    console.log('Fetching WhatsApp configuration...');
     const { data: whatsappConfig, error: configError } = await supabaseClient
       .from('whatsapp_config')
       .select('*')
       .single();
 
-    if (configError || !whatsappConfig) {
+    if (configError) {
       console.error('Error fetching WhatsApp config:', configError);
-      throw new Error("Missing WhatsApp configuration");
+      throw new Error("Failed to fetch WhatsApp configuration");
     }
 
-    console.log('WhatsApp config loaded:', {
-      templateName: whatsappConfig.template_name,
-      templateNamespace: whatsappConfig.template_namespace,
-      fromPhoneNumberId: whatsappConfig.from_phone_number_id
-    });
+    if (!whatsappConfig || !whatsappConfig.api_key || !whatsappConfig.template_name || !whatsappConfig.from_phone_number_id) {
+      console.error('Invalid WhatsApp configuration:', whatsappConfig);
+      throw new Error("Incomplete WhatsApp configuration. Please configure WhatsApp settings first.");
+    }
+
+    console.log('WhatsApp config loaded successfully');
 
     const { invId, phone, message, reminderNumber } = await req.json() as WhatsAppMessage;
+    console.log('Processing reminder for invoice:', invId, 'to phone:', phone);
 
     // Send WhatsApp message using the WhatsApp Business API
+    console.log('Sending WhatsApp message...');
     const response = await fetch(`https://graph.facebook.com/v17.0/${whatsappConfig.from_phone_number_id}/messages`, {
       method: "POST",
       headers: {
@@ -85,6 +91,7 @@ serve(async (req) => {
     console.log('WhatsApp message sent successfully');
 
     // Update the reminder status in the database
+    console.log('Updating reminder status in database...');
     const reminderColumn = `invReminder${reminderNumber}`;
     const messageColumn = `invMessage${reminderNumber}`;
     
@@ -100,6 +107,8 @@ serve(async (req) => {
       console.error('Error updating invoice:', updateError);
       throw updateError;
     }
+
+    console.log('Reminder process completed successfully');
 
     return new Response(
       JSON.stringify({ success: true }),

@@ -61,6 +61,11 @@ serve(async (req) => {
     }
 
     console.log("Sending WhatsApp message to:", phone);
+    console.log("Using template:", config.template_name);
+    console.log("Phone Number ID:", config.from_phone_number_id);
+
+    // Format the phone number to ensure it includes country code
+    const formattedPhone = phone.startsWith('+') ? phone : `+${phone}`;
 
     // Send WhatsApp message
     const response = await fetch(
@@ -68,37 +73,23 @@ serve(async (req) => {
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${config.api_key}`,
+          "Authorization": `Bearer ${config.api_key.trim()}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           messaging_product: "whatsapp",
-          to: phone,
-          type: "template",
-          template: {
-            name: config.template_name,
-            language: {
-              code: "en",
-            },
-            components: [
-              {
-                type: "body",
-                parameters: [
-                  {
-                    type: "text",
-                    text: message,
-                  },
-                ],
-              },
-            ],
-          },
+          to: formattedPhone,
+          type: "text",
+          text: {
+            body: message
+          }
         }),
       }
     );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error("WhatsApp API error:", errorText);
+      console.error("WhatsApp API error response:", errorText);
       throw new Error(`WhatsApp API error: ${errorText}`);
     }
 

@@ -30,7 +30,7 @@ serve(async (req) => {
     const supabaseClient = createClient(supabaseUrl, supabaseKey);
     const { invId, phone, message, reminderNumber } = await req.json() as WhatsAppMessage;
 
-    // Fetch WhatsApp configuration - get the most recent config
+    // Fetch WhatsApp configuration
     const { data: configs, error: configError } = await supabaseClient
       .from('whatsapp_config')
       .select('*')
@@ -43,15 +43,24 @@ serve(async (req) => {
     }
 
     if (!configs || configs.length === 0) {
-      throw new Error("WhatsApp configuration not found");
+      console.error("No WhatsApp configuration found");
+      throw new Error("WhatsApp configuration not found. Please configure WhatsApp settings first.");
     }
 
     const config = configs[0];
 
-    // Validate config fields
-    if (!config.api_key || !config.from_phone_number_id || !config.template_name) {
-      throw new Error("Incomplete WhatsApp configuration");
+    // Validate each required field individually for better error messages
+    if (!config.api_key) {
+      throw new Error("WhatsApp API Key is missing. Please configure it in WhatsApp settings.");
     }
+    if (!config.from_phone_number_id) {
+      throw new Error("WhatsApp Phone Number ID is missing. Please configure it in WhatsApp settings.");
+    }
+    if (!config.template_name) {
+      throw new Error("WhatsApp Template Name is missing. Please configure it in WhatsApp settings.");
+    }
+
+    console.log("Sending WhatsApp message to:", phone);
 
     // Send WhatsApp message
     const response = await fetch(
@@ -121,7 +130,8 @@ serve(async (req) => {
     console.error("Error in send-whatsapp-reminder:", error);
     return new Response(
       JSON.stringify({ 
-        error: error.message || "An unexpected error occurred"
+        error: error.message || "An unexpected error occurred",
+        details: error.stack
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

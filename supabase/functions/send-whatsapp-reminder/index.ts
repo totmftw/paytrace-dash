@@ -30,7 +30,7 @@ serve(async (req) => {
     const supabaseClient = createClient(supabaseUrl, supabaseKey);
     const { invId, phone, message, reminderNumber } = await req.json() as WhatsAppMessage;
 
-    // Fetch WhatsApp configuration
+    console.log("Fetching WhatsApp configuration...");
     const { data: configs, error: configError } = await supabaseClient
       .from('whatsapp_config')
       .select('*')
@@ -102,6 +102,9 @@ serve(async (req) => {
       throw new Error(`WhatsApp API error: ${errorText}`);
     }
 
+    const whatsappResponse = await response.json();
+    console.log("WhatsApp API response:", whatsappResponse);
+
     // Update reminder status
     const reminderColumn = `invReminder${reminderNumber}`;
     const messageColumn = `invMessage${reminderNumber}`;
@@ -120,7 +123,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true }),
+      JSON.stringify({ success: true, data: whatsappResponse }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,

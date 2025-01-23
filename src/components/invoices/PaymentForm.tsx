@@ -100,7 +100,8 @@ export function PaymentForm({ invoice, isOpen, onClose, onSuccess }: PaymentForm
         .update({
           invBalanceAmount: paymentDifference,
           invPaymentDifference: paymentDifference,
-          invPaymentStatus: paymentDifference <= 0 ? 'paid' : 'partial',
+          invPaymentStatus: paymentDifference <= 0 ? 'paid' : 
+                           paymentDifference < balanceAmount ? 'partial' : 'pending',
           invMarkcleared: paymentDifference <= 0,
         })
         .eq("invId", invoice.invId);
@@ -112,17 +113,20 @@ export function PaymentForm({ invoice, isOpen, onClose, onSuccess }: PaymentForm
         .from("paymentLedger")
         .insert({
           invId: invoice.invId,
+          custId: invoice.invCustid,
           transactionType: 'payment',
           amount: paymentAmount,
           runningBalance: paymentDifference,
-          description: `Payment received via ${values.paymentMode}`,
+          description: `Payment received via ${values.paymentMode}${values.remarks ? ` - ${values.remarks}` : ''}`,
         });
 
       if (ledgerError) throw ledgerError;
 
       toast({
         title: "Payment recorded",
-        description: "The payment has been successfully recorded.",
+        description: paymentDifference > 0 
+          ? `Payment recorded with remaining balance of ${formatCurrency(paymentDifference)}`
+          : "Payment recorded successfully",
       });
       
       onSuccess();

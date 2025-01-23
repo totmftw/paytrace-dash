@@ -7,7 +7,8 @@ import {
   Package, 
   LogOut,
   MessageSquare,
-  FileText
+  FileText,
+  Wallet
 } from "lucide-react";
 
 interface SidebarItem {
@@ -21,6 +22,7 @@ const sidebarItems: SidebarItem[] = [
   { icon: Users, label: "Customers", path: "/customers" },
   { icon: Package, label: "Products", path: "/products" },
   { icon: FileText, label: "Invoices", path: "/invoices" },
+  { icon: Wallet, label: "Payments", path: "/payments" },
   { icon: MessageSquare, label: "WhatsApp Reminders", path: "/whatsapp-reminders" },
 ];
 

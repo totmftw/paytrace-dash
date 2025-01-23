@@ -596,6 +596,24 @@ export type Database = {
       }
     }
     Views: {
+      customer_ledger_balance: {
+        Row: {
+          balance: number | null
+          custBusinessname: string | null
+          custId: number | null
+          custWhatsapp: number | null
+          last_transaction_date: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "paymentLedger_custId_fkey"
+            columns: ["custId"]
+            isOneToOne: false
+            referencedRelation: "customerMaster"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoice_reminder_status: {
         Row: {
           custBusinessname: string | null

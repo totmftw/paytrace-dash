@@ -7,9 +7,30 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Download, Send } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
+import { PaymentLedgerDialog } from "@/components/payments/PaymentLedgerDialog";
+import * as XLSX from 'xlsx';
 
 export default function Payments() {
-  const { data: payments, isLoading } = useQuery({
+  const [selectedCustomer, setSelectedCustomer] = useState<{
+    id: number;
+    name: string;
+    whatsapp: number;
+  } | null>(null);
+
+  const { data: ledgerBalances } = useQuery({
+    queryKey: ["ledger-balances"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('customer_ledger_balance')
+        .select('*')
+        .order('custBusinessname');
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: payments } = useQuery({
     queryKey: ["payments"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -34,13 +55,32 @@ export default function Payments() {
   });
 
   const downloadTemplate = () => {
-    // Implementation for downloading template
-    console.log("Downloading template...");
-  };
+    const template = [
+      {
+        InvoiceId: '1',
+        TransactionId: 'TXN123',
+        PaymentMode: 'bank_transfer',
+        PaymentDate: '2024-01-21',
+        Amount: '1000',
+        Remarks: 'Payment for Invoice #1',
+      }
+    ];
 
-  const sendLedgerToWhatsApp = async (customerId: number, whatsappNumber: number) => {
-    // Convert whatsappNumber to string when sending
-    console.log("Sending ledger to WhatsApp...", customerId, whatsappNumber.toString());
+    const ws = XLSX.utils.json_to_sheet(template);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Template");
+    
+    // Add column widths for better readability
+    ws['!cols'] = [
+      { wch: 15 }, // InvoiceId
+      { wch: 20 }, // TransactionId
+      { wch: 15 }, // PaymentMode
+      { wch: 15 }, // PaymentDate
+      { wch: 15 }, // Amount
+      { wch: 30 }, // Remarks
+    ];
+
+    XLSX.writeFile(wb, "payment-upload-template.xlsx");
   };
 
   return (
@@ -58,13 +98,59 @@ export default function Payments() {
         </div>
       </div>
 
-      <div className="grid gap-4">
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Customer Balances</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-[300px]">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Business Name</TableHead>
+                    <TableHead>Balance</TableHead>
+                    <TableHead>Last Transaction</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {ledgerBalances?.map((balance) => (
+                    <TableRow key={balance.custId}>
+                      <TableCell>{balance.custBusinessname}</TableCell>
+                      <TableCell>{formatCurrency(balance.balance)}</TableCell>
+                      <TableCell>
+                        {balance.last_transaction_date
+                          ? new Date(balance.last_transaction_date).toLocaleDateString()
+                          : '-'}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setSelectedCustomer({
+                            id: balance.custId,
+                            name: balance.custBusinessname,
+                            whatsapp: balance.custWhatsapp
+                          })}
+                        >
+                          View Ledger
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </ScrollArea>
+          </CardContent>
+        </Card>
+
         <Card>
           <CardHeader>
             <CardTitle>Payment History</CardTitle>
           </CardHeader>
           <CardContent>
-            <ScrollArea className="h-[600px]">
+            <ScrollArea className="h-[300px]">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -74,7 +160,6 @@ export default function Payments() {
                     <TableHead>Transaction ID</TableHead>
                     <TableHead>Payment Mode</TableHead>
                     <TableHead>Amount</TableHead>
-                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -92,22 +177,6 @@ export default function Payments() {
                       <TableCell>{payment.transactionId}</TableCell>
                       <TableCell>{payment.paymentMode}</TableCell>
                       <TableCell>{formatCurrency(payment.amount)}</TableCell>
-                      <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            if (payment.invoiceTable?.customerMaster) {
-                              sendLedgerToWhatsApp(
-                                payment.invoiceTable.customerMaster.id,
-                                payment.invoiceTable.customerMaster.custWhatsapp
-                              );
-                            }
-                          }}
-                        >
-                          <Send className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -116,6 +185,16 @@ export default function Payments() {
           </CardContent>
         </Card>
       </div>
+
+      {selectedCustomer && (
+        <PaymentLedgerDialog
+          isOpen={!!selectedCustomer}
+          onClose={() => setSelectedCustomer(null)}
+          customerId={selectedCustomer.id}
+          customerName={selectedCustomer.name}
+          whatsappNumber={selectedCustomer.whatsapp}
+        />
+      )}
     </div>
   );
 }

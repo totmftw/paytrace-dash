@@ -46,16 +46,16 @@ export function SalesOverview() {
 
       return Object.values(monthlyData);
     },
-    refetchInterval: 300000, // Refetch every 5 minutes
+    refetchInterval: 300000,
   });
 
   return (
-    <Card className="col-span-3">
+    <>
       <CardHeader>
         <CardTitle>Sales Overview</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[300px]">
+        <div className="h-[250px]">
           <ChartContainer
             config={{
               sales: { color: "#22c55e" },
@@ -100,6 +100,6 @@ export function SalesOverview() {
           </ChartContainer>
         </div>
       </CardContent>
-    </Card>
+    </>
   );
 }

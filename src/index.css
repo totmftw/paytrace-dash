@@ -32,28 +32,28 @@
     @apply border-border;
   }
   body {
-    @apply bg-[#15161B] text-foreground;
+    @apply bg-[#15161B] text-foreground overflow-auto;
   }
 }
 
 @layer components {
   .dashboard-card {
-    @apply bg-dashboard-card rounded-lg border border-dashboard-highlight p-4 shadow-lg;
+    @apply bg-[#1A1F2C] rounded-lg border border-[#403E43] p-4 shadow-lg hover:border-[#8B5CF6]/50 transition-colors;
   }
   .dashboard-highlight {
-    @apply bg-dashboard-highlight;
+    @apply bg-[#221F26];
   }
   .dashboard-table {
     @apply w-full border-collapse;
   }
   .dashboard-table th {
-    @apply bg-dashboard-highlight text-left p-3 text-sm font-medium text-gray-300;
+    @apply bg-[#221F26] text-left p-3 text-sm font-medium text-gray-300;
   }
   .dashboard-table td {
-    @apply border-t border-dashboard-highlight p-3 text-sm;
+    @apply border-t border-[#403E43] p-3 text-sm;
   }
   .dashboard-table tr:hover {
-    @apply bg-dashboard-highlight/50;
+    @apply bg-[#221F26]/50;
   }
   .stat-card {
     @apply dashboard-card flex flex-col gap-2;

@@ -30,18 +30,28 @@ serve(async (req) => {
     const supabaseClient = createClient(supabaseUrl, supabaseKey);
     const { invId, phone, message, reminderNumber } = await req.json() as WhatsAppMessage;
 
-    // Fetch WhatsApp configuration
+    // Fetch WhatsApp configuration - get the most recent config
     const { data: configs, error: configError } = await supabaseClient
       .from('whatsapp_config')
       .select('*')
       .order('created_at', { ascending: false })
       .limit(1);
 
-    if (configError || !configs || configs.length === 0) {
+    if (configError) {
+      console.error("Error fetching WhatsApp config:", configError);
+      throw new Error("Failed to fetch WhatsApp configuration");
+    }
+
+    if (!configs || configs.length === 0) {
       throw new Error("WhatsApp configuration not found");
     }
 
     const config = configs[0];
+
+    // Validate config fields
+    if (!config.api_key || !config.from_phone_number_id || !config.template_name) {
+      throw new Error("Incomplete WhatsApp configuration");
+    }
 
     // Send WhatsApp message
     const response = await fetch(
@@ -78,7 +88,9 @@ serve(async (req) => {
     );
 
     if (!response.ok) {
-      throw new Error(`WhatsApp API error: ${await response.text()}`);
+      const errorText = await response.text();
+      console.error("WhatsApp API error:", errorText);
+      throw new Error(`WhatsApp API error: ${errorText}`);
     }
 
     // Update reminder status
@@ -94,6 +106,7 @@ serve(async (req) => {
       .eq('invId', invId);
 
     if (updateError) {
+      console.error("Error updating invoice:", updateError);
       throw updateError;
     }
 
@@ -105,9 +118,10 @@ serve(async (req) => {
       }
     );
   } catch (error) {
+    console.error("Error in send-whatsapp-reminder:", error);
     return new Response(
       JSON.stringify({ 
-        error: error.message 
+        error: error.message || "An unexpected error occurred"
       }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

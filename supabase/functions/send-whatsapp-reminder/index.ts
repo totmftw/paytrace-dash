@@ -35,21 +35,28 @@ serve(async (req) => {
     
     // First, fetch WhatsApp configuration with detailed error logging
     console.log('Fetching WhatsApp configuration...');
-    const { data: whatsappConfig, error: configError } = await supabaseClient
+    const { data: configs, error: configError } = await supabaseClient
       .from('whatsapp_config')
       .select('*')
-      .limit(1)
-      .maybeSingle();
+      .order('created_at', { ascending: false })
+      .limit(1);
 
     if (configError) {
       console.error('Database error fetching WhatsApp config:', configError);
       throw new Error("Database error while fetching WhatsApp configuration");
     }
 
-    if (!whatsappConfig) {
+    if (!configs || configs.length === 0) {
       console.error('No WhatsApp configuration found in database');
       throw new Error("WhatsApp configuration not found. Please configure WhatsApp settings first.");
     }
+
+    const whatsappConfig = configs[0];
+    console.log('WhatsApp config retrieved:', {
+      hasApiKey: !!whatsappConfig.api_key,
+      hasTemplateName: !!whatsappConfig.template_name,
+      hasPhoneNumberId: !!whatsappConfig.from_phone_number_id
+    });
 
     if (!whatsappConfig.api_key || !whatsappConfig.template_name || !whatsappConfig.from_phone_number_id) {
       console.error('Invalid WhatsApp configuration:', {

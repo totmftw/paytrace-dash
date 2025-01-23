@@ -5,6 +5,7 @@ import * as z from "zod";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -54,6 +55,7 @@ type PaymentFormProps = {
     invId: number;
     invTotal: number;
     invBalanceAmount: number;
+    invCustid: number;
   };
   isOpen: boolean;
   onClose: () => void;

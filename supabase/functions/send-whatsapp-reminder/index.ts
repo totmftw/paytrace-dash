@@ -20,27 +20,36 @@ serve(async (req) => {
   }
 
   try {
-    const WHATSAPP_API_KEY = Deno.env.get("WHATSAPP_API_KEY");
-    const WHATSAPP_TEMPLATE_NAMESPACE = Deno.env.get("WHATSAPP_TEMPLATE_NAMESPACE");
-    const WHATSAPP_TEMPLATE_NAME = Deno.env.get("WHATSAPP_TEMPLATE_NAME");
-
-    if (!WHATSAPP_API_KEY || !WHATSAPP_TEMPLATE_NAMESPACE || !WHATSAPP_TEMPLATE_NAME) {
-      throw new Error("Missing WhatsApp configuration");
-    }
-
-    const { invId, phone, message, reminderNumber } = await req.json() as WhatsAppMessage;
-
     // Create Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    // First, fetch WhatsApp configuration
+    const { data: whatsappConfig, error: configError } = await supabaseClient
+      .from('whatsapp_config')
+      .select('*')
+      .single();
+
+    if (configError || !whatsappConfig) {
+      console.error('Error fetching WhatsApp config:', configError);
+      throw new Error("Missing WhatsApp configuration");
+    }
+
+    console.log('WhatsApp config loaded:', {
+      templateName: whatsappConfig.template_name,
+      templateNamespace: whatsappConfig.template_namespace,
+      fromPhoneNumberId: whatsappConfig.from_phone_number_id
+    });
+
+    const { invId, phone, message, reminderNumber } = await req.json() as WhatsAppMessage;
+
     // Send WhatsApp message using the WhatsApp Business API
-    const response = await fetch("https://graph.facebook.com/v17.0/FROM_PHONE_NUMBER_ID/messages", {
+    const response = await fetch(`https://graph.facebook.com/v17.0/${whatsappConfig.from_phone_number_id}/messages`, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${WHATSAPP_API_KEY}`,
+        "Authorization": `Bearer ${whatsappConfig.api_key}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -48,7 +57,7 @@ serve(async (req) => {
         to: phone,
         type: "template",
         template: {
-          name: WHATSAPP_TEMPLATE_NAME,
+          name: whatsappConfig.template_name,
           language: {
             code: "en",
           },
@@ -68,8 +77,12 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      throw new Error(`WhatsApp API error: ${await response.text()}`);
+      const errorText = await response.text();
+      console.error('WhatsApp API error:', errorText);
+      throw new Error(`WhatsApp API error: ${errorText}`);
     }
+
+    console.log('WhatsApp message sent successfully');
 
     // Update the reminder status in the database
     const reminderColumn = `invReminder${reminderNumber}`;
@@ -83,7 +96,10 @@ serve(async (req) => {
       })
       .eq('invId', invId);
 
-    if (updateError) throw updateError;
+    if (updateError) {
+      console.error('Error updating invoice:', updateError);
+      throw updateError;
+    }
 
     return new Response(
       JSON.stringify({ success: true }),

@@ -21,6 +21,12 @@ interface ExcelRowData {
 export function ExcelUpload() {
   const [uploading, setUploading] = useState(false);
   const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [selectedInvoice, setSelectedInvoice] = useState<{
+    invId: number;
+    invTotal: number;
+    invBalanceAmount: number;
+    invCustid: number;
+  } | null>(null);
   const { toast } = useToast();
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -136,6 +142,31 @@ export function ExcelUpload() {
     XLSX.writeFile(wb, "payment-template.xlsx");
   };
 
+  const handleAddSinglePayment = async () => {
+    try {
+      // Get the latest unpaid invoice for demonstration
+      const { data: invoice, error } = await supabase
+        .from('invoiceTable')
+        .select('invId, invTotal, invBalanceAmount, invCustid')
+        .eq('invPaymentStatus', 'pending')
+        .order('invDate', { ascending: false })
+        .limit(1)
+        .single();
+
+      if (error) throw error;
+
+      setSelectedInvoice(invoice);
+      setShowPaymentForm(true);
+    } catch (error: any) {
+      console.error('Error fetching invoice:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to fetch invoice information. Please try again.",
+      });
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4">
@@ -159,22 +190,27 @@ export function ExcelUpload() {
             </label>
           </Button>
         </div>
-        <Button onClick={() => setShowPaymentForm(true)}>
+        <Button onClick={handleAddSinglePayment}>
           Add Single Payment
         </Button>
       </div>
 
-      {showPaymentForm && (
+      {showPaymentForm && selectedInvoice && (
         <PaymentForm
           isOpen={showPaymentForm}
-          onClose={() => setShowPaymentForm(false)}
+          onClose={() => {
+            setShowPaymentForm(false);
+            setSelectedInvoice(null);
+          }}
           onSuccess={() => {
             setShowPaymentForm(false);
+            setSelectedInvoice(null);
             toast({
               title: "Success",
               description: "Payment recorded successfully",
             });
           }}
+          invoice={selectedInvoice}
         />
       )}
     </div>

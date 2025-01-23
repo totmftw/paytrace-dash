@@ -21,8 +21,10 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
+    console.log('Updating WhatsApp configuration...');
+
     // Update or insert WhatsApp configuration
-    const { error } = await supabaseClient
+    const { data, error } = await supabaseClient
       .from('whatsapp_config')
       .upsert({
         api_key: apiKey,
@@ -34,10 +36,15 @@ serve(async (req) => {
         onConflict: 'id'
       });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error updating WhatsApp config:', error);
+      throw error;
+    }
+
+    console.log('WhatsApp configuration updated successfully');
 
     return new Response(
-      JSON.stringify({ success: true }),
+      JSON.stringify({ success: true, data }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,

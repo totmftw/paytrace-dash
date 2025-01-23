@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,19 +15,26 @@ serve(async (req) => {
   try {
     const { apiKey, templateNamespace, templateName, fromPhoneNumberId } = await req.json();
 
-    // Store the configuration in Supabase Edge Function secrets
+    // Create Supabase client
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Update the secrets
-    await Promise.all([
-      Deno.env.set("WHATSAPP_API_KEY", apiKey),
-      Deno.env.set("WHATSAPP_TEMPLATE_NAMESPACE", templateNamespace),
-      Deno.env.set("WHATSAPP_TEMPLATE_NAME", templateName),
-      Deno.env.set("WHATSAPP_FROM_PHONE_NUMBER_ID", fromPhoneNumberId),
-    ]);
+    // Update or insert WhatsApp configuration
+    const { error } = await supabaseClient
+      .from('whatsapp_config')
+      .upsert({
+        api_key: apiKey,
+        template_namespace: templateNamespace,
+        template_name: templateName,
+        from_phone_number_id: fromPhoneNumberId,
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'id'
+      });
+
+    if (error) throw error;
 
     return new Response(
       JSON.stringify({ success: true }),

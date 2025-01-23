@@ -34,46 +34,39 @@ serve(async (req) => {
     const { data: configs, error: configError } = await supabaseClient
       .from('whatsapp_config')
       .select('*')
-      .order('created_at', { ascending: false })
-      .limit(1);
+      .eq('is_active', true)
+      .single();
 
     if (configError) {
       console.error("Error fetching WhatsApp config:", configError);
       throw new Error("Failed to fetch WhatsApp configuration");
     }
 
-    if (!configs || configs.length === 0) {
-      console.error("No WhatsApp configuration found");
+    if (!configs) {
+      console.error("No active WhatsApp configuration found");
       throw new Error("WhatsApp configuration not found. Please configure WhatsApp settings first.");
     }
 
-    const config = configs[0];
-
-    // Validate each required field individually for better error messages
-    if (!config.api_key) {
-      throw new Error("WhatsApp API Key is missing. Please configure it in WhatsApp settings.");
-    }
-    if (!config.from_phone_number_id) {
-      throw new Error("WhatsApp Phone Number ID is missing. Please configure it in WhatsApp settings.");
-    }
-    if (!config.template_name) {
-      throw new Error("WhatsApp Template Name is missing. Please configure it in WhatsApp settings.");
+    // Format the phone number
+    let formattedPhone = phone.replace(/\s+/g, ''); // Remove all spaces
+    formattedPhone = formattedPhone.replace(/^\+/, ''); // Remove leading +
+    
+    // Ensure the number starts with a country code
+    if (!formattedPhone.match(/^\d{1,3}\d+$/)) {
+      throw new Error("Invalid phone number format. Must include country code.");
     }
 
-    console.log("Sending WhatsApp message to:", phone);
-    console.log("Using template:", config.template_name);
-    console.log("Phone Number ID:", config.from_phone_number_id);
-
-    // Format the phone number to ensure it includes country code
-    const formattedPhone = phone.startsWith('+') ? phone : `+${phone}`;
+    console.log("Sending WhatsApp message to:", formattedPhone);
+    console.log("Using template:", configs.template_name);
+    console.log("Phone Number ID:", configs.from_phone_number_id);
 
     // Send WhatsApp message
     const response = await fetch(
-      `https://graph.facebook.com/v17.0/${config.from_phone_number_id}/messages`,
+      `https://graph.facebook.com/v17.0/${configs.from_phone_number_id}/messages`,
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${config.api_key.trim()}`,
+          "Authorization": `Bearer ${configs.api_key.trim()}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -87,14 +80,16 @@ serve(async (req) => {
       }
     );
 
+    const responseData = await response.text();
+    console.log("WhatsApp API raw response:", responseData);
+
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error("WhatsApp API error response:", errorText);
-      throw new Error(`WhatsApp API error: ${errorText}`);
+      console.error("WhatsApp API error response:", responseData);
+      throw new Error(`WhatsApp API error: ${responseData}`);
     }
 
-    const whatsappResponse = await response.json();
-    console.log("WhatsApp API response:", whatsappResponse);
+    const whatsappResponse = JSON.parse(responseData);
+    console.log("WhatsApp API parsed response:", whatsappResponse);
 
     // Update reminder status
     const reminderColumn = `invReminder${reminderNumber}`;

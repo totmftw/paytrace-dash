@@ -5,10 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Download, Send } from "lucide-react";
+import { Download } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 import { PaymentLedgerDialog } from "@/components/payments/PaymentLedgerDialog";
 import * as XLSX from 'xlsx';
+import { useToast } from "@/hooks/use-toast";
 
 export default function Payments() {
   const [selectedCustomer, setSelectedCustomer] = useState<{
@@ -16,8 +17,9 @@ export default function Payments() {
     name: string;
     whatsapp: number;
   } | null>(null);
+  const { toast } = useToast();
 
-  const { data: ledgerBalances } = useQuery({
+  const { data: ledgerBalances, isLoading: isLoadingBalances } = useQuery({
     queryKey: ["ledger-balances"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -25,12 +27,19 @@ export default function Payments() {
         .select('*')
         .order('custBusinessname');
 
-      if (error) throw error;
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error fetching balances",
+          description: error.message
+        });
+        throw error;
+      }
       return data;
     },
   });
 
-  const { data: payments } = useQuery({
+  const { data: payments, isLoading: isLoadingPayments } = useQuery({
     queryKey: ["payments"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -49,7 +58,14 @@ export default function Payments() {
         `)
         .order('paymentDate', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error fetching payments",
+          description: error.message
+        });
+        throw error;
+      }
       return data;
     },
   });
@@ -70,18 +86,21 @@ export default function Payments() {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Template");
     
-    // Add column widths for better readability
     ws['!cols'] = [
-      { wch: 15 }, // InvoiceId
-      { wch: 20 }, // TransactionId
-      { wch: 15 }, // PaymentMode
-      { wch: 15 }, // PaymentDate
-      { wch: 15 }, // Amount
-      { wch: 30 }, // Remarks
+      { wch: 15 },
+      { wch: 20 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 15 },
+      { wch: 30 },
     ];
 
     XLSX.writeFile(wb, "payment-upload-template.xlsx");
   };
+
+  if (isLoadingBalances || isLoadingPayments) {
+    return <div className="p-4">Loading...</div>;
+  }
 
   return (
     <div className="space-y-6">
@@ -169,7 +188,7 @@ export default function Payments() {
                         {new Date(payment.paymentDate).toLocaleDateString()}
                       </TableCell>
                       <TableCell>
-                        {payment.invoiceTable?.invNumber.join("-")}
+                        {payment.invoiceTable?.invNumber?.join("-")}
                       </TableCell>
                       <TableCell>
                         {payment.invoiceTable?.customerMaster?.custBusinessname}

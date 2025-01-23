@@ -1,5 +1,17 @@
 import { useState } from "react";
 import {
+  ColumnDef,
+  ColumnFiltersState,
+  SortingState,
+  VisibilityState,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import {
   Table,
   TableBody,
   TableCell,
@@ -8,16 +20,113 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Edit } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { CustomerFilters } from "./CustomerFilters";
 import { CustomerEditDialog } from "./CustomerEditDialog";
 import { useToast } from "@/hooks/use-toast";
 import { PostgrestError } from "@supabase/supabase-js";
+import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+
+type Customer = {
+  id: number;
+  custBusinessname: string;
+  custOwnername: string;
+  custPhone: number;
+  custWhatsapp: number;
+  custOwnerphone: number;
+  custOwnerwhatsapp: number;
+  custEmail: string;
+  custOwneremail: string;
+  custType: string;
+  custAddress: string;
+  custProvince: string;
+  custCity: string;
+  custPincode: number;
+  custGST: string;
+  custRemarks: string;
+  custStatus: string;
+  custCreditperiod: number;
+};
+
+const columns: ColumnDef<Customer>[] = [
+  {
+    accessorKey: "custBusinessname",
+    header: "Business Name",
+  },
+  {
+    accessorKey: "custOwnername",
+    header: "Owner Name",
+  },
+  {
+    accessorKey: "custPhone",
+    header: "Phone",
+  },
+  {
+    accessorKey: "custWhatsapp",
+    header: "WhatsApp",
+  },
+  {
+    accessorKey: "custOwnerphone",
+    header: "Owner Phone",
+  },
+  {
+    accessorKey: "custOwnerwhatsapp",
+    header: "Owner WhatsApp",
+  },
+  {
+    accessorKey: "custEmail",
+    header: "Email",
+  },
+  {
+    accessorKey: "custOwneremail",
+    header: "Owner Email",
+  },
+  {
+    accessorKey: "custType",
+    header: "Type",
+  },
+  {
+    accessorKey: "custAddress",
+    header: "Address",
+  },
+  {
+    accessorKey: "custProvince",
+    header: "Province",
+  },
+  {
+    accessorKey: "custCity",
+    header: "City",
+  },
+  {
+    accessorKey: "custPincode",
+    header: "Pincode",
+  },
+  {
+    accessorKey: "custGST",
+    header: "GST",
+  },
+  {
+    accessorKey: "custRemarks",
+    header: "Remarks",
+  },
+  {
+    accessorKey: "custStatus",
+    header: "Status",
+  },
+  {
+    accessorKey: "custCreditperiod",
+    header: "Credit Period",
+  },
+];
 
 export function CustomerTable() {
-  const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [pageSize, setPageSize] = useState(10);
   const { toast } = useToast();
 
   const { data: customers, isLoading, error, refetch } = useQuery({
@@ -53,9 +162,27 @@ export function CustomerTable() {
     refetchOnWindowFocus: false,
   });
 
-  const handleEdit = (customer: any) => {
-    setSelectedCustomer(customer);
-  };
+  const table = useReactTable({
+    data: customers || [],
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
+    state: {
+      sorting,
+      columnFilters,
+      columnVisibility,
+    },
+    initialState: {
+      pagination: {
+        pageSize: pageSize,
+      },
+    },
+  });
 
   if (error) {
     return (
@@ -80,43 +207,114 @@ export function CustomerTable() {
   }
 
   return (
-    <>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <Input
+          placeholder="Filter business names..."
+          value={(table.getColumn("custBusinessname")?.getFilterValue() as string) ?? ""}
+          onChange={(event) =>
+            table.getColumn("custBusinessname")?.setFilterValue(event.target.value)
+          }
+          className="max-w-sm"
+        />
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline">Columns</Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {table
+              .getAllColumns()
+              .filter((column) => column.getCanHide())
+              .map((column) => {
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={column.id}
+                    className="capitalize"
+                    checked={column.getIsVisible()}
+                    onCheckedChange={(value) =>
+                      column.toggleVisibility(!!value)
+                    }
+                  >
+                    {column.id}
+                  </DropdownMenuCheckboxItem>
+                );
+              })}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+
       <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Business Name</TableHead>
-              <TableHead>Owner Name</TableHead>
-              <TableHead>Phone</TableHead>
-              <TableHead>Email</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Status</TableHead>
+              {table.getHeaderGroups().map((headerGroup) => (
+                headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))
+              ))}
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {customers?.map((customer) => (
-              <TableRow key={customer.id}>
-                <TableCell>{customer.custBusinessname}</TableCell>
-                <TableCell>{customer.custOwnername}</TableCell>
-                <TableCell>{customer.custPhone}</TableCell>
-                <TableCell>{customer.custEmail}</TableCell>
-                <TableCell>{customer.custType}</TableCell>
-                <TableCell>{customer.custStatus}</TableCell>
-                <TableCell>
-                  <Button 
-                    variant="ghost" 
-                    size="icon"
-                    onClick={() => handleEdit(customer)}
-                  >
-                    <Edit className="h-4 w-4" />
-                  </Button>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                  <TableCell>
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      onClick={() => setSelectedCustomer(row.original)}
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={columns.length + 1} className="h-24 text-center">
+                  No results.
                 </TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </div>
+
+      <div className="flex items-center justify-end space-x-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
+        >
+          Previous
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.nextPage()}
+          disabled={!table.getCanNextPage()}
+        >
+          Next
+        </Button>
+      </div>
+
       {selectedCustomer && (
         <CustomerEditDialog
           customer={selectedCustomer}
@@ -127,6 +325,6 @@ export function CustomerTable() {
           }}
         />
       )}
-    </>
+    </div>
   );
 }

@@ -12,12 +12,6 @@ interface WhatsAppMessage {
   phone: string;
   message: string;
   reminderNumber: 1 | 2 | 3;
-  config: {
-    api_key: string;
-    template_namespace: string;
-    template_name: string;
-    from_phone_number_id: string;
-  };
 }
 
 serve(async (req) => {
@@ -34,11 +28,26 @@ serve(async (req) => {
     }
 
     const supabaseClient = createClient(supabaseUrl, supabaseKey);
-    const { invId, phone, message, reminderNumber, config } = await req.json() as WhatsAppMessage;
+    const { invId, phone, message, reminderNumber } = await req.json() as WhatsAppMessage;
 
-    if (!config) {
-      throw new Error("WhatsApp configuration not provided");
+    // Get the active WhatsApp configuration
+    const { data: configs, error: configError } = await supabaseClient
+      .from('whatsapp_config')
+      .select('*')
+      .eq('is_active', true)
+      .limit(1);
+
+    if (configError) {
+      console.error('Error fetching WhatsApp config:', configError);
+      throw configError;
     }
+
+    if (!configs || configs.length === 0) {
+      throw new Error('No active WhatsApp configuration found');
+    }
+
+    const config = configs[0];
+    console.log('Using WhatsApp config:', { ...config, api_key: '[REDACTED]' });
 
     // Format the phone number
     let formattedPhone = phone.replace(/\s+/g, ''); // Remove all spaces
@@ -49,9 +58,7 @@ serve(async (req) => {
       throw new Error("Invalid phone number format. Must include country code.");
     }
 
-    console.log("Sending WhatsApp message to:", formattedPhone);
-    console.log("Using template:", config.template_name);
-    console.log("Phone Number ID:", config.from_phone_number_id);
+    console.log('Sending WhatsApp message to:', formattedPhone);
 
     // Send WhatsApp message
     const response = await fetch(
@@ -59,7 +66,7 @@ serve(async (req) => {
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${config.api_key.trim()}`,
+          "Authorization": `Bearer ${config.api_key}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -74,17 +81,14 @@ serve(async (req) => {
     );
 
     const responseData = await response.text();
-    console.log("WhatsApp API raw response:", responseData);
+    console.log('WhatsApp API response:', responseData);
 
     if (!response.ok) {
-      console.error("WhatsApp API error response:", responseData);
+      console.error('WhatsApp API error response:', responseData);
       throw new Error(`WhatsApp API error: ${responseData}`);
     }
 
-    const whatsappResponse = JSON.parse(responseData);
-    console.log("WhatsApp API parsed response:", whatsappResponse);
-
-    // Update reminder status
+    // Update reminder status in the database
     const reminderColumn = `invReminder${reminderNumber}`;
     const messageColumn = `invMessage${reminderNumber}`;
     
@@ -97,19 +101,19 @@ serve(async (req) => {
       .eq('invId', invId);
 
     if (updateError) {
-      console.error("Error updating invoice:", updateError);
+      console.error('Error updating invoice:', updateError);
       throw updateError;
     }
 
     return new Response(
-      JSON.stringify({ success: true, data: whatsappResponse }),
+      JSON.stringify({ success: true, data: JSON.parse(responseData) }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,
       }
     );
   } catch (error) {
-    console.error("Error in send-whatsapp-reminder:", error);
+    console.error('Error in send-whatsapp-reminder:', error);
     return new Response(
       JSON.stringify({ 
         error: error.message || "An unexpected error occurred",

@@ -12,6 +12,12 @@ interface WhatsAppMessage {
   phone: string;
   message: string;
   reminderNumber: 1 | 2 | 3;
+  config: {
+    api_key: string;
+    template_namespace: string;
+    template_name: string;
+    from_phone_number_id: string;
+  };
 }
 
 serve(async (req) => {
@@ -28,23 +34,10 @@ serve(async (req) => {
     }
 
     const supabaseClient = createClient(supabaseUrl, supabaseKey);
-    const { invId, phone, message, reminderNumber } = await req.json() as WhatsAppMessage;
+    const { invId, phone, message, reminderNumber, config } = await req.json() as WhatsAppMessage;
 
-    console.log("Fetching WhatsApp configuration...");
-    const { data: configs, error: configError } = await supabaseClient
-      .from('whatsapp_config')
-      .select('*')
-      .eq('is_active', true)
-      .single();
-
-    if (configError) {
-      console.error("Error fetching WhatsApp config:", configError);
-      throw new Error("Failed to fetch WhatsApp configuration");
-    }
-
-    if (!configs) {
-      console.error("No active WhatsApp configuration found");
-      throw new Error("WhatsApp configuration not found. Please configure WhatsApp settings first.");
+    if (!config) {
+      throw new Error("WhatsApp configuration not provided");
     }
 
     // Format the phone number
@@ -57,16 +50,16 @@ serve(async (req) => {
     }
 
     console.log("Sending WhatsApp message to:", formattedPhone);
-    console.log("Using template:", configs.template_name);
-    console.log("Phone Number ID:", configs.from_phone_number_id);
+    console.log("Using template:", config.template_name);
+    console.log("Phone Number ID:", config.from_phone_number_id);
 
     // Send WhatsApp message
     const response = await fetch(
-      `https://graph.facebook.com/v17.0/${configs.from_phone_number_id}/messages`,
+      `https://graph.facebook.com/v17.0/${config.from_phone_number_id}/messages`,
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${configs.api_key.trim()}`,
+          "Authorization": `Bearer ${config.api_key.trim()}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({

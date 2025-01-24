@@ -65,12 +65,25 @@ export function PaymentReminders() {
       message: string; 
       reminderNumber: 1 | 2 | 3;
     }) => {
+      // First get the active WhatsApp config
+      const { data: configs, error: configError } = await supabase
+        .from('whatsapp_config')
+        .select('*')
+        .eq('is_active', true)
+        .limit(1);
+
+      if (configError) throw configError;
+      if (!configs || configs.length === 0) {
+        throw new Error('No active WhatsApp configuration found');
+      }
+
       const response = await supabase.functions.invoke('send-whatsapp-reminder', {
         body: {
           invId,
           phone,
           message,
           reminderNumber,
+          config: configs[0]  // Pass the active config to the edge function
         },
       });
 
@@ -88,7 +101,7 @@ export function PaymentReminders() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to send reminder. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to send reminder. Please try again.",
       });
       console.error("Error sending reminder:", error);
     },

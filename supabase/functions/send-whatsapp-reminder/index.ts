@@ -47,18 +47,31 @@ serve(async (req) => {
     }
 
     const config = configs[0];
-    console.log('Using WhatsApp config:', { ...config, api_key: '[REDACTED]' });
+    
+    // Validate API key
+    if (!config.api_key || typeof config.api_key !== 'string' || config.api_key.trim() === '') {
+      throw new Error('Invalid WhatsApp API key configuration');
+    }
+
+    console.log('WhatsApp config validation:', {
+      hasApiKey: !!config.api_key,
+      apiKeyLength: config.api_key.length,
+      fromPhoneNumberId: config.from_phone_number_id,
+    });
 
     // Format the phone number
     let formattedPhone = phone.replace(/\s+/g, ''); // Remove all spaces
     formattedPhone = formattedPhone.replace(/^\+/, ''); // Remove leading +
     
-    // Ensure the number starts with a country code
     if (!formattedPhone.match(/^\d{1,3}\d+$/)) {
       throw new Error("Invalid phone number format. Must include country code.");
     }
 
-    console.log('Sending WhatsApp message to:', formattedPhone);
+    console.log('Sending WhatsApp message:', {
+      to: formattedPhone,
+      fromPhoneNumberId: config.from_phone_number_id,
+      messageLength: message.length,
+    });
 
     // Send WhatsApp message
     const response = await fetch(
@@ -66,7 +79,7 @@ serve(async (req) => {
       {
         method: "POST",
         headers: {
-          "Authorization": `Bearer ${config.api_key}`,
+          "Authorization": `Bearer ${config.api_key.trim()}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -81,11 +94,20 @@ serve(async (req) => {
     );
 
     const responseData = await response.text();
-    console.log('WhatsApp API response:', responseData);
+    console.log('WhatsApp API raw response:', responseData);
 
     if (!response.ok) {
       console.error('WhatsApp API error response:', responseData);
       throw new Error(`WhatsApp API error: ${responseData}`);
+    }
+
+    // Parse response to validate it's proper JSON
+    let parsedResponse;
+    try {
+      parsedResponse = JSON.parse(responseData);
+    } catch (e) {
+      console.error('Failed to parse WhatsApp API response:', e);
+      throw new Error('Invalid response from WhatsApp API');
     }
 
     // Update reminder status in the database
@@ -106,7 +128,7 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, data: JSON.parse(responseData) }),
+      JSON.stringify({ success: true, data: parsedResponse }),
       {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
         status: 200,

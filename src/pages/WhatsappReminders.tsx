@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { PaymentReminders } from "@/components/dashboard/PaymentReminders";
-import { Settings, Plus } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Settings } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
@@ -20,7 +20,6 @@ export default function WhatsappReminders() {
     fromPhoneNumberId: ''
   });
 
-  // Fetch existing WhatsApp configuration
   const { data: existingConfig, refetch: refetchConfig } = useQuery({
     queryKey: ["whatsapp-config"],
     queryFn: async () => {
@@ -81,123 +80,80 @@ export default function WhatsappReminders() {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 p-8">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">WhatsApp Reminders</h1>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogTrigger asChild>
-            {existingConfig ? (
-              <Button 
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <Plus className="h-4 w-4" />
-                New Configuration
-              </Button>
-            ) : (
-              <Button 
-                variant="outline"
-                className="flex items-center gap-2"
-              >
-                <Settings className="h-4 w-4" />
-                Configure WhatsApp API
-              </Button>
-            )}
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle>WhatsApp API Configuration</DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="apiKey">API Key</Label>
-                <Input
-                  id="apiKey"
-                  type="password"
-                  value={whatsappConfig.apiKey}
-                  onChange={(e) => setWhatsappConfig(prev => ({
-                    ...prev,
-                    apiKey: e.target.value
-                  }))}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="templateNamespace">Template Namespace</Label>
-                <Input
-                  id="templateNamespace"
-                  value={whatsappConfig.templateNamespace}
-                  onChange={(e) => setWhatsappConfig(prev => ({
-                    ...prev,
-                    templateNamespace: e.target.value
-                  }))}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="templateName">Template Name</Label>
-                <Input
-                  id="templateName"
-                  value={whatsappConfig.templateName}
-                  onChange={(e) => setWhatsappConfig(prev => ({
-                    ...prev,
-                    templateName: e.target.value
-                  }))}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="fromPhoneNumberId">From Phone Number ID</Label>
-                <Input
-                  id="fromPhoneNumberId"
-                  value={whatsappConfig.fromPhoneNumberId}
-                  onChange={(e) => setWhatsappConfig(prev => ({
-                    ...prev,
-                    fromPhoneNumberId: e.target.value
-                  }))}
-                />
-              </div>
-            </div>
-            <Button onClick={handleConfigureWhatsApp} disabled={isConfiguring}>
-              {isConfiguring ? "Saving..." : "Save Configuration"}
-            </Button>
-          </DialogContent>
-        </Dialog>
+        <h1 className="text-3xl font-bold text-black">WhatsApp Reminders</h1>
+        <Button 
+          variant="outline"
+          className="flex items-center gap-2"
+          onClick={() => setIsDialogOpen(true)}
+        >
+          <Settings className="h-4 w-4" />
+          Configure WhatsApp
+        </Button>
       </div>
-      
-      {existingConfig && (
-        <div className="bg-gray-50 p-6 rounded-lg border">
-          <h2 className="text-lg font-semibold mb-4">Current Configuration</h2>
-          <div className="grid gap-4">
-            <div>
-              <Label>API Key</Label>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[425px] bg-black text-white">
+          <DialogHeader>
+            <DialogTitle className="text-white">WhatsApp API Configuration</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="apiKey" className="text-white">API Key</Label>
               <Input
+                id="apiKey"
                 type="password"
-                value={existingConfig.api_key}
-                disabled
+                value={whatsappConfig.apiKey}
+                onChange={(e) => setWhatsappConfig(prev => ({
+                  ...prev,
+                  apiKey: e.target.value
+                }))}
+                className="bg-black text-white border-gray-700"
               />
             </div>
-            <div>
-              <Label>Template Namespace</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="templateNamespace" className="text-white">Template Namespace</Label>
               <Input
-                value={existingConfig.template_namespace}
-                disabled
+                id="templateNamespace"
+                value={whatsappConfig.templateNamespace}
+                onChange={(e) => setWhatsappConfig(prev => ({
+                  ...prev,
+                  templateNamespace: e.target.value
+                }))}
+                className="bg-black text-white border-gray-700"
               />
             </div>
-            <div>
-              <Label>Template Name</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="templateName" className="text-white">Template Name</Label>
               <Input
-                value={existingConfig.template_name}
-                disabled
+                id="templateName"
+                value={whatsappConfig.templateName}
+                onChange={(e) => setWhatsappConfig(prev => ({
+                  ...prev,
+                  templateName: e.target.value
+                }))}
+                className="bg-black text-white border-gray-700"
               />
             </div>
-            <div>
-              <Label>From Phone Number ID</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="fromPhoneNumberId" className="text-white">From Phone Number ID</Label>
               <Input
-                value={existingConfig.from_phone_number_id}
-                disabled
+                id="fromPhoneNumberId"
+                value={whatsappConfig.fromPhoneNumberId}
+                onChange={(e) => setWhatsappConfig(prev => ({
+                  ...prev,
+                  fromPhoneNumberId: e.target.value
+                }))}
+                className="bg-black text-white border-gray-700"
               />
             </div>
           </div>
-        </div>
-      )}
+          <Button onClick={handleConfigureWhatsApp} disabled={isConfiguring}>
+            {isConfiguring ? "Saving..." : "Save Configuration"}
+          </Button>
+        </DialogContent>
+      </Dialog>
       
       <PaymentReminders />
     </div>

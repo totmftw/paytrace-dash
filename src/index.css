@@ -64,4 +64,21 @@
   .stat-label {
     @apply text-sm text-gray-400;
   }
+
+  /* Grid Layout Styles */
+  .react-grid-item {
+    @apply transition-all duration-200 ease-in-out;
+  }
+  
+  .react-grid-item.react-grid-placeholder {
+    @apply bg-blue-500/20 border-2 border-blue-500 rounded-lg;
+  }
+  
+  .react-resizable-handle {
+    @apply border-none bg-blue-500/50 rounded-br-lg;
+  }
+  
+  .react-grid-item > .react-resizable-handle::after {
+    @apply border-white/50;
+  }
 }

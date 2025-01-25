@@ -117,11 +117,13 @@ const Dashboard = () => {
         onLayoutChange={(_, layouts) => handleLayoutChange(layouts.lg)}
         isDraggable
         isResizable
+        draggableHandle=".drag-handle"
       >
         {widgets.map((widget) => (
           <div key={widget.id} className="dashboard-card">
+            <div className="drag-handle" title="Drag to move" />
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">{widget.title}</h3>
+              <h3 className="text-lg font-semibold text-black">{widget.title}</h3>
               <Button
                 variant="ghost"
                 size="sm"
@@ -131,7 +133,9 @@ const Dashboard = () => {
                 Remove
               </Button>
             </div>
-            {renderWidget(widget)}
+            <div className="overflow-auto h-[calc(100%-4rem)]">
+              {renderWidget(widget)}
+            </div>
           </div>
         ))}
       </ResponsiveGridLayout>

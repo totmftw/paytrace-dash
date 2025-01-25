@@ -29,8 +29,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { formatCurrency } from "@/lib/utils";
 
+interface Payment {
+  invNumber: number[];
+  customerMaster: {
+    custBusinessname: string;
+  };
+  invDate: string;
+  invDuedate: string;
+  invTotal: number;
+}
+
 interface PaymentDetailsTableProps {
-  data: any[];
+  data: Payment[];
 }
 
 export function PaymentDetailsTable({ data }: PaymentDetailsTableProps) {
@@ -39,11 +49,14 @@ export function PaymentDetailsTable({ data }: PaymentDetailsTableProps) {
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
 
-  const columns: ColumnDef<any>[] = [
+  const columns: ColumnDef<Payment>[] = [
     {
       accessorKey: "invNumber",
       header: "Invoice Number",
-      cell: ({ row }) => row.getValue("invNumber").join("-"),
+      cell: ({ row }) => {
+        const invNumber = row.getValue("invNumber") as number[];
+        return invNumber.join("-");
+      },
     },
     {
       accessorKey: "customerMaster.custBusinessname",

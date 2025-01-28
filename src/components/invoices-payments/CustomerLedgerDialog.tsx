@@ -3,15 +3,29 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
-interface LedgerEntry {
+type TransactionType = 'invoice' | 'payment';
+
+interface BaseLedgerEntry {
   id: number;
   date: string;
   description: string;
-  debit?: number;
-  credit?: number;
   balance: number;
-  type: 'invoice' | 'payment';
+  type: TransactionType;
 }
+
+interface InvoiceLedgerEntry extends BaseLedgerEntry {
+  type: 'invoice';
+  debit: number;
+  credit?: never;
+}
+
+interface PaymentLedgerEntry extends BaseLedgerEntry {
+  type: 'payment';
+  debit?: never;
+  credit: number;
+}
+
+type LedgerEntry = InvoiceLedgerEntry | PaymentLedgerEntry;
 
 interface CustomerLedgerProps {
   customerId: number;
@@ -40,31 +54,47 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
             .order("paymentDate")
         ]);
 
-        const entries: LedgerEntry[] = [
-          ...(invoicesResult.data?.map(inv => ({
-            id: inv.invId,
-            date: format(new Date(inv.invDate), 'yyyy-MM-dd'),
-            description: `Invoice #${inv.invId}`,
-            debit: inv.invTotal,
-            credit: undefined,
-            balance: 0,
-            type: 'invoice' as const
-          })) || []),
-          ...(paymentsResult.data?.map(pay => ({
-            id: pay.paymentId,
-            date: format(new Date(pay.paymentDate), 'yyyy-MM-dd'),
-            description: `Payment #${pay.paymentId}`,
-            debit: undefined,
-            credit: pay.amount,
-            balance: 0,
-            type: 'payment' as const
-          })) || [])
-        ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        const entries: LedgerEntry[] = [];
 
+        // Add invoice entries
+        if (invoicesResult.data) {
+          invoicesResult.data.forEach(inv => {
+            entries.push({
+              id: inv.invId,
+              date: format(new Date(inv.invDate), 'yyyy-MM-dd'),
+              description: `Invoice #${inv.invId}`,
+              debit: inv.invTotal,
+              balance: 0,
+              type: 'invoice'
+            });
+          });
+        }
+
+        // Add payment entries
+        if (paymentsResult.data) {
+          paymentsResult.data.forEach(pay => {
+            entries.push({
+              id: pay.paymentId,
+              date: format(new Date(pay.paymentDate), 'yyyy-MM-dd'),
+              description: `Payment #${pay.paymentId}`,
+              credit: pay.amount,
+              balance: 0,
+              type: 'payment'
+            });
+          });
+        }
+
+        // Sort entries by date
+        entries.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+        // Calculate running balance
         let balance = 0;
         entries.forEach(entry => {
-          if (entry.debit) balance += entry.debit;
-          if (entry.credit) balance -= entry.credit;
+          if (entry.type === 'invoice') {
+            balance += entry.debit;
+          } else {
+            balance -= entry.credit;
+          }
           entry.balance = balance;
         });
 
@@ -105,10 +135,10 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
                     <td className="p-2">{entry.date}</td>
                     <td className="p-2">{entry.description}</td>
                     <td className="text-right p-2">
-                      {entry.debit?.toFixed(2) || '-'}
+                      {entry.type === 'invoice' ? entry.debit.toFixed(2) : '-'}
                     </td>
                     <td className="text-right p-2">
-                      {entry.credit?.toFixed(2) || '-'}
+                      {entry.type === 'payment' ? entry.credit.toFixed(2) : '-'}
                     </td>
                     <td className="text-right p-2">{entry.balance.toFixed(2)}</td>
                   </tr>

@@ -25,6 +25,20 @@ interface LedgerEntry {
   balance: number;
 }
 
+interface InvoiceRecord {
+  invDate: string;
+  invGst: number;
+  invNumber: number[];
+  invTotal: number;
+}
+
+interface PaymentRecord {
+  paymentDate: string;
+  paymentMode: string;
+  transactionId: string;
+  amount: number;
+}
+
 interface CustomerLedgerDialogProps {
   customerId: number;
   customerName: string;
@@ -62,7 +76,7 @@ export function CustomerLedgerDialog({
       let balance = 0;
 
       // Process invoices
-      (invoices || []).forEach((inv) => {
+      (invoices || []).forEach((inv: InvoiceRecord) => {
         balance += inv.invTotal;
         entries.push({
           date: inv.invDate,
@@ -70,18 +84,20 @@ export function CustomerLedgerDialog({
           vchType: "Invoice",
           vchNo: inv.invNumber.join("-"),
           debit: inv.invTotal,
+          credit: undefined,
           balance,
         });
       });
 
       // Process payments
-      (payments || []).forEach((payment) => {
+      (payments || []).forEach((payment: PaymentRecord) => {
         balance -= payment.amount;
         entries.push({
           date: payment.paymentDate,
           particulars: `Payment - ${payment.paymentMode}`,
           vchType: "Payment",
           vchNo: payment.transactionId,
+          debit: undefined,
           credit: payment.amount,
           balance,
         });

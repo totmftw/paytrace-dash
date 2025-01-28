@@ -3,14 +3,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
-interface LedgerEntry {
+type LedgerEntry = {
   id: number;
   date: string;
   description: string;
   amount: number;
   balance: number;
   transactionType: 'invoice' | 'payment';
-}
+};
 
 interface CustomerLedgerProps {
   customerId: number;
@@ -69,19 +69,17 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
           });
         }
 
-        // Sort by date
+        // Sort by date and calculate running balance
         entries.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-        // Calculate running balance
         let runningBalance = 0;
-        const entriesWithBalance = entries.map(entry => {
+        entries.forEach(entry => {
           runningBalance = entry.transactionType === 'invoice' 
             ? runningBalance + entry.amount 
             : runningBalance - entry.amount;
-          return { ...entry, balance: runningBalance };
+          entry.balance = runningBalance;
         });
 
-        setLedgerEntries(entriesWithBalance);
+        setLedgerEntries(entries);
       } catch (error) {
         console.error("Error fetching ledger entries:", error);
       } finally {

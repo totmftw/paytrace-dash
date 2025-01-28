@@ -45,7 +45,7 @@ export function CustomerLedgerDialog({
         .order("paymentDate", { ascending: true });
 
       // Combine and sort entries
-      const entries: LedgerEntry[] = [
+      const entries = [
         ...(invoices || []).map((inv): LedgerEntry => ({
           date: inv.invDate,
           particulars: `GST Sales @ ${inv.invGst}%`,
@@ -78,7 +78,7 @@ export function CustomerLedgerDialog({
 
       return {
         entries,
-        openingBalance: 0, // You might want to fetch this from somewhere
+        openingBalance: 0,
         closingBalance: balance
       };
     }

@@ -29,9 +29,15 @@ import { ReminderMessageForm } from "../invoices/ReminderMessageForm";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+interface CustomerData {
+  id: number;
+  name: string;
+  whatsappNumber: number;
+}
+
 interface InvoicePaymentTableProps {
   data: any[];
-  onCustomerClick: (customer: { id: number; name: string }) => void;
+  onCustomerClick: (customer: CustomerData) => void;
   onInvoiceClick: (invoice: any) => void;
 }
 
@@ -92,6 +98,7 @@ export function InvoicePaymentTable({
           onClick={() => onCustomerClick({
             id: row.original.customerMaster.id,
             name: row.original.customerMaster.custBusinessname,
+            whatsappNumber: row.original.customerMaster.custWhatsapp
           })}
         >
           {row.getValue("customerMaster.custBusinessname")}

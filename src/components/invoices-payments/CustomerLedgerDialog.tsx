@@ -14,7 +14,16 @@ import { Download, Send } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { transformToLedgerEntries, type InvoiceData, type PaymentData } from "@/utils/ledgerUtils";
+
+interface LedgerEntry {
+  date: string;
+  particulars: string;
+  vchType: string;
+  vchNo: string;
+  debit?: number;
+  credit?: number;
+  balance: number;
+}
 
 interface CustomerLedgerDialogProps {
   customerId: number;
@@ -49,15 +58,42 @@ export function CustomerLedgerDialog({
         .eq("invCustid", customerId)
         .order("paymentDate", { ascending: true });
 
-      const entries = transformToLedgerEntries(
-        invoices as InvoiceData[],
-        payments as PaymentData[]
-      );
+      const entries: LedgerEntry[] = [];
+      let balance = 0;
+
+      // Process invoices
+      (invoices || []).forEach((inv) => {
+        balance += inv.invTotal;
+        entries.push({
+          date: inv.invDate,
+          particulars: `Invoice ${inv.invNumber.join("-")}`,
+          vchType: "Invoice",
+          vchNo: inv.invNumber.join("-"),
+          debit: inv.invTotal,
+          balance,
+        });
+      });
+
+      // Process payments
+      (payments || []).forEach((payment) => {
+        balance -= payment.amount;
+        entries.push({
+          date: payment.paymentDate,
+          particulars: `Payment - ${payment.paymentMode}`,
+          vchType: "Payment",
+          vchNo: payment.transactionId,
+          credit: payment.amount,
+          balance,
+        });
+      });
+
+      // Sort entries by date
+      entries.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
       return {
         entries,
         openingBalance: 0,
-        closingBalance: entries[entries.length - 1]?.balance || 0
+        closingBalance: balance
       };
     }
   });

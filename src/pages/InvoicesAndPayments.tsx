@@ -9,12 +9,14 @@ import { InvoiceDetailsDialog } from "@/components/invoices-payments/InvoiceDeta
 import { ExcelUpload } from "@/components/dashboard/ExcelUpload";
 import { Download } from "lucide-react";
 
+interface SelectedCustomer {
+  id: number;
+  name: string;
+  whatsappNumber: number;
+}
+
 export default function InvoicesAndPayments() {
-  const [selectedCustomer, setSelectedCustomer] = useState<{
-    id: number;
-    name: string;
-    whatsappNumber: number;
-  } | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState<SelectedCustomer | null>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
 
   const { data: combinedData, isLoading } = useQuery({
@@ -100,7 +102,7 @@ export default function InvoicesAndPayments() {
           </div>
         </TabsContent>
       </Tabs>
-
+      
       {selectedCustomer && (
         <CustomerLedgerDialog
           customerId={selectedCustomer.id}

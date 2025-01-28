@@ -3,15 +3,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
-type TransactionType = 'invoice' | 'payment';
-
 interface LedgerEntry {
   id: number;
   date: string;
   description: string;
   amount: number;
   balance: number;
-  transactionType: TransactionType;
+  transactionType: 'invoice' | 'payment';
 }
 
 interface CustomerLedgerProps {

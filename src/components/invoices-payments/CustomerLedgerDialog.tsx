@@ -3,15 +3,24 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
-// Define a simple, flat type structure
-type LedgerEntry = {
+interface BaseLedgerEntry {
   id: number;
   date: string;
   description: string;
-  amount: number;
   balance: number;
-  type: 'invoice' | 'payment';
-};
+}
+
+interface InvoiceEntry extends BaseLedgerEntry {
+  type: 'invoice';
+  amount: number;
+}
+
+interface PaymentEntry extends BaseLedgerEntry {
+  type: 'payment';
+  amount: number;
+}
+
+type LedgerEntry = InvoiceEntry | PaymentEntry;
 
 interface CustomerLedgerProps {
   customerId: number;
@@ -50,7 +59,7 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
               date: format(new Date(inv.invDate), 'yyyy-MM-dd'),
               description: `Invoice #${inv.invId}`,
               amount: inv.invTotal,
-              balance: 0, // Will be calculated later
+              balance: 0,
               type: 'invoice'
             });
           });
@@ -64,7 +73,7 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
               date: format(new Date(pay.paymentDate), 'yyyy-MM-dd'),
               description: `Payment #${pay.paymentId}`,
               amount: pay.amount,
-              balance: 0, // Will be calculated later
+              balance: 0,
               type: 'payment'
             });
           });

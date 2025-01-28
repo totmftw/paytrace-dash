@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import {
   Dialog,
   DialogContent,
@@ -14,6 +13,7 @@ import { formatCurrency } from "@/lib/utils";
 import { Download, Send } from "lucide-react";
 import { format } from "date-fns";
 import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import { transformToLedgerEntries, type InvoiceData, type PaymentData } from "@/utils/ledgerUtils";
 
 interface CustomerLedgerDialogProps {

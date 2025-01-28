@@ -13,6 +13,7 @@ export default function InvoicesAndPayments() {
   const [selectedCustomer, setSelectedCustomer] = useState<{
     id: number;
     name: string;
+    whatsappNumber: number;
   } | null>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
 
@@ -28,6 +29,7 @@ export default function InvoicesAndPayments() {
             custBusinessname,
             custAddress,
             custPhone,
+            custWhatsapp,
             custEmail
           )
         `)
@@ -43,7 +45,8 @@ export default function InvoicesAndPayments() {
             invNumber,
             customerMaster (
               id,
-              custBusinessname
+              custBusinessname,
+              custWhatsapp
             )
           )
         `)
@@ -81,7 +84,11 @@ export default function InvoicesAndPayments() {
         <TabsContent value="combined">
           <InvoicePaymentTable
             data={combinedData?.invoices || []}
-            onCustomerClick={setSelectedCustomer}
+            onCustomerClick={(customer) => setSelectedCustomer({
+              id: customer.id,
+              name: customer.name,
+              whatsappNumber: customer.whatsappNumber
+            })}
             onInvoiceClick={setSelectedInvoice}
           />
         </TabsContent>
@@ -98,6 +105,7 @@ export default function InvoicesAndPayments() {
         <CustomerLedgerDialog
           customerId={selectedCustomer.id}
           customerName={selectedCustomer.name}
+          whatsappNumber={selectedCustomer.whatsappNumber}
           isOpen={!!selectedCustomer}
           onClose={() => setSelectedCustomer(null)}
         />

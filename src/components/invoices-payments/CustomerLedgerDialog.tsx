@@ -46,23 +46,25 @@ export function CustomerLedgerDialog({
 
       // Combine and sort entries
       const entries: LedgerEntry[] = [
-        ...(invoices || []).map((inv) => ({
+        ...(invoices || []).map((inv): LedgerEntry => ({
           date: inv.invDate,
           particulars: `GST Sales @ ${inv.invGst}%`,
           vchType: "MARG TALLY BILL",
           vchNo: inv.invNumber.join("-"),
           debit: inv.invTotal,
           credit: null,
-          type: "Dr"
+          type: "Dr" as const,
+          balance: 0 // Will be calculated below
         })),
-        ...(payments || []).map((pay) => ({
+        ...(payments || []).map((pay): LedgerEntry => ({
           date: pay.paymentDate,
           particulars: pay.paymentMode.toUpperCase(),
           vchType: "Receipt",
           vchNo: pay.transactionId,
           debit: null,
           credit: pay.amount,
-          type: "Cr"
+          type: "Cr" as const,
+          balance: 0 // Will be calculated below
         }))
       ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 

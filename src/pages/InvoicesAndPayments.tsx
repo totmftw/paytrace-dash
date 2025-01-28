@@ -88,8 +88,8 @@ export default function InvoicesAndPayments() {
 
         <TabsContent value="upload">
           <div className="grid gap-4">
-            <ExcelUpload type="invoices" />
-            <ExcelUpload type="payments" />
+            <ExcelUpload uploadType="invoices" />
+            <ExcelUpload uploadType="payments" />
           </div>
         </TabsContent>
       </Tabs>

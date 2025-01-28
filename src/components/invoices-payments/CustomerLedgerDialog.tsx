@@ -2,7 +2,14 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { LedgerEntry, CustomerLedgerProps } from "@/types/ledger";
+import { LedgerEntry } from "@/types/ledger";
+
+interface CustomerLedgerProps {
+  customerId: number;
+  customerName: string;
+  whatsappNumber: string;
+  onClose: () => void;
+}
 
 export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber, onClose }: CustomerLedgerProps) {
   const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>([]);
@@ -11,23 +18,21 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
   useEffect(() => {
     async function fetchLedgerEntries() {
       try {
-        // Fetch invoices
-        const { data: invoices } = await supabase
-          .from("invoiceTable")
-          .select("invId, invDate, invTotal")
-          .eq("invCustid", customerId)
-          .order("invDate");
+        const [invoicesResult, paymentsResult] = await Promise.all([
+          supabase
+            .from("invoiceTable")
+            .select("invId, invDate, invTotal")
+            .eq("invCustid", customerId)
+            .order("invDate"),
+          supabase
+            .from("paymentTransactions")
+            .select("paymentId, paymentDate, amount")
+            .eq("custId", customerId)
+            .order("paymentDate")
+        ]);
 
-        // Fetch payments
-        const { data: payments } = await supabase
-          .from("paymentTransactions")
-          .select("paymentId, paymentDate, amount")
-          .eq("custId", customerId)
-          .order("paymentDate");
-
-        // Combine and sort entries
         const entries: LedgerEntry[] = [
-          ...(invoices?.map(inv => ({
+          ...(invoicesResult.data?.map(inv => ({
             id: inv.invId,
             date: format(new Date(inv.invDate), 'yyyy-MM-dd'),
             description: `Invoice #${inv.invId}`,
@@ -36,7 +41,7 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
             balance: 0,
             type: 'invoice' as const
           })) || []),
-          ...(payments?.map(pay => ({
+          ...(paymentsResult.data?.map(pay => ({
             id: pay.paymentId,
             date: format(new Date(pay.paymentDate), 'yyyy-MM-dd'),
             description: `Payment #${pay.paymentId}`,
@@ -47,7 +52,6 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
           })) || [])
         ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-        // Calculate running balance
         let balance = 0;
         entries.forEach(entry => {
           if (entry.debit) balance += entry.debit;

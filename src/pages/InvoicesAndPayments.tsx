@@ -13,7 +13,7 @@ const InvoicesAndPayments = () => {
 
   useEffect(() => {
     const fetchInvoices = async () => {
-      const { data, error } = await supabase.from('invoices').select('*');
+      const { data, error } = await supabase.from('invoiceTable').select('*');
       if (error) {
         toast({
           variant: 'destructive',
@@ -26,7 +26,7 @@ const InvoicesAndPayments = () => {
     };
 
     const fetchPayments = async () => {
-      const { data, error } = await supabase.from('payments').select('*');
+      const { data, error } = await supabase.from('paymentTransactions').select('*');
       if (error) {
         toast({
           variant: 'destructive',
@@ -42,8 +42,8 @@ const InvoicesAndPayments = () => {
     fetchPayments();
   }, [toast]);
 
-  const handlePageChange = (pageNumber: string) => {
-    setCurrentPage(parseInt(pageNumber));
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
   };
 
   return (
@@ -53,7 +53,7 @@ const InvoicesAndPayments = () => {
         <h2 className="text-xl">Invoices</h2>
         <ul>
           {invoices.map((invoice) => (
-            <li key={invoice.id}>{invoice.description}</li>
+            <li key={invoice.invId}>{invoice.invId}</li>
           ))}
         </ul>
       </div>
@@ -61,15 +61,15 @@ const InvoicesAndPayments = () => {
         <h2 className="text-xl">Payments</h2>
         <ul>
           {payments.map((payment) => (
-            <li key={payment.id}>{payment.description}</li>
+            <li key={payment.paymentId}>{payment.paymentId}</li>
           ))}
         </ul>
       </div>
       <div className="flex justify-between">
-        <Button onClick={() => handlePageChange((currentPage - 1).toString())} disabled={currentPage === 1}>
+        <Button onClick={() => handlePageChange(currentPage - 1)} disabled={currentPage === 1}>
           Previous
         </Button>
-        <Button onClick={() => handlePageChange((currentPage + 1).toString())} disabled={currentPage === totalPages}>
+        <Button onClick={() => handlePageChange(currentPage + 1)} disabled={currentPage === totalPages}>
           Next
         </Button>
       </div>

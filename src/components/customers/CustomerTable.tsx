@@ -28,27 +28,7 @@ import { CustomerEditDialog } from "./CustomerEditDialog";
 import { useToast } from "@/hooks/use-toast";
 import { PostgrestError } from "@supabase/supabase-js";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-
-type Customer = {
-  id: number;
-  custBusinessname: string;
-  custOwnername: string;
-  custPhone: number;
-  custWhatsapp: number;
-  custOwnerphone: number;
-  custOwnerwhatsapp: number;
-  custEmail: string;
-  custOwneremail: string;
-  custType: string;
-  custAddress: string;
-  custProvince: string;
-  custCity: string;
-  custPincode: number;
-  custGST: string;
-  custRemarks: string;
-  custStatus: string;
-  custCreditperiod: number;
-};
+import { Customer } from '@/types/customer';
 
 const columns: ColumnDef<Customer>[] = [
   {
@@ -68,20 +48,8 @@ const columns: ColumnDef<Customer>[] = [
     header: "WhatsApp",
   },
   {
-    accessorKey: "custOwnerphone",
-    header: "Owner Phone",
-  },
-  {
-    accessorKey: "custOwnerwhatsapp",
-    header: "Owner WhatsApp",
-  },
-  {
     accessorKey: "custEmail",
     header: "Email",
-  },
-  {
-    accessorKey: "custOwneremail",
-    header: "Owner Email",
   },
   {
     accessorKey: "custType",
@@ -92,24 +60,8 @@ const columns: ColumnDef<Customer>[] = [
     header: "Address",
   },
   {
-    accessorKey: "custProvince",
-    header: "Province",
-  },
-  {
-    accessorKey: "custCity",
-    header: "City",
-  },
-  {
-    accessorKey: "custPincode",
-    header: "Pincode",
-  },
-  {
     accessorKey: "custGST",
     header: "GST",
-  },
-  {
-    accessorKey: "custRemarks",
-    header: "Remarks",
   },
   {
     accessorKey: "custStatus",

@@ -3,24 +3,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
-interface BaseLedgerEntry {
+type TransactionType = 'invoice' | 'payment';
+
+interface LedgerEntry {
   id: number;
   date: string;
   description: string;
+  amount: number;
   balance: number;
+  transactionType: TransactionType;
 }
-
-interface InvoiceEntry extends BaseLedgerEntry {
-  type: 'invoice';
-  amount: number;
-}
-
-interface PaymentEntry extends BaseLedgerEntry {
-  type: 'payment';
-  amount: number;
-}
-
-type LedgerEntry = InvoiceEntry | PaymentEntry;
 
 interface CustomerLedgerProps {
   customerId: number;
@@ -60,7 +52,7 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
               description: `Invoice #${inv.invId}`,
               amount: inv.invTotal,
               balance: 0,
-              type: 'invoice'
+              transactionType: 'invoice'
             });
           });
         }
@@ -74,7 +66,7 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
               description: `Payment #${pay.paymentId}`,
               amount: pay.amount,
               balance: 0,
-              type: 'payment'
+              transactionType: 'payment'
             });
           });
         }
@@ -85,7 +77,7 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
         // Calculate running balance
         let runningBalance = 0;
         const entriesWithBalance = entries.map(entry => {
-          runningBalance = entry.type === 'invoice' 
+          runningBalance = entry.transactionType === 'invoice' 
             ? runningBalance + entry.amount 
             : runningBalance - entry.amount;
           return { ...entry, balance: runningBalance };
@@ -124,14 +116,14 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
               </thead>
               <tbody>
                 {ledgerEntries.map((entry) => (
-                  <tr key={`${entry.type}-${entry.id}`} className="border-b">
+                  <tr key={`${entry.transactionType}-${entry.id}`} className="border-b">
                     <td className="p-2">{entry.date}</td>
                     <td className="p-2">{entry.description}</td>
                     <td className="text-right p-2">
-                      {entry.type === 'invoice' ? entry.amount.toFixed(2) : '-'}
+                      {entry.transactionType === 'invoice' ? entry.amount.toFixed(2) : '-'}
                     </td>
                     <td className="text-right p-2">
-                      {entry.type === 'payment' ? entry.amount.toFixed(2) : '-'}
+                      {entry.transactionType === 'payment' ? entry.amount.toFixed(2) : '-'}
                     </td>
                     <td className="text-right p-2">{entry.balance.toFixed(2)}</td>
                   </tr>

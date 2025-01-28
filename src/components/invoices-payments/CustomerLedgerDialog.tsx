@@ -11,39 +11,29 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatCurrency } from "@/lib/utils";
-import { Download } from "lucide-react";
+import { Download, Send } from "lucide-react";
 import { format } from "date-fns";
-import type { LedgerEntry } from "@/types/ledger";
+import { useToast } from "@/hooks/use-toast";
+import { transformToLedgerEntries, type InvoiceData, type PaymentData } from "@/utils/ledgerUtils";
 
 interface CustomerLedgerDialogProps {
   customerId: number;
   customerName: string;
+  whatsappNumber: number;
   isOpen: boolean;
   onClose: () => void;
 }
 
-interface InvoiceData {
-  invDate: string;
-  invGst: number;
-  invNumber: number[];
-  invTotal: number;
-}
-
-interface PaymentData {
-  paymentDate: string;
-  paymentMode: string;
-  transactionId: string;
-  amount: number;
-}
-
-type BaseLedgerEntry = Omit<LedgerEntry, 'balance'>;
-
 export function CustomerLedgerDialog({
   customerId,
   customerName,
+  whatsappNumber,
   isOpen,
   onClose,
 }: CustomerLedgerDialogProps) {
+  const [isSending, setIsSending] = useState(false);
+  const { toast } = useToast();
+
   const { data: ledgerData, isLoading } = useQuery({
     queryKey: ["customer-ledger", customerId],
     queryFn: async () => {
@@ -58,47 +48,50 @@ export function CustomerLedgerDialog({
         .select("paymentDate, paymentMode, transactionId, amount")
         .eq("invCustid", customerId)
         .order("paymentDate", { ascending: true });
-      
-      // Combine and sort entries
-      const combinedEntries: BaseLedgerEntry[] = [
-        ...(invoices || []).map((inv: InvoiceData) => ({
-          date: inv.invDate,
-          particulars: `GST Sales @ ${inv.invGst}%`,
-          vchType: "MARG TALLY BILL",
-          vchNo: inv.invNumber.join("-"),
-          debit: inv.invTotal,
-          credit: null,
-          type: "Dr" as const
-        })),
-        ...(payments || []).map((pay: PaymentData) => ({
-          date: pay.paymentDate,
-          particulars: pay.paymentMode.toUpperCase(),
-          vchType: "Receipt",
-          vchNo: pay.transactionId,
-          debit: null,
-          credit: pay.amount,
-          type: "Cr" as const
-        }))
-      ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-      // Calculate running balance
-      let balance = 0;
-      const entries: LedgerEntry[] = combinedEntries.map(entry => {
-        if (entry.debit) balance += entry.debit;
-        if (entry.credit) balance -= entry.credit;
-        return { ...entry, balance };
-      });
+      const entries = transformToLedgerEntries(
+        invoices as InvoiceData[],
+        payments as PaymentData[]
+      );
 
       return {
         entries,
         openingBalance: 0,
-        closingBalance: balance
+        closingBalance: entries[entries.length - 1]?.balance || 0
       };
     }
   });
 
-  const handleDownloadPDF = () => {
-    // Implement PDF download functionality
+  const handleSendToWhatsApp = async () => {
+    if (!ledgerData) return;
+    
+    setIsSending(true);
+    try {
+      const { error } = await supabase.functions.invoke('send-whatsapp-reminder', {
+        body: {
+          phone: whatsappNumber.toString(),
+          message: `Dear ${customerName},\n\nPlease find your ledger statement attached. Your current balance is ${formatCurrency(ledgerData.closingBalance)}.\n\nRegards,\nTeam`,
+          type: 'ledger',
+          ledgerData: ledgerData
+        },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Ledger statement has been sent via WhatsApp",
+      });
+    } catch (error) {
+      console.error('Error sending ledger:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to send ledger via WhatsApp",
+      });
+    } finally {
+      setIsSending(false);
+    }
   };
 
   if (isLoading) {
@@ -110,14 +103,23 @@ export function CustomerLedgerDialog({
       <DialogContent className="max-w-6xl h-[90vh]">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">{customerName} - Ledger Statement</DialogTitle>
-          <Button
-            onClick={handleDownloadPDF}
-            variant="outline"
-            className="absolute right-4 top-4"
-          >
-            <Download className="h-4 w-4 mr-2" />
-            Download PDF
-          </Button>
+          <div className="absolute right-4 top-4 flex gap-2">
+            <Button
+              onClick={handleSendToWhatsApp}
+              variant="outline"
+              disabled={isSending}
+            >
+              <Send className="h-4 w-4 mr-2" />
+              {isSending ? "Sending..." : "Send to WhatsApp"}
+            </Button>
+            <Button
+              onClick={() => window.open(`/api/ledger-pdf/${customerId}`, '_blank')}
+              variant="outline"
+            >
+              <Download className="h-4 w-4 mr-2" />
+              Download PDF
+            </Button>
+          </div>
         </DialogHeader>
         
         <ScrollArea className="h-full mt-4">

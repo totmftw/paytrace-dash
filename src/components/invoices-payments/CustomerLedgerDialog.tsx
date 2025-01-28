@@ -22,6 +22,20 @@ interface CustomerLedgerDialogProps {
   onClose: () => void;
 }
 
+interface Invoice {
+  invDate: string;
+  invGst: number;
+  invNumber: number[];
+  invTotal: number;
+}
+
+interface Payment {
+  paymentDate: string;
+  paymentMode: string;
+  transactionId: string;
+  amount: number;
+}
+
 export function CustomerLedgerDialog({
   customerId,
   customerName,
@@ -43,11 +57,11 @@ export function CustomerLedgerDialog({
         .eq("invCustid", customerId)
         .order("paymentDate", { ascending: true });
 
-      type TempEntry = Omit<LedgerEntry, 'balance'> & { balance?: number };
+      type TempEntry = Omit<LedgerEntry, 'balance'>;
       
       // Combine and sort entries
       const combinedEntries: TempEntry[] = [
-        ...(invoices || []).map((inv) => ({
+        ...(invoices || []).map((inv: Invoice) => ({
           date: inv.invDate,
           particulars: `GST Sales @ ${inv.invGst}%`,
           vchType: "MARG TALLY BILL",
@@ -56,7 +70,7 @@ export function CustomerLedgerDialog({
           credit: null,
           type: "Dr" as const
         })),
-        ...(payments || []).map((pay) => ({
+        ...(payments || []).map((pay: Payment) => ({
           date: pay.paymentDate,
           particulars: pay.paymentMode.toUpperCase(),
           vchType: "Receipt",

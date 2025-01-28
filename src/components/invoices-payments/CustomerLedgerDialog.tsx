@@ -45,8 +45,8 @@ export function CustomerLedgerDialog({
         .order("paymentDate", { ascending: true });
 
       // Combine and sort entries
-      const entries = [
-        ...(invoices || []).map((inv): LedgerEntry => ({
+      const combinedEntries = [
+        ...(invoices || []).map((inv) => ({
           date: inv.invDate,
           particulars: `GST Sales @ ${inv.invGst}%`,
           vchType: "MARG TALLY BILL",
@@ -54,9 +54,9 @@ export function CustomerLedgerDialog({
           debit: inv.invTotal,
           credit: null,
           type: "Dr" as const,
-          balance: 0 // Will be calculated below
+          balance: 0
         })),
-        ...(payments || []).map((pay): LedgerEntry => ({
+        ...(payments || []).map((pay) => ({
           date: pay.paymentDate,
           particulars: pay.paymentMode.toUpperCase(),
           vchType: "Receipt",
@@ -64,16 +64,16 @@ export function CustomerLedgerDialog({
           debit: null,
           credit: pay.amount,
           type: "Cr" as const,
-          balance: 0 // Will be calculated below
+          balance: 0
         }))
       ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
       // Calculate running balance
       let balance = 0;
-      entries.forEach(entry => {
+      const entries: LedgerEntry[] = combinedEntries.map(entry => {
         if (entry.debit) balance += entry.debit;
         if (entry.credit) balance -= entry.credit;
-        entry.balance = balance;
+        return { ...entry, balance };
       });
 
       return {
@@ -140,7 +140,7 @@ export function CustomerLedgerDialog({
                     {entry.credit ? formatCurrency(entry.credit) : ""}
                   </TableCell>
                   <TableCell className="text-right">
-                    {formatCurrency(entry.balance || 0)}
+                    {formatCurrency(entry.balance)}
                   </TableCell>
                 </TableRow>
               ))}

@@ -3,29 +3,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
-type TransactionType = 'invoice' | 'payment';
-
-interface BaseLedgerEntry {
+// Simplified type structure to prevent deep instantiation
+interface LedgerTransaction {
   id: number;
   date: string;
   description: string;
-  balance: number;
-  type: TransactionType;
+  amount: number;
+  isInvoice: boolean;
 }
-
-interface InvoiceLedgerEntry extends BaseLedgerEntry {
-  type: 'invoice';
-  debit: number;
-  credit?: never;
-}
-
-interface PaymentLedgerEntry extends BaseLedgerEntry {
-  type: 'payment';
-  debit?: never;
-  credit: number;
-}
-
-type LedgerEntry = InvoiceLedgerEntry | PaymentLedgerEntry;
 
 interface CustomerLedgerProps {
   customerId: number;
@@ -35,7 +20,7 @@ interface CustomerLedgerProps {
 }
 
 export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber, onClose }: CustomerLedgerProps) {
-  const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>([]);
+  const [ledgerEntries, setLedgerEntries] = useState<LedgerTransaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -54,51 +39,34 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
             .order("paymentDate")
         ]);
 
-        const entries: LedgerEntry[] = [];
+        const transactions: LedgerTransaction[] = [];
 
-        // Add invoice entries
+        // Process invoices
         if (invoicesResult.data) {
-          invoicesResult.data.forEach(inv => {
-            entries.push({
-              id: inv.invId,
-              date: format(new Date(inv.invDate), 'yyyy-MM-dd'),
-              description: `Invoice #${inv.invId}`,
-              debit: inv.invTotal,
-              balance: 0,
-              type: 'invoice'
-            });
-          });
+          transactions.push(...invoicesResult.data.map(inv => ({
+            id: inv.invId,
+            date: format(new Date(inv.invDate), 'yyyy-MM-dd'),
+            description: `Invoice #${inv.invId}`,
+            amount: inv.invTotal,
+            isInvoice: true
+          })));
         }
 
-        // Add payment entries
+        // Process payments
         if (paymentsResult.data) {
-          paymentsResult.data.forEach(pay => {
-            entries.push({
-              id: pay.paymentId,
-              date: format(new Date(pay.paymentDate), 'yyyy-MM-dd'),
-              description: `Payment #${pay.paymentId}`,
-              credit: pay.amount,
-              balance: 0,
-              type: 'payment'
-            });
-          });
+          transactions.push(...paymentsResult.data.map(pay => ({
+            id: pay.paymentId,
+            date: format(new Date(pay.paymentDate), 'yyyy-MM-dd'),
+            description: `Payment #${pay.paymentId}`,
+            amount: pay.amount,
+            isInvoice: false
+          })));
         }
 
-        // Sort entries by date
-        entries.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        // Sort by date
+        transactions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-        // Calculate running balance
-        let balance = 0;
-        entries.forEach(entry => {
-          if (entry.type === 'invoice') {
-            balance += entry.debit;
-          } else {
-            balance -= entry.credit;
-          }
-          entry.balance = balance;
-        });
-
-        setLedgerEntries(entries);
+        setLedgerEntries(transactions);
       } catch (error) {
         console.error("Error fetching ledger entries:", error);
       } finally {
@@ -108,6 +76,17 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
 
     fetchLedgerEntries();
   }, [customerId]);
+
+  // Calculate running balance
+  const entriesWithBalance = ledgerEntries.reduce<(LedgerTransaction & { balance: number })[]>((acc, entry) => {
+    const previousBalance = acc.length > 0 ? acc[acc.length - 1].balance : 0;
+    const balance = entry.isInvoice 
+      ? previousBalance + entry.amount 
+      : previousBalance - entry.amount;
+    
+    acc.push({ ...entry, balance });
+    return acc;
+  }, []);
 
   return (
     <Dialog open onOpenChange={() => onClose()}>
@@ -130,15 +109,15 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
                 </tr>
               </thead>
               <tbody>
-                {ledgerEntries.map((entry) => (
-                  <tr key={`${entry.type}-${entry.id}`} className="border-b">
+                {entriesWithBalance.map((entry) => (
+                  <tr key={`${entry.isInvoice ? 'inv' : 'pay'}-${entry.id}`} className="border-b">
                     <td className="p-2">{entry.date}</td>
                     <td className="p-2">{entry.description}</td>
                     <td className="text-right p-2">
-                      {entry.type === 'invoice' ? entry.debit.toFixed(2) : '-'}
+                      {entry.isInvoice ? entry.amount.toFixed(2) : '-'}
                     </td>
                     <td className="text-right p-2">
-                      {entry.type === 'payment' ? entry.credit.toFixed(2) : '-'}
+                      {!entry.isInvoice ? entry.amount.toFixed(2) : '-'}
                     </td>
                     <td className="text-right p-2">{entry.balance.toFixed(2)}</td>
                   </tr>

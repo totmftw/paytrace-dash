@@ -31,7 +31,6 @@ export function CustomerLedgerDialog({
   const { data: ledgerData, isLoading } = useQuery({
     queryKey: ["customer-ledger", customerId],
     queryFn: async () => {
-      // Fetch both invoices and payments for the customer
       const { data: invoices } = await supabase
         .from("invoiceTable")
         .select("*")
@@ -44,8 +43,10 @@ export function CustomerLedgerDialog({
         .eq("invCustid", customerId)
         .order("paymentDate", { ascending: true });
 
+      type TempEntry = Omit<LedgerEntry, 'balance'> & { balance?: number };
+      
       // Combine and sort entries
-      const combinedEntries = [
+      const combinedEntries: TempEntry[] = [
         ...(invoices || []).map((inv) => ({
           date: inv.invDate,
           particulars: `GST Sales @ ${inv.invGst}%`,
@@ -53,8 +54,7 @@ export function CustomerLedgerDialog({
           vchNo: inv.invNumber.join("-"),
           debit: inv.invTotal,
           credit: null,
-          type: "Dr" as const,
-          balance: 0
+          type: "Dr" as const
         })),
         ...(payments || []).map((pay) => ({
           date: pay.paymentDate,
@@ -63,8 +63,7 @@ export function CustomerLedgerDialog({
           vchNo: pay.transactionId,
           debit: null,
           credit: pay.amount,
-          type: "Cr" as const,
-          balance: 0
+          type: "Cr" as const
         }))
       ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 

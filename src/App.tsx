@@ -10,12 +10,12 @@ import Products from "@/pages/Products";
 import Invoices from "@/pages/Invoices";
 import Payments from "@/pages/Payments";
 import WhatsappReminders from "@/pages/WhatsappReminders";
+import UserManagement from "@/pages/UserManagement";
 import Login from "@/pages/Login";
-import UserProfiles from "@/pages/UserProfiles";
 
 const queryClient = new QueryClient();
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
+function ProtectedRoute({ children, roles }: { children: React.ReactNode; roles?: string[] }) {
   const { user, loading } = useAuth();
 
   if (loading) {
@@ -24,6 +24,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   if (!user) {
     return <Navigate to="/login" />;
+  }
+
+  if (roles && !roles.includes(user.role)) {
+    return <Navigate to="/dashboard" />;
   }
 
   return <>{children}</>;
@@ -51,13 +55,13 @@ function App() {
                 <Route path="/invoices" element={<Invoices />} />
                 <Route path="/payments" element={<Payments />} />
                 <Route path="/whatsapp-reminders" element={<WhatsappReminders />} />
-                <Route 
-                  path="/user-profiles" 
+                <Route
+                  path="/user-management"
                   element={
-                    <ProtectedRoute>
-                      <UserProfiles />
+                    <ProtectedRoute roles={["it_admin", "business_owner"]}>
+                      <UserManagement />
                     </ProtectedRoute>
-                  } 
+                  }
                 />
               </Route>
             </Routes>

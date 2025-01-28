@@ -1,24 +1,16 @@
 export interface LedgerEntry {
+  id: number;
   date: string;
-  particulars: string;
-  vchType: string;
-  vchNo: string;
-  debit: number | null;
-  credit: number | null;
-  balance?: number;
-  type: 'Dr' | 'Cr';
+  description: string;
+  debit?: number;
+  credit?: number;
+  balance: number;
+  type: 'invoice' | 'payment';
 }
 
-export interface CustomerLedger {
+export interface CustomerLedgerProps {
+  customerId: number;
   customerName: string;
-  businessAddress: string;
-  contactInfo: string;
-  email: string;
-  period: {
-    from: string;
-    to: string;
-  };
-  entries: LedgerEntry[];
-  openingBalance: number;
-  closingBalance: number;
+  whatsappNumber: string;
+  onClose: () => void;
 }

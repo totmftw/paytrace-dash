@@ -1,70 +1,57 @@
-import { LedgerEntry } from "@/types/ledger";
+import { Customer } from '@/types/customer';
 
-export interface InvoiceData {
-  invDate: string;
-  invGst: number;
-  invNumber: number[];
-  invTotal: number;
-}
-
-export interface PaymentData {
-  paymentDate: string;
-  paymentMode: string;
-  transactionId: string;
+interface LedgerEntry {
+  date: string;
+  description: string;
+  transactionType: "invoice" | "payment";
   amount: number;
+  balance: number;
 }
 
-export const transformToLedgerEntries = (
-  invoices: InvoiceData[] = [],
-  payments: PaymentData[] = []
+export const calculateRunningBalance = (entries: LedgerEntry[]): LedgerEntry[] => {
+  let balance = 0;
+  return entries.map(entry => {
+    if (entry.transactionType === "invoice") {
+      balance += entry.amount;
+    } else if (entry.transactionType === "payment") {
+      balance -= entry.amount;
+    }
+    return { ...entry, balance };
+  });
+};
+
+export const formatLedgerEntries = (
+  customer: Customer,
+  invoices: any[],
+  payments: any[]
 ): LedgerEntry[] => {
   const entries: LedgerEntry[] = [];
-  let balance = 0;
 
-  const combined = [
-    ...invoices.map(inv => ({
-      date: inv.invDate,
-      isInvoice: true,
-      amount: inv.invTotal,
-      data: inv
-    })),
-    ...payments.map(pay => ({
-      date: pay.paymentDate,
-      isInvoice: false,
-      amount: pay.amount,
-      data: pay
-    }))
-  ].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-  combined.forEach(item => {
-    if (item.isInvoice) {
-      const inv = item.data as InvoiceData;
-      balance += inv.invTotal;
-      entries.push({
-        date: inv.invDate,
-        particulars: `GST Sales @ ${inv.invGst}%`,
-        vchType: "MARG TALLY BILL",
-        vchNo: inv.invNumber.join("-"),
-        debit: inv.invTotal,
-        credit: null,
-        balance,
-        type: "Dr"
-      });
-    } else {
-      const pay = item.data as PaymentData;
-      balance -= pay.amount;
-      entries.push({
-        date: pay.paymentDate,
-        particulars: pay.paymentMode.toUpperCase(),
-        vchType: "Receipt",
-        vchNo: pay.transactionId,
-        debit: null,
-        credit: pay.amount,
-        balance,
-        type: "Cr"
-      });
-    }
+  // Add invoice entries
+  invoices.forEach(invoice => {
+    entries.push({
+      date: invoice.invDate,
+      description: `Invoice #${invoice.invNumber}`,
+      transactionType: "invoice",
+      amount: invoice.invTotal,
+      balance: 0, // Will be calculated later
+    });
   });
 
-  return entries;
+  // Add payment entries
+  payments.forEach(payment => {
+    entries.push({
+      date: payment.paymentDate,
+      description: `Payment - ${payment.paymentMode}`,
+      transactionType: "payment",
+      amount: payment.amount,
+      balance: 0, // Will be calculated later
+    });
+  });
+
+  // Sort entries by date
+  entries.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  // Calculate running balance
+  return calculateRunningBalance(entries);
 };

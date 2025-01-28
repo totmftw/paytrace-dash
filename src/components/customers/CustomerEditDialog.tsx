@@ -1,9 +1,11 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { supabase } from "@/integrations/supabase/client";
 import { Customer } from '@/types/customer';
+import { useToast } from "@/hooks/use-toast";
 
 interface CustomerEditDialogProps {
   customer: Customer | null;
@@ -12,7 +14,8 @@ interface CustomerEditDialogProps {
 }
 
 export function CustomerEditDialog({ customer, onClose, onSave }: CustomerEditDialogProps) {
-  const [formData, setFormData] = React.useState({
+  const { toast } = useToast();
+  const [formData, setFormData] = useState({
     custBusinessname: customer?.custBusinessname || '',
     custOwnername: customer?.custOwnername || '',
     custPhone: customer?.custPhone?.toString() || '',
@@ -29,7 +32,11 @@ export function CustomerEditDialog({ customer, onClose, onSave }: CustomerEditDi
 
   const handleSubmit = async () => {
     try {
-      const { data, error } = await supabase
+      if (!customer?.id) {
+        throw new Error('Customer ID is required');
+      }
+
+      const { error } = await supabase
         .from('customerMaster')
         .update({
           custBusinessname: formData.custBusinessname,
@@ -40,12 +47,23 @@ export function CustomerEditDialog({ customer, onClose, onSave }: CustomerEditDi
           custType: formData.custType,
           custAddress: formData.custAddress,
         })
-        .eq('id', customer?.id);
+        .eq('id', customer.id);
 
       if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: "Customer updated successfully",
+      });
+      
       onSave();
     } catch (error) {
       console.error('Error updating customer:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to update customer",
+      });
     }
   };
 

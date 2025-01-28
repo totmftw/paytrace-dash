@@ -27,7 +27,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CustomerEditDialog } from "./CustomerEditDialog";
 import { useToast } from "@/hooks/use-toast";
 import { PostgrestError } from "@supabase/supabase-js";
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Card } from "@/components/ui/card";
 
 type Customer = {
   id: number;
@@ -126,6 +126,7 @@ export function CustomerTable() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [pageIndex, setPageIndex] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const { toast } = useToast();
 
@@ -176,13 +177,16 @@ export function CustomerTable() {
       sorting,
       columnFilters,
       columnVisibility,
-    },
-    initialState: {
       pagination: {
-        pageSize: pageSize,
+        pageIndex,
+        pageSize,
       },
     },
   });
+
+  const handleSearch = (searchTerm: string) => {
+    table.getColumn("custBusinessname")?.setFilterValue(searchTerm);
+  };
 
   if (error) {
     return (
@@ -207,30 +211,78 @@ export function CustomerTable() {
   }
 
   return (
-    <Paper>
-      {/* Search Bar at the top */}
-      <SearchBar onSearch={handleSearch} />
+    <Card className="p-6">
+      <div className="flex items-center py-4">
+        <Input
+          placeholder="Search customers..."
+          onChange={(e) => handleSearch(e.target.value)}
+          className="max-w-sm"
+        />
+      </div>
 
-      {/* Table Content */}
-      <TableContainer>
+      <div className="rounded-md border">
         <Table>
-          <TableHeader />
-          <TableBodyContent
-            customers={filteredCustomers}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  No customers found.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
         </Table>
-      </TableContainer>
+      </div>
 
-      {/* Pagination */}
-      <div style={{ padding: "16px" }}>
-        <Button onClick={() => handleChangePage(page - 1)} disabled={page === 0}>
+      <div className="flex items-center justify-end space-x-2 py-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
+        >
           Previous
         </Button>
         <Button
-          onClick={() => handleChangePage(page + 1)}
-          disabled={page >= Math.ceil(customers.length / rowsPerPage) - 1}
+          variant="outline"
+          size="sm"
+          onClick={() => table.nextPage()}
+          disabled={!table.getCanNextPage()}
         >
           Next
         </Button>
@@ -246,6 +298,6 @@ export function CustomerTable() {
           }}
         />
       )}
-    </div>
+    </Card>
   );
 }

@@ -2,7 +2,16 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { LedgerEntry } from "@/types/ledger";
+
+interface LedgerEntry {
+  id: number;
+  date: string;
+  description: string;
+  debit?: number;
+  credit?: number;
+  balance: number;
+  type: 'invoice' | 'payment';
+}
 
 interface CustomerLedgerProps {
   customerId: number;

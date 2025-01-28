@@ -3,14 +3,15 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
-// Simplified type structure to prevent deep instantiation
-interface LedgerTransaction {
+// Define a simple, flat type structure
+type LedgerEntry = {
   id: number;
   date: string;
   description: string;
   amount: number;
-  isInvoice: boolean;
-}
+  balance: number;
+  type: 'invoice' | 'payment';
+};
 
 interface CustomerLedgerProps {
   customerId: number;
@@ -20,7 +21,7 @@ interface CustomerLedgerProps {
 }
 
 export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber, onClose }: CustomerLedgerProps) {
-  const [ledgerEntries, setLedgerEntries] = useState<LedgerTransaction[]>([]);
+  const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -39,34 +40,49 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
             .order("paymentDate")
         ]);
 
-        const transactions: LedgerTransaction[] = [];
+        const entries: LedgerEntry[] = [];
 
         // Process invoices
         if (invoicesResult.data) {
-          transactions.push(...invoicesResult.data.map(inv => ({
-            id: inv.invId,
-            date: format(new Date(inv.invDate), 'yyyy-MM-dd'),
-            description: `Invoice #${inv.invId}`,
-            amount: inv.invTotal,
-            isInvoice: true
-          })));
+          invoicesResult.data.forEach(inv => {
+            entries.push({
+              id: inv.invId,
+              date: format(new Date(inv.invDate), 'yyyy-MM-dd'),
+              description: `Invoice #${inv.invId}`,
+              amount: inv.invTotal,
+              balance: 0, // Will be calculated later
+              type: 'invoice'
+            });
+          });
         }
 
         // Process payments
         if (paymentsResult.data) {
-          transactions.push(...paymentsResult.data.map(pay => ({
-            id: pay.paymentId,
-            date: format(new Date(pay.paymentDate), 'yyyy-MM-dd'),
-            description: `Payment #${pay.paymentId}`,
-            amount: pay.amount,
-            isInvoice: false
-          })));
+          paymentsResult.data.forEach(pay => {
+            entries.push({
+              id: pay.paymentId,
+              date: format(new Date(pay.paymentDate), 'yyyy-MM-dd'),
+              description: `Payment #${pay.paymentId}`,
+              amount: pay.amount,
+              balance: 0, // Will be calculated later
+              type: 'payment'
+            });
+          });
         }
 
         // Sort by date
-        transactions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        entries.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-        setLedgerEntries(transactions);
+        // Calculate running balance
+        let runningBalance = 0;
+        const entriesWithBalance = entries.map(entry => {
+          runningBalance = entry.type === 'invoice' 
+            ? runningBalance + entry.amount 
+            : runningBalance - entry.amount;
+          return { ...entry, balance: runningBalance };
+        });
+
+        setLedgerEntries(entriesWithBalance);
       } catch (error) {
         console.error("Error fetching ledger entries:", error);
       } finally {
@@ -76,17 +92,6 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
 
     fetchLedgerEntries();
   }, [customerId]);
-
-  // Calculate running balance
-  const entriesWithBalance = ledgerEntries.reduce<(LedgerTransaction & { balance: number })[]>((acc, entry) => {
-    const previousBalance = acc.length > 0 ? acc[acc.length - 1].balance : 0;
-    const balance = entry.isInvoice 
-      ? previousBalance + entry.amount 
-      : previousBalance - entry.amount;
-    
-    acc.push({ ...entry, balance });
-    return acc;
-  }, []);
 
   return (
     <Dialog open onOpenChange={() => onClose()}>
@@ -109,15 +114,15 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
                 </tr>
               </thead>
               <tbody>
-                {entriesWithBalance.map((entry) => (
-                  <tr key={`${entry.isInvoice ? 'inv' : 'pay'}-${entry.id}`} className="border-b">
+                {ledgerEntries.map((entry) => (
+                  <tr key={`${entry.type}-${entry.id}`} className="border-b">
                     <td className="p-2">{entry.date}</td>
                     <td className="p-2">{entry.description}</td>
                     <td className="text-right p-2">
-                      {entry.isInvoice ? entry.amount.toFixed(2) : '-'}
+                      {entry.type === 'invoice' ? entry.amount.toFixed(2) : '-'}
                     </td>
                     <td className="text-right p-2">
-                      {!entry.isInvoice ? entry.amount.toFixed(2) : '-'}
+                      {entry.type === 'payment' ? entry.amount.toFixed(2) : '-'}
                     </td>
                     <td className="text-right p-2">{entry.balance.toFixed(2)}</td>
                   </tr>

@@ -22,19 +22,21 @@ interface CustomerLedgerDialogProps {
   onClose: () => void;
 }
 
-interface Invoice {
+interface InvoiceData {
   invDate: string;
   invGst: number;
   invNumber: number[];
   invTotal: number;
 }
 
-interface Payment {
+interface PaymentData {
   paymentDate: string;
   paymentMode: string;
   transactionId: string;
   amount: number;
 }
+
+type BaseLedgerEntry = Omit<LedgerEntry, 'balance'>;
 
 export function CustomerLedgerDialog({
   customerId,
@@ -47,21 +49,19 @@ export function CustomerLedgerDialog({
     queryFn: async () => {
       const { data: invoices } = await supabase
         .from("invoiceTable")
-        .select("*")
+        .select("invDate, invGst, invNumber, invTotal")
         .eq("invCustid", customerId)
         .order("invDate", { ascending: true });
 
       const { data: payments } = await supabase
         .from("paymentTransactions")
-        .select("*")
+        .select("paymentDate, paymentMode, transactionId, amount")
         .eq("invCustid", customerId)
         .order("paymentDate", { ascending: true });
-
-      type TempEntry = Omit<LedgerEntry, 'balance'>;
       
       // Combine and sort entries
-      const combinedEntries: TempEntry[] = [
-        ...(invoices || []).map((inv: Invoice) => ({
+      const combinedEntries: BaseLedgerEntry[] = [
+        ...(invoices || []).map((inv: InvoiceData) => ({
           date: inv.invDate,
           particulars: `GST Sales @ ${inv.invGst}%`,
           vchType: "MARG TALLY BILL",
@@ -70,7 +70,7 @@ export function CustomerLedgerDialog({
           credit: null,
           type: "Dr" as const
         })),
-        ...(payments || []).map((pay: Payment) => ({
+        ...(payments || []).map((pay: PaymentData) => ({
           date: pay.paymentDate,
           particulars: pay.paymentMode.toUpperCase(),
           vchType: "Receipt",

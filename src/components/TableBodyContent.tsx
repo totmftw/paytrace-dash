@@ -1,54 +1,65 @@
 import React from "react";
-import { Table, TableContainer, Paper } from "@mui/material";
-import TableHeader from "./components/TableHeader";
-import TableBodyContent from "./components/TableBodyContent";
-import SearchBar from "./components/SearchBar";
-import useCustomerTable from "./hooks/useCustomerTable";
+import { TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Edit, Trash } from "lucide-react";
 
-const CustomerTable: React.FC = () => {
-  const {
-    customers,
-    filteredCustomers,
-    handleSearch,
-    page,
-    rowsPerPage,
-    handleChangePage,
-    handleChangeRowsPerPage,
-    handleEdit,
-    handleDelete,
-  } = useCustomerTable();
+interface Customer {
+  id: number;
+  [key: string]: any;
+}
 
+interface TableBodyContentProps {
+  customers: Customer[];
+  columns: { accessorKey: string; header: string }[];
+  onEdit?: (customer: Customer) => void;
+  onDelete?: (customer: Customer) => void;
+}
+
+export function TableBodyContent({ 
+  customers, 
+  columns,
+  onEdit,
+  onDelete 
+}: TableBodyContentProps) {
   return (
-    <Paper>
-      {/* Search Bar at the top */}
-      <SearchBar onSearch={handleSearch} />
-
-      {/* Table Content */}
-      <TableContainer>
-        <Table>
-          <TableHeader />
-          <TableBodyContent
-            customers={filteredCustomers}
-            onEdit={handleEdit}
-            onDelete={handleDelete}
-          />
-        </Table>
-      </TableContainer>
-
-      {/* Pagination */}
-      <div style={{ padding: "16px" }}>
-        <Button onClick={() => handleChangePage(page - 1)} disabled={page === 0}>
-          Previous
-        </Button>
-        <Button
-          onClick={() => handleChangePage(page + 1)}
-          disabled={page >= Math.ceil(customers.length / rowsPerPage) - 1}
-        >
-          Next
-        </Button>
-      </div>
-    </Paper>
+    <TableBody>
+      {customers.length === 0 ? (
+        <TableRow>
+          <TableCell colSpan={columns.length} className="text-center">
+            No customers found
+          </TableCell>
+        </TableRow>
+      ) : (
+        customers.map((customer) => (
+          <TableRow key={customer.id}>
+            {columns.map((column) => (
+              <TableCell key={column.accessorKey}>
+                {customer[column.accessorKey]}
+              </TableCell>
+            ))}
+            <TableCell>
+              {onEdit && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onEdit(customer)}
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+              )}
+              {onDelete && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => onDelete(customer)}
+                >
+                  <Trash className="h-4 w-4" />
+                </Button>
+              )}
+            </TableCell>
+          </TableRow>
+        ))
+      )}
+    </TableBody>
   );
-};
-
-export default CustomerTable;
+}

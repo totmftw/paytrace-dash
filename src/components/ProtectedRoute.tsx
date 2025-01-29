@@ -1,9 +1,8 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { PaymentTabs } from "@/components/payments/PaymentTabs";
 
-export default function Payments() {
+export function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
 
@@ -17,9 +16,5 @@ export default function Payments() {
     return <div className="p-8 flex items-center justify-center">Loading...</div>;
   }
 
-  return (
-    <div className="space-y-6 p-8">
-      <PaymentTabs />
-    </div>
-  );
+  return <>{children}</>;
 }

@@ -1,6 +1,7 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 import { 
   LayoutDashboard, 
   Users, 
@@ -9,50 +10,28 @@ import {
   MessageSquare,
   UserCircle,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  FileText,
+  CreditCard,
+  Bell
 } from "lucide-react";
 
-export const AppSidebar = () => {
-  const navigationItems = [
-    { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
-    { path: "/customers", icon: Users, label: "Customers" },
-    { path: "/products", icon: Package, label: "Products" },
-    { path: "/invoices", icon: FileText, label: "Invoices" },
-    { path: "/payments", icon: CreditCard, label: "Payments" },
-    { path: "/users-profiles", icon: User, label: "Users" },
-    { path: "/whatsapp-reminders", icon: Bell, label: "Reminders" },
-  ];
-
-  return (
-    <div className="w-64 border-r bg-card h-screen p-4">
-      <nav className="space-y-1">
-        {navigationItems.map((item) => (
-          <Button
-            key={item.path}
-            asChild
-            variant="ghost"
-            className="w-full justify-start"
-          >
-            <Link to={item.path}>
-              <item.icon className="h-4 w-4 mr-2" />
-              {item.label}
-            </Link>
-          </Button>
-        ))}
-      </nav>
-    </div>
-  );
-};
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Customers", href: "/customers", icon: Users },
-  { name: "Invoices & Payments", href: "/invoices-payments", icon: IndianRupee },
+  { name: "Invoices", href: "/invoices", icon: FileText },
+  { name: "Payments", href: "/payments", icon: CreditCard },
   { name: "Products", href: "/products", icon: Package },
-  { name: "WhatsApp Reminders", href: "/whatsapp-reminders", icon: MessageSquare },
+  { name: "WhatsApp Reminders", href: "/whatsapp-reminders", icon: Bell },
   { name: "User Management", href: "/user-management", icon: UserCircle },
 ];
 
-export function AppSidebar({ isCollapsed, toggleSidebar }) {
+interface AppSidebarProps {
+  isCollapsed: boolean;
+  toggleSidebar: () => void;
+}
+
+export function AppSidebar({ isCollapsed, toggleSidebar }: AppSidebarProps) {
   return (
     <div className={cn("h-full bg-[#1A1F2C] flex flex-col transition-all duration-300", isCollapsed ? "w-16" : "w-64")}>
       <div className="flex justify-between items-center h-16 px-4">

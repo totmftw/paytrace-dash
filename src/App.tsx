@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AppLayout } from "./components/AppLayout";
+import { ProtectedRoute } from "./components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import Customers from "./pages/Customers";
@@ -14,11 +15,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SidebarProvider } from "./components/ui/sidebar";
 import { FinancialYearProvider } from "./contexts/FinancialYearContext";
 
-// Create a client
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000, // 5 minutes
+      staleTime: 5 * 60 * 1000,
       refetchOnWindowFocus: false,
       retry: 1,
     },
@@ -34,7 +34,14 @@ function App() {
             <SidebarProvider>
               <Routes>
                 <Route path="/login" element={<Login />} />
-                <Route path="/" element={<AppLayout />}>
+                <Route
+                  path="/"
+                  element={
+                    <ProtectedRoute>
+                      <AppLayout />
+                    </ProtectedRoute>
+                  }
+                >
                   <Route index element={<Navigate to="/dashboard" replace />} />
                   <Route path="dashboard" element={<Dashboard />} />
                   <Route path="customers" element={<Customers />} />
@@ -44,7 +51,6 @@ function App() {
                   <Route path="users" element={<UserManagement />} />
                   <Route path="user-profiles" element={<UserProfiles />} />
                   <Route path="whatsapp-reminders" element={<WhatsappReminders />} />
-                  {/* Add 404 fallback */}
                   <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Route>
               </Routes>

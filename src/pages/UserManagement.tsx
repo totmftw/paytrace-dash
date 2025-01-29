@@ -47,8 +47,14 @@ export default function UserManagement() {
     );
   }
 
+  const handleSubmit = (formData: any) => {
+    // Handle form submission
+    console.log('Form submitted:', formData);
+    setIsCreateDialogOpen(false);
+  };
+
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold">User Management</h2>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
@@ -56,7 +62,10 @@ export default function UserManagement() {
             <Button>Add New User</Button>
           </DialogTrigger>
           <DialogContent className="max-w-4xl">
-            <UserManagementForm onClose={() => setIsCreateDialogOpen(false)} onSubmit={() => {}} />
+            <UserManagementForm 
+              onClose={() => setIsCreateDialogOpen(false)} 
+              onSubmit={handleSubmit} 
+            />
           </DialogContent>
         </Dialog>
       </div>

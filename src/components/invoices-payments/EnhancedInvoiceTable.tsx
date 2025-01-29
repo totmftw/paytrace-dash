@@ -1,13 +1,9 @@
-<>
-tsx
-
-
 import React, { useState } from 'react';
 import TableHeader from './TableHeader';
 import TableRow from './TableRow';
 import InvoiceDetails from './InvoiceDetails';
 
-const EnhancedInvoiceTable = ({ invoices }) => {
+const EnhancedInvoiceTable = ({ invoices = [] }) => {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
 
   const handleRowClick = (invoice) => {
@@ -17,14 +13,18 @@ const EnhancedInvoiceTable = ({ invoices }) => {
   return (
     <div>
       <h1>Invoices</h1>
-      <table>
-        <TableHeader />
-        <tbody>
-          {invoices.map((invoice) => (
-            <TableRow key={invoice.id} invoice={invoice} onRowClick={handleRowClick} />
-          ))}
-        </tbody>
-      </table>
+      {invoices.length > 0 ? (
+        <table>
+          <TableHeader />
+          <tbody>
+            {invoices.map((invoice) => (
+              <TableRow key={invoice.id} invoice={invoice} onRowClick={handleRowClick} />
+            ))}
+          </tbody>
+        </table>
+      ) : (
+        <p>No invoices available.</p>
+      )}
       {selectedInvoice && <InvoiceDetails invoice={selectedInvoice} />}
     </div>
   );

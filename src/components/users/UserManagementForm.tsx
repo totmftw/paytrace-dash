@@ -3,7 +3,7 @@ import TextInput from './TextInput';
 import SelectInput from './SelectInput';
 import FormButton from './FormButton';
 
-const UserManagementForm = ({ onSubmit }) => {
+const UserManagementForm = ({ onSubmit, onClose }) => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -17,7 +17,17 @@ const UserManagementForm = ({ onSubmit }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    if (formData.name && formData.email && formData.role) {
+      onSubmit(formData);
+    }
+  };
+
+  const handleReset = () => {
+    setFormData({
+      name: '',
+      email: '',
+      role: '',
+    });
   };
 
   return (
@@ -34,7 +44,11 @@ const UserManagementForm = ({ onSubmit }) => {
           { value: 'user', label: 'User' },
         ]}
       />
-      <FormButton label="Submit" type="submit" />
+      <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+        <FormButton label="Submit" type="submit" />
+        <FormButton label="Reset" type="button" onClick={handleReset} />
+        <FormButton label="Close" type="button" onClick={onClose} />
+      </div>
     </form>
   );
 };

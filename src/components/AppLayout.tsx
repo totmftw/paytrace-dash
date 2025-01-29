@@ -12,7 +12,11 @@ import { useSidebar } from "./ui/sidebar";
 export const AppLayout = () => {
   const { user, signOut } = useAuth();
   const { isTransitioning } = useFinancialYear();
-  const { state } = useSidebar();
+  const { state, open, setOpen } = useSidebar();
+
+  const toggleSidebar = () => {
+    setOpen(!open);
+  };
 
   return (
     <div className="min-h-screen flex w-full bg-background">

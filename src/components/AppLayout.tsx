@@ -20,7 +20,7 @@ export const AppLayout = () => {
 
   return (
     <div className="min-h-screen flex w-full bg-background">
-      <AppSidebar />
+      <AppSidebar isCollapsed={!open} toggleSidebar={toggleSidebar} />
       <main className="flex-1 overflow-hidden">
         <div className="flex h-16 items-center justify-between gap-4 border-b px-6 bg-card">
           <div className="flex items-center gap-4">

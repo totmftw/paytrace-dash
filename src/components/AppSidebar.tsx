@@ -1,8 +1,7 @@
 import React from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
 import { 
   LayoutDashboard, 
   Users, 
@@ -27,7 +26,12 @@ const navigation = [
   { name: "User Management", href: "/user-management", icon: UserCircle },
 ];
 
-export function AppSidebar({ isCollapsed, toggleSidebar }) {
+interface AppSidebarProps {
+  isCollapsed: boolean;
+  toggleSidebar: () => void;
+}
+
+export function AppSidebar({ isCollapsed, toggleSidebar }: AppSidebarProps) {
   return (
     <div className={cn("h-full bg-[#1A1F2C] flex flex-col transition-all duration-300", isCollapsed ? "w-16" : "w-64")}>
       <div className="flex justify-between items-center h-16 px-4">

@@ -14,6 +14,19 @@ import { AuthProvider } from "./contexts/AuthContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SidebarProvider } from "./components/ui/sidebar";
 
+import { FinancialYearProvider } from "@/contexts/FinancialYearContext";
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <FinancialYearProvider>
+        <Router>
+          {/* Existing providers and routes */}
+        </Router>
+      </FinancialYearProvider>
+    </QueryClientProvider>
+  );
+}
 // Create a client
 const queryClient = new QueryClient({
   defaultOptions: {

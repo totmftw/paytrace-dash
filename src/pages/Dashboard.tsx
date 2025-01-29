@@ -11,7 +11,19 @@ import { PlusCircle } from "lucide-react";
 import { AddWidgetDialog } from "@/components/dashboard/AddWidgetDialog";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { toast } from "sonner";
+import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 
+const Dashboard = () => {
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">Dashboard</h2>
+        <FinancialYearSelector />
+      </div>
+      {/* Existing dashboard components */}
+    </div>
+  );
+};
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
 interface LayoutItem {

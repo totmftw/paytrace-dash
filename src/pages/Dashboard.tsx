@@ -16,6 +16,8 @@ import { FinancialYearProvider, useFinancialYear } from "@/contexts/FinancialYea
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 
+const ResponsiveGridLayout = WidthProvider(Responsive);
+
 interface LayoutItem {
   i: string;
   x: number;

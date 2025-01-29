@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AppLayout } from "./components/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import Customers from "./pages/Customers";
@@ -17,7 +17,8 @@ function App() {
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/" element={<AppLayout />}>
-          <Route index element={<Dashboard />} />
+          <Route index element={<Navigate to="/dashboard" replace />} />
+          <Route path="dashboard" element={<Dashboard />} />
           <Route path="customers" element={<Customers />} />
           <Route path="products" element={<Products />} />
           <Route path="invoices" element={<Invoices />} />

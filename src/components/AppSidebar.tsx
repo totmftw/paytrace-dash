@@ -16,7 +16,7 @@ const navigation = [
   { name: "Invoices & Payments", href: "/invoices-payments", icon: IndianRupee },
   { name: "Products", href: "/products", icon: Package },
   { name: "WhatsApp Reminders", href: "/whatsapp-reminders", icon: MessageSquare },
-  { name: "User Management", href: "/user-management", icon: UserCircle },
+  { name: "User Management", href: "/users", icon: UserCircle },
 ];
 
 export function AppSidebar() {

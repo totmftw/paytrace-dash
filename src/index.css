@@ -39,7 +39,7 @@
 
 @layer components {
   .dashboard-card {
-    @apply bg-card rounded-xl border border-border p-6 shadow-sm hover:shadow-md transition-shadow;
+    @apply bg-white rounded-xl border border-border p-6 shadow-sm hover:shadow-md transition-shadow;
   }
   
   .dashboard-table {
@@ -71,7 +71,7 @@
   }
 
   .react-grid-item {
-    @apply bg-card border border-border rounded-xl p-4;
+    @apply bg-white border border-border rounded-xl p-4;
   }
 
   /* Grid Layout Styles */

@@ -15,7 +15,7 @@ import {
 import { PaymentDetailsTable } from "./PaymentDetailsTable";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 
-const PaymentMetrics = () => {
+export const PaymentMetrics = () => {
   const { selectedYear } = useFinancialYear();
   const [showPendingPayments, setShowPendingPayments] = useState(false);
   const [showOverduePayments, setShowOverduePayments] = useState(false);
@@ -178,5 +178,3 @@ const PaymentMetrics = () => {
     </>
   );
 };
-
-export default PaymentMetrics;

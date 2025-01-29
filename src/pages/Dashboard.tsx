@@ -15,40 +15,6 @@ import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 import { Skeleton } from "@/components/ui/skeleton";
 
-import { FinancialYearSelector } from "@/components/FinancialYearSelector";
-import { useFinancialYear } from "@/contexts/FinancialYearContext";
-import { Skeleton } from "@/components/ui/skeleton";
-
-const Dashboard = () => {
-  const { selectedYear, isLoading } = useFinancialYear();
-
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-foreground">Dashboard</h2>
-        {isLoading ? (
-          <Skeleton className="h-8 w-48" />
-        ) : (
-          <FinancialYearSelector />
-        )}
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {/* Example Card */}
-        <div className="dashboard-card">
-          <h3 className="text-lg font-semibold mb-4">
-            Financial Year Summary - {selectedYear}
-          </h3>
-          {/* Add your content here */}
-        </div>
-        
-        {/* Add more dashboard components */}
-      </div>
-    </div>
-  );
-};
-
-export default Dashboard;
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
 interface LayoutItem {
@@ -82,6 +48,7 @@ const defaultWidgets: DashboardWidget[] = [
 ];
 
 const Dashboard = () => {
+  const { selectedYear, isLoading } = useFinancialYear();
   const [layout, setLayout] = useLocalStorage("dashboard-layout", defaultLayout);
   const [widgets, setWidgets] = useLocalStorage("dashboard-widgets", defaultWidgets);
   const [isAddWidgetOpen, setIsAddWidgetOpen] = useState(false);
@@ -138,7 +105,7 @@ const Dashboard = () => {
   return (
     <div className="space-y-8 p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+        <h1 className="text-3xl font-bold">Dashboard</h1>
         <Button onClick={() => setIsAddWidgetOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Add Widget
@@ -160,7 +127,7 @@ const Dashboard = () => {
           <div key={widget.id} className="dashboard-card">
             <div className="drag-handle" title="Drag to move" />
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-black">{widget.title}</h3>
+              <h3 className="text-lg font-semibold">{widget.title}</h3>
               <Button
                 variant="ghost"
                 size="sm"

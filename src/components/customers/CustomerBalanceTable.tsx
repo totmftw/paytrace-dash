@@ -2,10 +2,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
-import { useReactTable, ColumnDef, getCoreRowModel, getPaginationRowModel, getSortedRowModel, getFilteredRowModel } from "@tanstack/react-table";
-import { Input } from "@/components/ui/input";
-import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { flexRender, useReactTable, ColumnDef, getCoreRowModel, getPaginationRowModel, getSortedRowModel, getFilteredRowModel } from "@tanstack/react-table";
 
 interface CustomerBalancesTableProps {
   financialYear: number;
@@ -77,7 +76,10 @@ const CustomerBalancesTable = ({ financialYear }: CustomerBalancesTableProps) =>
                   <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
-                      : header.renderHeader()}
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -88,7 +90,7 @@ const CustomerBalancesTable = ({ financialYear }: CustomerBalancesTableProps) =>
               <TableRow key={row.id}>
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
-                    {cell.renderCell()}
+                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </TableCell>
                 ))}
               </TableRow>

@@ -1,27 +1,38 @@
+// SalesOverview.tsx
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 import { formatCurrency } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useFinancialYear } from "@/contexts/FinancialYearContext";
 
-export function SalesOverview() {
+const SalesOverview = () => {
+  const { selectedYear } = useFinancialYear();
+
+  const getFinancialYearStart = (year: number) => new Date(`${year}-04-01`).toISOString();
+  const getFinancialYearEnd = (year: number) => new Date(`${year + 1}-03-31`).toISOString();
+
   const { data: salesData } = useQuery({
-    queryKey: ["sales-overview"],
+    queryKey: ["sales-overview", selectedYear],
     queryFn: async () => {
+      const startDate = getFinancialYearStart(selectedYear);
+      const endDate = getFinancialYearEnd(selectedYear);
+
       const { data: invoices, error } = await supabase
         .from("invoiceTable")
         .select("*")
-        .gte("invDate", new Date(new Date().setMonth(new Date().getMonth() - 3)).toISOString());
+        .gte("invDate", startDate)
+        .lte("invDate", endDate);
 
       if (error) throw error;
 
       const monthlyData = {};
-      
+
       invoices?.forEach(invoice => {
         const date = new Date(invoice.invDate);
         const monthKey = date.toLocaleString('default', { month: 'short' });
-        
+
         if (!monthlyData[monthKey]) {
           monthlyData[monthKey] = {
             month: monthKey,
@@ -102,4 +113,6 @@ export function SalesOverview() {
       </CardContent>
     </>
   );
-}
+};
+
+export default SalesOverview;

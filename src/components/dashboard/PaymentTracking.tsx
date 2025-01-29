@@ -1,14 +1,24 @@
+// PaymentTracking.tsx
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertCircle, CheckCircle2, Clock } from "lucide-react";
+import { useFinancialYear } from "@/contexts/FinancialYearContext";
 
-export function PaymentTracking() {
-  const { data: invoices } = useQuery({
-    queryKey: ["payment-tracking"],
+const PaymentTracking = () => {
+  const { selectedYear } = useFinancialYear();
+
+  const getFinancialYearStart = (year: number) => new Date(`${year}-04-01`).toISOString();
+  const getFinancialYearEnd = (year: number) => new Date(`${year + 1}-03-31`).toISOString();
+
+  const { data: invoices, isLoading } = useQuery({
+    queryKey: ["payment-tracking", selectedYear],
     queryFn: async () => {
+      const startDate = getFinancialYearStart(selectedYear);
+      const endDate = getFinancialYearEnd(selectedYear);
+
       const { data, error } = await supabase
         .from("invoiceTable")
         .select(`
@@ -18,12 +28,14 @@ export function PaymentTracking() {
             custCreditperiod
           )
         `)
+        .gte("invDate", startDate)
+        .lte("invDate", endDate)
         .order("invDuedate", { ascending: true });
 
       if (error) throw error;
 
       const today = new Date();
-      return invoices?.map(invoice => {
+      return data?.map(invoice => {
         const dueDate = new Date(invoice.invDuedate);
         const daysToDue = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
         
@@ -43,6 +55,10 @@ export function PaymentTracking() {
     },
     refetchInterval: 300000, // Refetch every 5 minutes
   });
+
+  if (isLoading) {
+    return <div className="p-8 flex items-center justify-center">Loading...</div>;
+  }
 
   return (
     <Card>
@@ -116,4 +132,6 @@ export function PaymentTracking() {
       </CardContent>
     </Card>
   );
-}
+};
+
+export default PaymentTracking;

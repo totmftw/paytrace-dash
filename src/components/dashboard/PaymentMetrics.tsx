@@ -1,3 +1,4 @@
+// PaymentMetrics.tsx
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,16 +13,22 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { PaymentDetailsTable } from "./PaymentDetailsTable";
+import { useFinancialYear } from "@/contexts/FinancialYearContext";
 
-export function PaymentMetrics() {
+const PaymentMetrics = () => {
+  const { selectedYear } = useFinancialYear();
   const [showPendingPayments, setShowPendingPayments] = useState(false);
   const [showOverduePayments, setShowOverduePayments] = useState(false);
 
+  const getFinancialYearStart = (year: number) => new Date(`${year}-04-01`).toISOString();
+  const getFinancialYearEnd = (year: number) => new Date(`${year + 1}-03-31`).toISOString();
+
   const { data: metrics } = useQuery({
-    queryKey: ["payment-metrics"],
+    queryKey: ["payment-metrics", selectedYear],
     queryFn: async () => {
-      const today = new Date();
-      
+      const startDate = getFinancialYearStart(selectedYear);
+      const endDate = getFinancialYearEnd(selectedYear);
+
       const { data: invoices, error } = await supabase
         .from("invoiceTable")
         .select(`
@@ -31,7 +38,9 @@ export function PaymentMetrics() {
             custCreditperiod
           )
         `)
-        .eq("invMarkcleared", false);
+        .eq("invMarkcleared", false)
+        .gte("invDate", startDate)
+        .lte("invDate", endDate);
 
       if (error) throw error;
 
@@ -51,7 +60,7 @@ export function PaymentMetrics() {
         const dueDate = new Date(invoice.invDuedate);
         const amount = invoice.invTotal;
 
-        if (dueDate < today) {
+        if (dueDate < new Date()) {
           overduePayments.amount += Number(amount);
           overduePayments.count++;
           overduePayments.invoices.push(invoice);
@@ -168,4 +177,6 @@ export function PaymentMetrics() {
       </Dialog>
     </>
   );
-}
+};
+
+export default PaymentMetrics;

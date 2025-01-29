@@ -40,7 +40,7 @@ const defaultLayout: LayoutItem[] = [
   { i: "payment-metrics", x: 0, y: 0, w: 12, h: 4, minH: 4 },
   { i: "sales-overview", x: 0, y: 4, w: 8, h: 8, minH: 6 },
   { i: "payment-tracking", x: 8, y: 4, w: 4, h: 8, minH: 6 },
-  { i: "payment-reminders", x: 0, y: 12, w: 12, h: 8, minH: 6 }
+  { i: "payment-reminders", x: 0, y: 12, w: 12, h: 8, minH: 6 },
 ];
 
 const defaultWidgets: DashboardWidget[] = [
@@ -131,15 +131,19 @@ const Dashboard = () => {
       <div className="space-y-8 p-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Dashboard</h1>
-          <FinancialYearSelector />
-          {user?.role === "IT admin" && (
-            <Button onClick={() => setIsAddWidgetOpen(true)}>
-              <PlusCircle className="h-4 w-4" />
-            </Button>
-          )}
-          <Button onClick={() => setIsEditing(!isEditing)}>
-            {isEditing ? <Check className="h-4 w-4" /> : <Wrench className="h-4 w-4" />}
-          </Button>
+          <div className="flex items-center gap-2">
+            <FinancialYearSelector />
+            {user?.role === "IT admin" && (
+              <>
+                <Button onClick={() => setIsAddWidgetOpen(true)}>
+                  <PlusCircle className="h-4 w-4" />
+                </Button>
+                <Button onClick={() => setIsEditing(!isEditing)}>
+                  {isEditing ? <Check className="h-4 w-4" /> : <Wrench className="h-4 w-4" />}
+                </Button>
+              </>
+            )}
+          </div>
         </div>
 
         <ResponsiveGridLayout

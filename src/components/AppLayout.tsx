@@ -6,13 +6,13 @@ import { Button } from "./ui/button";
 import { LogOut, User } from "lucide-react";
 import { useState } from "react";
 
-
 export const AppLayout = () => {
   const { user, signOut } = useAuth();
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
     <div className="min-h-screen flex w-full bg-[#15161B]">
-      <AppSidebar />
+      <AppSidebar isCollapsed={isCollapsed} toggleSidebar={() => setIsCollapsed(!isCollapsed)} />
       <main className="flex-1 overflow-hidden">
         <div className="flex h-16 items-center justify-between gap-4 border-b border-dashboard-highlight px-6 bg-dashboard-card">
           <div className="flex items-center gap-4">
@@ -42,16 +42,5 @@ export const AppLayout = () => {
         </div>
       </main>
     </div>
-    
-    export function AppLayout() {
-      const [isCollapsed, setIsCollapsed] = useState(false);
-    
-      return (
-        <div className="flex h-screen">
-          <AppSidebar isCollapsed={isCollapsed} toggleSidebar={() => setIsCollapsed(!isCollapsed)} />
-          <div className="flex-1 overflow-auto p-6">
-            <Outlet />
-          </div>
-        </div>
   );
 };

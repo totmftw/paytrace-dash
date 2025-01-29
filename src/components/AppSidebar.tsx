@@ -7,7 +7,9 @@ import {
   IndianRupee,
   Package,
   MessageSquare,
-  UserCircle
+  UserCircle,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 
 const navigation = [
@@ -16,18 +18,17 @@ const navigation = [
   { name: "Invoices & Payments", href: "/invoices-payments", icon: IndianRupee },
   { name: "Products", href: "/products", icon: Package },
   { name: "WhatsApp Reminders", href: "/whatsapp-reminders", icon: MessageSquare },
-  { name: "User Management", href: "/users", icon: UserCircle },
+  { name: "User Management", href: "/user-management", icon: UserCircle },
 ];
 
-export function AppSidebar() {
+export function AppSidebar({ isCollapsed, toggleSidebar }) {
   return (
-    <div className="flex h-full flex-col gap-y-5 bg-[#1A1F2C] px-6">
-      <div className="flex h-16 shrink-0 items-center">
-        <img
-          className="h-8 w-auto"
-          src="/logo.svg"
-          alt="Your Company"
-        />
+    <div className={cn("h-full bg-[#1A1F2C] flex flex-col transition-all duration-300", isCollapsed ? "w-16" : "w-64")}>
+      <div className="flex justify-between items-center h-16 px-4">
+        {!isCollapsed && <img className="h-8 w-auto" src="/logo.svg" alt="Your Company" />}
+        <button onClick={toggleSidebar} className="text-white p-2">
+          {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+        </button>
       </div>
       <nav className="flex flex-1 flex-col">
         <ul role="list" className="flex flex-1 flex-col gap-y-7">
@@ -42,7 +43,7 @@ export function AppSidebar() {
                         isActive
                           ? "bg-[#221F26] text-white"
                           : "text-gray-400 hover:text-white hover:bg-[#221F26]",
-                        "group flex gap-x-3 rounded-md p-2 text-sm leading-6"
+                        "group flex items-center gap-x-3 rounded-md p-2 text-sm leading-6"
                       )
                     }
                   >
@@ -55,7 +56,7 @@ export function AppSidebar() {
                           )}
                           aria-hidden="true"
                         />
-                        {item.name}
+                        {!isCollapsed && <span>{item.name}</span>}
                       </>
                     )}
                   </NavLink>

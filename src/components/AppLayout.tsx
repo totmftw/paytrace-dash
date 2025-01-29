@@ -4,6 +4,8 @@ import { SidebarTrigger } from "./ui/sidebar";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "./ui/button";
 import { LogOut, User } from "lucide-react";
+import { useState } from "react";
+
 
 export const AppLayout = () => {
   const { user, signOut } = useAuth();
@@ -40,5 +42,16 @@ export const AppLayout = () => {
         </div>
       </main>
     </div>
+    
+    export function AppLayout() {
+      const [isCollapsed, setIsCollapsed] = useState(false);
+    
+      return (
+        <div className="flex h-screen">
+          <AppSidebar isCollapsed={isCollapsed} toggleSidebar={() => setIsCollapsed(!isCollapsed)} />
+          <div className="flex-1 overflow-auto p-6">
+            <Outlet />
+          </div>
+        </div>
   );
 };

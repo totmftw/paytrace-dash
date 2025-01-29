@@ -6,23 +6,13 @@ import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 
-interface PaymentRemindersProps {
-  financialYear: number;
-}
-
-export function PaymentReminders({ financialYear }: PaymentRemindersProps) {
+export function PaymentReminders() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const getFinancialYearStart = (year: number) => new Date(`${year}-04-01`).toISOString();
-  const getFinancialYearEnd = (year: number) => new Date(`${year + 1}-03-31`).toISOString();
-
   const { data: reminders } = useQuery({
-    queryKey: ["payment-reminders", financialYear],
+    queryKey: ["payment-reminders"],
     queryFn: async () => {
-      const startDate = getFinancialYearStart(financialYear);
-      const endDate = getFinancialYearEnd(financialYear);
-
       const { data: invoices, error } = await supabase
         .from("invoiceTable")
         .select(`
@@ -34,8 +24,6 @@ export function PaymentReminders({ financialYear }: PaymentRemindersProps) {
           )
         `)
         .eq("invMarkcleared", false)
-        .gte("invDate", startDate)
-        .lte("invDate", endDate)
         .order("invDuedate", { ascending: true });
 
       if (error) throw error;
@@ -103,7 +91,7 @@ export function PaymentReminders({ financialYear }: PaymentRemindersProps) {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["payment-reminders", financialYear] });
+      queryClient.invalidateQueries({ queryKey: ["payment-reminders"] });
       toast({
         title: "Reminder sent",
         description: "The payment reminder has been sent successfully.",

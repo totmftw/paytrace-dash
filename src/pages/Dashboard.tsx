@@ -11,7 +11,6 @@ import { PlusCircle } from "lucide-react";
 import { AddWidgetDialog } from "@/components/dashboard/AddWidgetDialog";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { toast } from "sonner";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -49,7 +48,6 @@ const Dashboard = () => {
   const [layout, setLayout] = useLocalStorage("dashboard-layout", defaultLayout);
   const [widgets, setWidgets] = useLocalStorage("dashboard-widgets", defaultWidgets);
   const [isAddWidgetOpen, setIsAddWidgetOpen] = useState(false);
-  const [financialYear, setFinancialYear] = useState(new Date().getFullYear());
 
   const handleLayoutChange = (newLayout: LayoutItem[]) => {
     setLayout(newLayout);
@@ -88,13 +86,13 @@ const Dashboard = () => {
   const renderWidget = (widget: DashboardWidget) => {
     switch (widget.type) {
       case "payment-metrics":
-        return <PaymentMetrics financialYear={financialYear} />;
+        return <PaymentMetrics />;
       case "sales-overview":
-        return <SalesOverview financialYear={financialYear} />;
+        return <SalesOverview />;
       case "payment-tracking":
-        return <PaymentTracking financialYear={financialYear} />;
+        return <PaymentTracking />;
       case "payment-reminders":
-        return <PaymentReminders financialYear={financialYear} />;
+        return <PaymentReminders />;
       default:
         return <div>Unknown widget type</div>;
     }
@@ -104,27 +102,10 @@ const Dashboard = () => {
     <div className="space-y-8 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-        <div className="flex items-center gap-4">
-          <Select
-            value={financialYear.toString()}
-            onValueChange={(value) => setFinancialYear(parseInt(value))}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select Financial Year" />
-            </SelectTrigger>
-            <SelectContent>
-              {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map(year => (
-                <SelectItem key={year} value={year.toString()}>
-                  {year}-{year + 1}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-          <Button onClick={() => setIsAddWidgetOpen(true)}>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Add Widget
-          </Button>
-        </div>
+        <Button onClick={() => setIsAddWidgetOpen(true)}>
+          <PlusCircle className="mr-2 h-4 w-4" />
+          Add Widget
+        </Button>
       </div>
 
       <ResponsiveGridLayout

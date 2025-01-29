@@ -13,23 +13,15 @@ import {
 } from "@/components/ui/dialog";
 import { PaymentDetailsTable } from "./PaymentDetailsTable";
 
-interface PaymentMetricsProps {
-  financialYear: number;
-}
-
-export function PaymentMetrics({ financialYear }: PaymentMetricsProps) {
+export function PaymentMetrics() {
   const [showPendingPayments, setShowPendingPayments] = useState(false);
   const [showOverduePayments, setShowOverduePayments] = useState(false);
 
-  const getFinancialYearStart = (year: number) => new Date(`${year}-04-01`).toISOString();
-  const getFinancialYearEnd = (year: number) => new Date(`${year + 1}-03-31`).toISOString();
-
   const { data: metrics } = useQuery({
-    queryKey: ["payment-metrics", financialYear],
+    queryKey: ["payment-metrics"],
     queryFn: async () => {
-      const startDate = getFinancialYearStart(financialYear);
-      const endDate = getFinancialYearEnd(financialYear);
-
+      const today = new Date();
+      
       const { data: invoices, error } = await supabase
         .from("invoiceTable")
         .select(`
@@ -39,9 +31,7 @@ export function PaymentMetrics({ financialYear }: PaymentMetricsProps) {
             custCreditperiod
           )
         `)
-        .eq("invMarkcleared", false)
-        .gte("invDate", startDate)
-        .lte("invDate", endDate);
+        .eq("invMarkcleared", false);
 
       if (error) throw error;
 
@@ -61,7 +51,7 @@ export function PaymentMetrics({ financialYear }: PaymentMetricsProps) {
         const dueDate = new Date(invoice.invDuedate);
         const amount = invoice.invTotal;
 
-        if (dueDate < new Date()) {
+        if (dueDate < today) {
           overduePayments.amount += Number(amount);
           overduePayments.count++;
           overduePayments.invoices.push(invoice);

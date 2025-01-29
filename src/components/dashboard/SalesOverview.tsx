@@ -5,25 +5,14 @@ import { formatCurrency } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-interface SalesOverviewProps {
-  financialYear: number;
-}
-
-export function SalesOverview({ financialYear }: SalesOverviewProps) {
-  const getFinancialYearStart = (year: number) => new Date(`${year}-04-01`).toISOString();
-  const getFinancialYearEnd = (year: number) => new Date(`${year + 1}-03-31`).toISOString();
-
+export function SalesOverview() {
   const { data: salesData } = useQuery({
-    queryKey: ["sales-overview", financialYear],
+    queryKey: ["sales-overview"],
     queryFn: async () => {
-      const startDate = getFinancialYearStart(financialYear);
-      const endDate = getFinancialYearEnd(financialYear);
-
       const { data: invoices, error } = await supabase
         .from("invoiceTable")
         .select("*")
-        .gte("invDate", startDate)
-        .lte("invDate", endDate);
+        .gte("invDate", new Date(new Date().setMonth(new Date().getMonth() - 3)).toISOString());
 
       if (error) throw error;
 

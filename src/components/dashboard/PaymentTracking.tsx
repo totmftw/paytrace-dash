@@ -5,20 +5,10 @@ import { formatCurrency } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertCircle, CheckCircle2, Clock } from "lucide-react";
 
-interface PaymentTrackingProps {
-  financialYear: number;
-}
-
-export function PaymentTracking({ financialYear }: PaymentTrackingProps) {
-  const getFinancialYearStart = (year: number) => new Date(`${year}-04-01`).toISOString();
-  const getFinancialYearEnd = (year: number) => new Date(`${year + 1}-03-31`).toISOString();
-
+export function PaymentTracking() {
   const { data: invoices } = useQuery({
-    queryKey: ["payment-tracking", financialYear],
+    queryKey: ["payment-tracking"],
     queryFn: async () => {
-      const startDate = getFinancialYearStart(financialYear);
-      const endDate = getFinancialYearEnd(financialYear);
-
       const { data, error } = await supabase
         .from("invoiceTable")
         .select(`
@@ -28,14 +18,12 @@ export function PaymentTracking({ financialYear }: PaymentTrackingProps) {
             custCreditperiod
           )
         `)
-        .gte("invDate", startDate)
-        .lte("invDate", endDate)
         .order("invDuedate", { ascending: true });
 
       if (error) throw error;
 
       const today = new Date();
-      return data?.map(invoice => {
+      return invoices?.map(invoice => {
         const dueDate = new Date(invoice.invDuedate);
         const daysToDue = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
         

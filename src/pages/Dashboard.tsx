@@ -16,6 +16,7 @@ import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 import { FinancialYearProvider, useFinancialYear } from "@/contexts/FinancialYearContext";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -54,7 +55,9 @@ const Dashboard = () => {
   const [widgets, setWidgets] = useLocalStorage("dashboard-widgets", defaultWidgets);
   const [isAddWidgetOpen, setIsAddWidgetOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isConfigured, setIsConfigured] = useState(false);
   const { user } = useAuth();
+  const [isApplyDialogOpen, setIsApplyDialogOpen] = useState(false);
 
   const handleLayoutChange = (newLayout: LayoutItem[]) => {
     setLayout(newLayout);
@@ -92,6 +95,7 @@ const Dashboard = () => {
 
   const handleApplyChanges = async () => {
     setIsEditing(false);
+    setIsConfigured(true);
 
     try {
       const { error } = await supabase.from("dashboard_config").upsert({
@@ -103,6 +107,7 @@ const Dashboard = () => {
       if (error) throw error;
 
       toast.success("Changes applied successfully");
+      setIsApplyDialogOpen(true);
     } catch (error) {
       toast.error("Failed to apply changes");
     }
@@ -131,7 +136,7 @@ const Dashboard = () => {
           <FinancialYearSelector />
           {user?.role === "IT admin" && (
             <Button onClick={() => setIsAddWidgetOpen(true)}>
-              {isEditing ? <Check className="h-4 w-4" /> : <PlusCircle className="h-4 w-4" />}
+              <PlusCircle className="h-4 w-4" />
             </Button>
           )}
           <Button onClick={() => setIsEditing(!isEditing)}>
@@ -176,6 +181,17 @@ const Dashboard = () => {
           onOpenChange={setIsAddWidgetOpen}
           onAdd={handleAddWidget}
         />
+
+        <Dialog open={isApplyDialogOpen} onOpenChange={setIsApplyDialogOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle>Configuration Applied</DialogTitle>
+            </DialogHeader>
+            <p className="text-center text-muted-foreground">
+              The configuration has been applied and will not be editable.
+            </p>
+          </DialogContent>
+        </Dialog>
       </div>
     </FinancialYearProvider>
   );

@@ -94,7 +94,7 @@ const Dashboard = () => {
 
     try {
       const { error } = await supabase.from("dashboard_config").upsert({
-        userId: user.id,
+        userid: user.id,
         layout: JSON.stringify(layout),
         widgets: JSON.stringify(widgets)
       });
@@ -134,7 +134,7 @@ const Dashboard = () => {
             </Button>
           )}
           <Button onClick={() => setIsEditing(!isEditing)}>
-            {isEditing ? <Check className="h-4 w-4" /> : <Wrench className="h-4 w-4" />}
+            <Wrench className="h-4 w-4" />
           </Button>
         </div>
 

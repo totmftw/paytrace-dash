@@ -1,4 +1,3 @@
-// SalesOverview.tsx
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
@@ -7,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 
-const SalesOverview = () => {
+export const SalesOverview = () => {
   const { selectedYear } = useFinancialYear();
 
   const getFinancialYearStart = (year: string) => {
@@ -129,5 +128,3 @@ const SalesOverview = () => {
     </>
   );
 };
-
-export default SalesOverview;

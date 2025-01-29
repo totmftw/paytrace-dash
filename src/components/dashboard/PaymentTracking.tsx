@@ -1,4 +1,3 @@
-// PaymentTracking.tsx
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,7 +6,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertCircle, CheckCircle2, Clock } from "lucide-react";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 
-const PaymentTracking = () => {
+export const PaymentTracking = () => {
   const { selectedYear } = useFinancialYear();
 
   const getFinancialYearStart = (year: number) => new Date(`${year}-04-01`).toISOString();
@@ -133,5 +132,3 @@ const PaymentTracking = () => {
     </Card>
   );
 };
-
-export default PaymentTracking;

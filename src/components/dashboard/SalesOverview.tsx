@@ -1,93 +1,97 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartContainer } from "@/components/ui/chart";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
-import { formatCurrency } from "@/lib/utils";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useFinancialYear } from "@/contexts/FinancialYearContext";
+import React from 'react';
+import { Card } from "@/components/ui/card";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useFinancialYear } from '@/contexts/FinancialYearContext';
 
 export const SalesOverview = () => {
   const { selectedYear } = useFinancialYear();
 
-  const getFinancialYearStart = (year: number) => new Date(`${year}-04-01`).toISOString();
-  const getFinancialYearEnd = (year: number) => new Date(`${year + 1}-03-31`).toISOString();
-
-  const { data: salesData } = useQuery({
-    queryKey: ["sales-overview", selectedYear],
+  const { data: salesData = [], isLoading } = useQuery({
+    queryKey: ['sales-overview', selectedYear],
     queryFn: async () => {
-      const startDate = getFinancialYearStart(Number(selectedYear));
-      const endDate = getFinancialYearEnd(Number(selectedYear));
+      const startDate = new Date(Number(selectedYear), 3, 1); // Financial year starts from April
+      const endDate = new Date(Number(selectedYear) + 1, 2, 31); // Ends in March next year
 
       const { data: invoices, error } = await supabase
-        .from("invoiceTable")
-        .select("*")
-        .gte("invDate", startDate)
-        .lte("invDate", endDate);
+        .from('invoiceTable')
+        .select('invTotal, invBalanceAmount, invDate')
+        .gte('invDate', startDate.toISOString())
+        .lte('invDate', endDate.toISOString());
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching sales data:', error);
+        return [];
+      }
 
-      const monthlyData = {};
+      // Process the data to get monthly totals
+      const monthlyData = Array(12).fill(0).map((_, index) => {
+        const month = new Date(Number(selectedYear), index + 3, 1);
+        const monthName = month.toLocaleString('default', { month: 'short' });
+        
+        const monthInvoices = invoices.filter(inv => {
+          const invDate = new Date(inv.invDate);
+          return invDate.getMonth() === month.getMonth() && 
+                 invDate.getFullYear() === month.getFullYear();
+        });
 
-      invoices?.forEach(invoice => {
-        const date = new Date(invoice.invDate);
-        const monthKey = date.toLocaleString('default', { month: 'short' });
+        const sales = monthInvoices.reduce((sum, inv) => sum + Number(inv.invTotal), 0);
+        const pending = monthInvoices.reduce((sum, inv) => {
+          const balance = Number(inv.invBalanceAmount);
+          const dueDate = new Date(inv.invDate);
+          dueDate.setDate(dueDate.getDate() + 30); // Assuming 30 days credit period
+          return sum + (balance > 0 && new Date() <= dueDate ? balance : 0);
+        }, 0);
+        const overdue = monthInvoices.reduce((sum, inv) => {
+          const balance = Number(inv.invBalanceAmount);
+          const dueDate = new Date(inv.invDate);
+          dueDate.setDate(dueDate.getDate() + 30); // Assuming 30 days credit period
+          return sum + (balance > 0 && new Date() > dueDate ? balance : 0);
+        }, 0);
 
-        if (!monthlyData[monthKey]) {
-          monthlyData[monthKey] = {
-            month: monthKey,
-            sales: 0,
-            pending: 0,
-            overdue: 0
-          };
-        }
-
-        const amount = Number(invoice.invTotal);
-        const dueDate = new Date(invoice.invDuedate);
-        const today = new Date();
-
-        if (invoice.invMarkcleared) {
-          monthlyData[monthKey].sales += amount;
-        } else if (dueDate < today) {
-          monthlyData[monthKey].overdue += amount;
-        } else {
-          monthlyData[monthKey].pending += amount;
-        }
+        return {
+          month: monthName,
+          sales,
+          pending,
+          overdue
+        };
       });
 
-      return Object.values(monthlyData);
-    },
-    refetchInterval: 300000,
+      return monthlyData;
+    }
   });
 
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      maximumFractionDigits: 0
+    }).format(value);
+  };
+
+  if (isLoading) {
+    return <Card className="w-full h-[400px] animate-pulse" />;
+  }
+
   return (
-    <>
-      <CardHeader>
-        <CardTitle>Sales Overview</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="h-full relative">
-          {salesData && (
-            <ChartContainer
-              config={{
-                sales: { color: "#22c55e" },
-                pending: { color: "#eab308" },
-                overdue: { color: "#ef4444" },
-              }}
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={salesData}>
-                  <XAxis dataKey="month" />
-                  <YAxis tickFormatter={(value: number) => `₹${value / 1000}k`} />
-                  <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                  <Bar dataKey="sales" fill="var(--color-sales)" />
-                  <Bar dataKey="pending" fill="var(--color-pending)" />
-                  <Bar dataKey="overdue" fill="var(--color-overdue)" />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
-          )}
+    <Card className="w-full h-[400px] p-4">
+      <div className="h-full">
+        <h3 className="text-lg font-semibold mb-4">Sales Overview</h3>
+        <div className="h-[320px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={salesData}>
+              <XAxis dataKey="month" />
+              <YAxis tickFormatter={(value: number) => `₹${value / 1000}k`} />
+              <Tooltip formatter={(value: number) => formatCurrency(value)} />
+              <Bar dataKey="sales" fill="var(--color-sales)" />
+              <Bar dataKey="pending" fill="var(--color-pending)" />
+              <Bar dataKey="overdue" fill="var(--color-overdue)" />
+              <Legend />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
-      </CardContent>
-    </>
+      </div>
+    </Card>
   );
 };

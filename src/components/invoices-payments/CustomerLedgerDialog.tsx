@@ -3,8 +3,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
-// Define a discriminated union type for transaction types
-type TransactionType = 'invoice' | 'payment';
+// Simple enum for transaction types
+enum TransactionType {
+  Invoice = 'invoice',
+  Payment = 'payment'
+}
 
 // Base transaction interface
 interface Transaction {
@@ -12,10 +15,10 @@ interface Transaction {
   date: string;
   description: string;
   amount: number;
-  transactionType: TransactionType;
+  type: TransactionType;
 }
 
-// Ledger entry extends transaction with balance
+// Ledger entry interface
 interface LedgerEntry extends Transaction {
   balance: number;
 }
@@ -57,7 +60,7 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
               date: format(new Date(inv.invDate), 'yyyy-MM-dd'),
               description: `Invoice #${inv.invId}`,
               amount: inv.invTotal,
-              transactionType: 'invoice'
+              type: TransactionType.Invoice
             });
           });
         }
@@ -70,7 +73,7 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
               date: format(new Date(pay.paymentDate), 'yyyy-MM-dd'),
               description: `Payment #${pay.paymentId}`,
               amount: pay.amount,
-              transactionType: 'payment'
+              type: TransactionType.Payment
             });
           });
         }
@@ -80,7 +83,7 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
         
         let runningBalance = 0;
         const entriesWithBalance: LedgerEntry[] = transactions.map(transaction => {
-          runningBalance = transaction.transactionType === 'invoice' 
+          runningBalance = transaction.type === TransactionType.Invoice 
             ? runningBalance + transaction.amount 
             : runningBalance - transaction.amount;
           
@@ -120,14 +123,14 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
               </thead>
               <tbody>
                 {ledgerEntries.map((entry) => (
-                  <tr key={`${entry.transactionType}-${entry.id}`} className="border-b">
+                  <tr key={`${entry.type}-${entry.id}`} className="border-b">
                     <td className="p-2">{entry.date}</td>
                     <td className="p-2">{entry.description}</td>
                     <td className="text-right p-2">
-                      {entry.transactionType === 'invoice' ? entry.amount.toFixed(2) : '-'}
+                      {entry.type === TransactionType.Invoice ? entry.amount.toFixed(2) : '-'}
                     </td>
                     <td className="text-right p-2">
-                      {entry.transactionType === 'payment' ? entry.amount.toFixed(2) : '-'}
+                      {entry.type === TransactionType.Payment ? entry.amount.toFixed(2) : '-'}
                     </td>
                     <td className="text-right p-2">{entry.balance.toFixed(2)}</td>
                   </tr>

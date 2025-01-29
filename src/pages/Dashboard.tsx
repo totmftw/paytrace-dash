@@ -1,4 +1,3 @@
-// Dashboard.tsx
 import { useState } from "react";
 import { Responsive, WidthProvider } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
@@ -13,28 +12,9 @@ import { AddWidgetDialog } from "@/components/dashboard/AddWidgetDialog";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { toast } from "sonner";
 import { FinancialYearSelector } from "@/components/FinancialYearSelector";
-import { FinancialYearProvider, useFinancialYear } from "@/contexts/FinancialYearContext";
+import { FinancialYearProvider } from "@/contexts/FinancialYearContext";
 import { useAuth } from "@/hooks/use-auth";
-import { useAuth } from "@/hooks/use-auth";
 
-const Dashboard = () => {
-  const { user } = useAuth();
-
-  return (
-    <div>
-      <h1>Dashboard</h1>
-      {user && (
-        <div>
-          <p>User ID: {user.id}</p>
-          <p>User Name: {user.name}</p>
-          <p>User Role: {user.role}</p>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default Dashboard;
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
 interface LayoutItem {

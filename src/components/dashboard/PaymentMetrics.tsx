@@ -19,14 +19,11 @@ export const PaymentMetrics = () => {
   const [showPendingPayments, setShowPendingPayments] = useState(false);
   const [showOverduePayments, setShowOverduePayments] = useState(false);
 
-  const getFinancialYearStart = (year: number) => new Date(`${year}-04-01`);
-  const getFinancialYearEnd = (year: number) => new Date(`${year + 1}-03-31`);
-
   const { data: metrics } = useQuery({
     queryKey: ["payment-metrics", selectedYear],
     queryFn: async () => {
-      const startDate = getFinancialYearStart(selectedYear).toISOString();
-      const endDate = getFinancialYearEnd(selectedYear).toISOString();
+      const startDate = new Date(selectedYear, 3, 1).toISOString(); // April 1st
+      const endDate = new Date(selectedYear + 1, 2, 31).toISOString(); // March 31st
 
       const { data: invoices, error } = await supabase
         .from("invoiceTable")
@@ -176,4 +173,3 @@ export const PaymentMetrics = () => {
       </Dialog>
     </>
   );
-};

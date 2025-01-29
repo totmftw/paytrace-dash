@@ -9,14 +9,11 @@ import { useFinancialYear } from "@/contexts/FinancialYearContext";
 export const SalesOverview = () => {
   const { selectedYear } = useFinancialYear();
 
-  const getFinancialYearStart = (year: number) => new Date(`${year}-04-01`);
-  const getFinancialYearEnd = (year: number) => new Date(`${year + 1}-03-31`);
-
   const { data: salesData } = useQuery({
     queryKey: ["sales-overview", selectedYear],
     queryFn: async () => {
-      const startDate = getFinancialYearStart(selectedYear).toISOString();
-      const endDate = getFinancialYearEnd(selectedYear).toISOString();
+      const startDate = new Date(selectedYear, 3, 1).toISOString(); // April 1st
+      const endDate = new Date(selectedYear + 1, 2, 31).toISOString(); // March 31st
 
       const { data: invoices, error } = await supabase
         .from("invoiceTable")

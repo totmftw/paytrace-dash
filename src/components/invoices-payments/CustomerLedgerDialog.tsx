@@ -3,19 +3,22 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
-// Separate the base type to prevent circular references
-type BaseLedgerEntry = {
+// Define a discriminated union type for transaction types
+type TransactionType = 'invoice' | 'payment';
+
+// Base transaction interface
+interface Transaction {
   id: number;
   date: string;
   description: string;
   amount: number;
-  transactionType: 'invoice' | 'payment';
-};
+  transactionType: TransactionType;
+}
 
-// Extend the base type to include the calculated balance
-type LedgerEntry = BaseLedgerEntry & {
+// Ledger entry extends transaction with balance
+interface LedgerEntry extends Transaction {
   balance: number;
-};
+}
 
 interface CustomerLedgerProps {
   customerId: number;
@@ -44,12 +47,12 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
             .order("paymentDate")
         ]);
 
-        const entries: BaseLedgerEntry[] = [];
+        const transactions: Transaction[] = [];
 
         // Process invoices
         if (invoicesResult.data) {
           invoicesResult.data.forEach(inv => {
-            entries.push({
+            transactions.push({
               id: inv.invId,
               date: format(new Date(inv.invDate), 'yyyy-MM-dd'),
               description: `Invoice #${inv.invId}`,
@@ -62,7 +65,7 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
         // Process payments
         if (paymentsResult.data) {
           paymentsResult.data.forEach(pay => {
-            entries.push({
+            transactions.push({
               id: pay.paymentId,
               date: format(new Date(pay.paymentDate), 'yyyy-MM-dd'),
               description: `Payment #${pay.paymentId}`,
@@ -73,13 +76,15 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
         }
 
         // Sort by date and calculate running balance
-        entries.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        transactions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        
         let runningBalance = 0;
-        const entriesWithBalance: LedgerEntry[] = entries.map(entry => {
-          runningBalance = entry.transactionType === 'invoice' 
-            ? runningBalance + entry.amount 
-            : runningBalance - entry.amount;
-          return { ...entry, balance: runningBalance };
+        const entriesWithBalance: LedgerEntry[] = transactions.map(transaction => {
+          runningBalance = transaction.transactionType === 'invoice' 
+            ? runningBalance + transaction.amount 
+            : runningBalance - transaction.amount;
+          
+          return { ...transaction, balance: runningBalance };
         });
 
         setLedgerEntries(entriesWithBalance);

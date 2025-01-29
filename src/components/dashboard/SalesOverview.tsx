@@ -1,3 +1,4 @@
+// SalesOverview.tsx
 import React from 'react';
 import { Card } from "@/components/ui/card";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
@@ -25,7 +26,6 @@ export const SalesOverview = () => {
         return [];
       }
 
-      // Process the data to get monthly totals
       const monthlyData = Array(12).fill(0).map((_, index) => {
         const month = new Date(Number(selectedYear), index + 3, 1);
         const monthName = month.toLocaleString('default', { month: 'short' });
@@ -52,9 +52,9 @@ export const SalesOverview = () => {
 
         return {
           month: monthName,
-          sales,
-          pending,
-          overdue
+          sales: Math.round(sales),
+          pending: Math.round(pending),
+          overdue: Math.round(overdue)
         };
       });
 
@@ -62,13 +62,7 @@ export const SalesOverview = () => {
     }
   });
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0
-    }).format(value);
-  };
+  const formatCurrency = (value: number) => `₹${value.toLocaleString('en-IN')}`;
 
   if (isLoading) {
     return <Card className="w-full h-[400px] animate-pulse" />;
@@ -82,12 +76,16 @@ export const SalesOverview = () => {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={salesData}>
               <XAxis dataKey="month" />
-              <YAxis tickFormatter={(value: number) => `₹${value / 1000}k`} />
+              <YAxis tickFormatter={(value) => `₹${value / 1000}k`} />
               <Tooltip formatter={(value: number) => formatCurrency(value)} />
-              <Bar dataKey="sales" fill="var(--color-sales)" />
-              <Bar dataKey="pending" fill="var(--color-pending)" />
-              <Bar dataKey="overdue" fill="var(--color-overdue)" />
-              <Legend />
+              <Bar dataKey="sales" fill="#22c55e" />
+              <Bar dataKey="pending" fill="#eab308" />
+              <Bar dataKey="overdue" fill="#ef4444" />
+              <Legend payload={[
+                { value: 'Sales', type: 'square', color: '#22c55e' },
+                { value: 'Pending', type: 'square', color: '#eab308' },
+                { value: 'Overdue', type: 'square', color: '#ef4444' }
+              ]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

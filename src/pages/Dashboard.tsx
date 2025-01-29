@@ -131,7 +131,7 @@ const Dashboard = () => {
       <div className="space-y-8 p-6">
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Dashboard</h1>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-4">
             <FinancialYearSelector />
             {user?.role === "IT admin" && (
               <>
@@ -171,7 +171,7 @@ const Dashboard = () => {
                   Remove
                 </Button>
               </div>
-              <div className="overflow-auto h-full">
+              <div className="overflow-auto h-[calc(100%-4rem)]">
                 {renderWidget(widget)}
               </div>
             </div>

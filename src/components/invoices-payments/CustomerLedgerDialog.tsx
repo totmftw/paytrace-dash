@@ -3,14 +3,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
-// Simple enum for transaction types
-enum TransactionType {
-  Invoice = 'invoice',
-  Payment = 'payment'
-}
+// Simple type for transaction types
+type TransactionType = 'invoice' | 'payment';
 
-// Base transaction interface
-interface Transaction {
+// Base transaction interface without circular references
+interface BaseTransaction {
   id: number;
   date: string;
   description: string;
@@ -18,8 +15,13 @@ interface Transaction {
   type: TransactionType;
 }
 
-// Ledger entry interface
-interface LedgerEntry extends Transaction {
+// Separate interface for ledger entries
+interface LedgerEntry {
+  id: number;
+  date: string;
+  description: string;
+  amount: number;
+  type: TransactionType;
   balance: number;
 }
 
@@ -50,7 +52,7 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
             .order("paymentDate")
         ]);
 
-        const transactions: Transaction[] = [];
+        const transactions: BaseTransaction[] = [];
 
         // Process invoices
         if (invoicesResult.data) {
@@ -60,7 +62,7 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
               date: format(new Date(inv.invDate), 'yyyy-MM-dd'),
               description: `Invoice #${inv.invId}`,
               amount: inv.invTotal,
-              type: TransactionType.Invoice
+              type: 'invoice'
             });
           });
         }
@@ -73,7 +75,7 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
               date: format(new Date(pay.paymentDate), 'yyyy-MM-dd'),
               description: `Payment #${pay.paymentId}`,
               amount: pay.amount,
-              type: TransactionType.Payment
+              type: 'payment'
             });
           });
         }
@@ -83,11 +85,14 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
         
         let runningBalance = 0;
         const entriesWithBalance: LedgerEntry[] = transactions.map(transaction => {
-          runningBalance = transaction.type === TransactionType.Invoice 
+          runningBalance = transaction.type === 'invoice' 
             ? runningBalance + transaction.amount 
             : runningBalance - transaction.amount;
           
-          return { ...transaction, balance: runningBalance };
+          return {
+            ...transaction,
+            balance: runningBalance
+          };
         });
 
         setLedgerEntries(entriesWithBalance);
@@ -127,10 +132,10 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
                     <td className="p-2">{entry.date}</td>
                     <td className="p-2">{entry.description}</td>
                     <td className="text-right p-2">
-                      {entry.type === TransactionType.Invoice ? entry.amount.toFixed(2) : '-'}
+                      {entry.type === 'invoice' ? entry.amount.toFixed(2) : '-'}
                     </td>
                     <td className="text-right p-2">
-                      {entry.type === TransactionType.Payment ? entry.amount.toFixed(2) : '-'}
+                      {entry.type === 'payment' ? entry.amount.toFixed(2) : '-'}
                     </td>
                     <td className="text-right p-2">{entry.balance.toFixed(2)}</td>
                   </tr>

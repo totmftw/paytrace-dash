@@ -2,8 +2,8 @@ import { useState } from "react";
 import { Responsive, WidthProvider } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
-import { PaymentMetrics } from "@/components/dashboard/PaymentMetrics";
-import { SalesOverview } from "@/components/dashboard/SalesOverview";
+import PaymentMetrics from "@/components/dashboard/PaymentMetrics";
+import SalesOverview from "@/components/dashboard/SalesOverview";
 import { PaymentTracking } from "@/components/dashboard/PaymentTracking";
 import { PaymentReminders } from "@/components/dashboard/PaymentReminders";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { AddWidgetDialog } from "@/components/dashboard/AddWidgetDialog";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { toast } from "sonner";
 import { FinancialYearSelector } from "@/components/FinancialYearSelector";
-import { FinancialYearProvider, useFinancialYear } from "@/contexts/FinancialYearContext";
+import { FinancialYearProvider } from "@/contexts/FinancialYearContext";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -94,7 +94,7 @@ const Dashboard = () => {
 
     try {
       const { error } = await supabase.from("dashboard_config").upsert({
-        userId: user.id,
+        userid: user.id,
         layout: JSON.stringify(layout),
         widgets: JSON.stringify(widgets)
       });

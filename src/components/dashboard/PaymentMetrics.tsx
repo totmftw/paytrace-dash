@@ -21,8 +21,15 @@ const PaymentMetrics = () => {
   const [showOverduePayments, setShowOverduePayments] = useState(false);
   const [showOrders, setShowOrders] = useState(false);
 
-  const getFinancialYearStart = (year: number) => new Date(`${year}-04-01`).toISOString();
-  const getFinancialYearEnd = (year: number) => new Date(`${year + 1}-03-31`).toISOString();
+  const getFinancialYearStart = (year: string) => {
+    const yearNum = parseInt(year.split('-')[0]);
+    return new Date(yearNum, 3, 1).toISOString();
+  };
+
+  const getFinancialYearEnd = (year: string) => {
+    const yearNum = parseInt(year.split('-')[0]);
+    return new Date(yearNum + 1, 2, 31).toISOString();
+  };
 
   const { data: metrics } = useQuery({
     queryKey: ["payment-metrics", selectedYear],

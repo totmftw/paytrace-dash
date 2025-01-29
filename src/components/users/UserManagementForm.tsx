@@ -44,7 +44,7 @@ const UserManagementForm = ({ onSubmit, onClose }) => {
           { value: 'user', label: 'User' },
         ]}
       />
-      <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+      <div className="flex gap-4 mt-6">
         <FormButton label="Submit" type="submit" />
         <FormButton label="Reset" type="button" onClick={handleReset} />
         <FormButton label="Close" type="button" onClick={onClose} />

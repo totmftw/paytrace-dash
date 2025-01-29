@@ -3,7 +3,7 @@ import TableHeader from './TableHeader';
 import TableRow from './TableRow';
 import InvoiceDetails from './InvoiceDetails';
 
-const EnhancedInvoiceTable = ({ invoices = [] }) => {
+export default function EnhancedInvoiceTable({ invoices = [] }) {
   const [selectedInvoice, setSelectedInvoice] = useState(null);
 
   const handleRowClick = (invoice) => {
@@ -28,6 +28,4 @@ const EnhancedInvoiceTable = ({ invoices = [] }) => {
       {selectedInvoice && <InvoiceDetails invoice={selectedInvoice} />}
     </div>
   );
-};
-
-export default EnhancedInvoiceTable;
+}

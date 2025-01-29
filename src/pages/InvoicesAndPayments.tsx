@@ -1,5 +1,5 @@
 import { InvoiceUploadButtons } from "@/components/invoices-payments/InvoiceUploadButtons";
-import { EnhancedInvoiceTable } from "@/components/invoices-payments/EnhancedInvoiceTable";
+import EnhancedInvoiceTable from "@/components/invoices-payments/EnhancedInvoiceTable";
 
 export default function InvoicesAndPayments() {
   return (
@@ -8,7 +8,7 @@ export default function InvoicesAndPayments() {
         <h1 className="text-2xl font-bold">Invoices and Payments</h1>
         <InvoiceUploadButtons />
       </div>
-      <EnhancedInvoiceTable />
+      <EnhancedInvoiceTable invoices={[]} />
     </div>
   );
 }

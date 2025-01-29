@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import { UserManagementForm } from "@/components/users/UserManagementForm";
+import UserManagementForm from "@/components/users/UserManagementForm";
 import UsersList from "@/components/users/UsersList";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
@@ -56,7 +56,7 @@ export default function UserManagement() {
             <Button>Add New User</Button>
           </DialogTrigger>
           <DialogContent className="max-w-4xl">
-            <UserManagementForm />
+            <UserManagementForm onClose={() => setIsCreateDialogOpen(false)} onSubmit={() => {}} />
           </DialogContent>
         </Dialog>
       </div>

@@ -12,18 +12,43 @@ import { AddWidgetDialog } from "@/components/dashboard/AddWidgetDialog";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { toast } from "sonner";
 import { FinancialYearSelector } from "@/components/FinancialYearSelector";
+import { useFinancialYear } from "@/contexts/FinancialYearContext";
+import { Skeleton } from "@/components/ui/skeleton";
+
+import { FinancialYearSelector } from "@/components/FinancialYearSelector";
+import { useFinancialYear } from "@/contexts/FinancialYearContext";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const Dashboard = () => {
+  const { selectedYear, isLoading } = useFinancialYear();
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Dashboard</h2>
-        <FinancialYearSelector />
+        <h2 className="text-2xl font-bold text-foreground">Dashboard</h2>
+        {isLoading ? (
+          <Skeleton className="h-8 w-48" />
+        ) : (
+          <FinancialYearSelector />
+        )}
       </div>
-      {/* Existing dashboard components */}
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {/* Example Card */}
+        <div className="dashboard-card">
+          <h3 className="text-lg font-semibold mb-4">
+            Financial Year Summary - {selectedYear}
+          </h3>
+          {/* Add your content here */}
+        </div>
+        
+        {/* Add more dashboard components */}
+      </div>
     </div>
   );
 };
+
+export default Dashboard;
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
 interface LayoutItem {

@@ -106,6 +106,11 @@ const Dashboard = () => {
     <div className="space-y-8 p-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Dashboard</h1>
+        {isLoading ? (
+          <Skeleton className="h-8 w-48" />
+        ) : (
+          <FinancialYearSelector />
+        )}
         <Button onClick={() => setIsAddWidgetOpen(true)}>
           <PlusCircle className="mr-2 h-4 w-4" />
           Add Widget

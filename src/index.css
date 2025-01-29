@@ -4,26 +4,26 @@
  
 @layer base {
   :root {
-    --background: 225 25% 11%; /* Dark background */
-    --foreground: 210 40% 98%; /* Light text */
-    --card: 225 25% 11%; /* Dark card background */
-    --card-foreground: 210 40% 98%; /* Light card text */
-    --popover: 225 25% 11%; /* Dark popover background */
-    --popover-foreground: 210 40% 98%; /* Light popover text */
-    --primary: 210 70% 40%; /* Primary color */
-    --primary-foreground: 210 40% 98%; /* Primary text color */
-    --secondary: 210 40% 20%; /* Secondary color */
-    --secondary-foreground: 210 40% 98%; /* Secondary text color */
-    --muted: 210 40% 20%; /* Muted color */
-    --muted-foreground: 210 40% 60%; /* Muted text color */
-    --accent: 210 40% 20%; /* Accent color */
-    --accent-foreground: 210 40% 98%; /* Accent text color */
-    --destructive: 0 62.8% 30.6%; /* Destructive color */
-    --destructive-foreground: 210 40% 98%; /* Destructive text color */
-    --border: 210 40% 20%; /* Border color */
-    --input: 210 40% 20%; /* Input background */
-    --ring: 224.3 76.3% 48%; /* Ring color */
-    --radius: 0.5rem; /* Radius for rounded corners */
+    --background: 0 0% 100%;         /* White */
+    --foreground: 222.2 47.4% 11.2%; /* Dark navy */
+    --card: 0 0% 100%;               /* White */
+    --card-foreground: 222.2 47.4% 11.2%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 47.4% 11.2%;
+    --primary: 210 40% 48%;          /* Professional blue */
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 20% 96%;        /* Light gray */
+    --secondary-foreground: 222.2 47.4% 11.2%;
+    --muted: 210 20% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 210 40% 90%;           /* Very light blue */
+    --accent-foreground: 222.2 47.4% 11.2%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214.3 20% 85%;         /* Light gray border */
+    --input: 214.3 20% 85%;
+    --ring: 210 40% 48%;             /* Matching primary */
+    --radius: 0.5rem;
   }
 }
 
@@ -32,38 +32,48 @@
     @apply border-border;
   }
   body {
-    @apply bg-[#15161B] text-foreground overflow-auto;
+    @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
   }
 }
 
 @layer components {
   .dashboard-card {
-    @apply bg-[#1A1F2C] rounded-lg border border-[#403E43] p-4 shadow-lg hover:border-[#8B5CF6]/50 transition-colors overflow-auto relative;
+    @apply bg-card rounded-xl border border-border p-6 shadow-sm hover:shadow-md transition-shadow;
   }
-  .dashboard-highlight {
-    @apply bg-[#221F26];
-  }
+  
   .dashboard-table {
-    @apply w-full border-collapse;
+    @apply w-full border-collapse rounded-lg overflow-hidden;
+    
+    th {
+      @apply bg-muted/50 text-left p-4 text-sm font-semibold text-foreground;
+    }
+    
+    td {
+      @apply border-t border-border p-4 text-sm text-foreground/90;
+    }
+    
+    tr:hover {
+      @apply bg-muted/30;
+    }
   }
-  .dashboard-table th {
-    @apply bg-[#221F26] text-left p-3 text-sm font-medium text-gray-300;
-  }
-  .dashboard-table td {
-    @apply border-t border-[#403E43] p-3 text-sm;
-  }
-  .dashboard-table tr:hover {
-    @apply bg-[#221F26]/50;
-  }
+
   .stat-card {
-    @apply dashboard-card flex flex-col gap-2;
+    @apply dashboard-card flex flex-col gap-3 p-6;
+    
+    .stat-value {
+      @apply text-3xl font-bold text-foreground;
+    }
+    
+    .stat-label {
+      @apply text-sm text-muted-foreground;
+    }
   }
-  .stat-value {
-    @apply text-2xl font-bold text-white;
+
+  .react-grid-item {
+    @apply bg-card border border-border rounded-xl p-4;
   }
-  .stat-label {
-    @apply text-sm text-gray-400;
-  }
+}
 
   /* Grid Layout Styles */
   .react-grid-item {

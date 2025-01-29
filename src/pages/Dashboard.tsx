@@ -8,33 +8,15 @@ import { SalesOverview } from "@/components/dashboard/SalesOverview";
 import { PaymentTracking } from "@/components/dashboard/PaymentTracking";
 import { PaymentReminders } from "@/components/dashboard/PaymentReminders";
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, Wrench, Check } from "lucide-react";
 import { AddWidgetDialog } from "@/components/dashboard/AddWidgetDialog";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { toast } from "sonner";
 import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 import { FinancialYearProvider, useFinancialYear } from "@/contexts/FinancialYearContext";
 import { useAuth } from "@/hooks/use-auth";
-import { useAuth } from "@/hooks/use-auth";
+import { supabase } from "@/integrations/supabase/client";
 
-const Dashboard = () => {
-  const { user } = useAuth();
-
-  return (
-    <div>
-      <h1>Dashboard</h1>
-      {user && (
-        <div>
-          <p>User ID: {user.id}</p>
-          <p>User Name: {user.name}</p>
-          <p>User Role: {user.role}</p>
-        </div>
-      )}
-    </div>
-  );
-};
-
-export default Dashboard;
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
 interface LayoutItem {
@@ -108,9 +90,22 @@ const Dashboard = () => {
     toast.success("Widget removed successfully");
   };
 
-  const handleApplyChanges = () => {
+  const handleApplyChanges = async () => {
     setIsEditing(false);
-    toast.success("Changes applied successfully");
+
+    try {
+      const { error } = await supabase.from("dashboard_config").upsert({
+        userId: user.id,
+        layout: JSON.stringify(layout),
+        widgets: JSON.stringify(widgets)
+      });
+
+      if (error) throw error;
+
+      toast.success("Changes applied successfully");
+    } catch (error) {
+      toast.error("Failed to apply changes");
+    }
   };
 
   const renderWidget = (widget: DashboardWidget) => {
@@ -136,12 +131,11 @@ const Dashboard = () => {
           <FinancialYearSelector />
           {user?.role === "IT admin" && (
             <Button onClick={() => setIsAddWidgetOpen(true)}>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Add Widget
+              {isEditing ? <Check className="h-4 w-4" /> : <PlusCircle className="h-4 w-4" />}
             </Button>
           )}
           <Button onClick={() => setIsEditing(!isEditing)}>
-            {isEditing ? "Apply Changes" : "Edit Layout"}
+            <Wrench className="h-4 w-4" />
           </Button>
         </div>
 

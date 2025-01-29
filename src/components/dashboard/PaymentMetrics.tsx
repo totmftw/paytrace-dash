@@ -1,3 +1,4 @@
+// PaymentMetrics.tsx
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,18 +15,20 @@ import {
 import { PaymentDetailsTable } from "./PaymentDetailsTable";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 
-export const PaymentMetrics = () => {
+const PaymentMetrics = () => {
   const { selectedYear } = useFinancialYear();
   const [showPendingPayments, setShowPendingPayments] = useState(false);
   const [showOverduePayments, setShowOverduePayments] = useState(false);
   const [showOrders, setShowOrders] = useState(false);
 
+  const getFinancialYearStart = (year: number) => new Date(`${year}-04-01`).toISOString();
+  const getFinancialYearEnd = (year: number) => new Date(`${year + 1}-03-31`).toISOString();
+
   const { data: metrics } = useQuery({
     queryKey: ["payment-metrics", selectedYear],
     queryFn: async () => {
-      const year = parseInt(selectedYear.split('-')[0]);
-      const startDate = new Date(year, 3, 1).toISOString(); // April 1st
-      const endDate = new Date(year + 1, 2, 31).toISOString(); // March 31st
+      const startDate = getFinancialYearStart(selectedYear);
+      const endDate = getFinancialYearEnd(selectedYear);
 
       const { data: invoices, error } = await supabase
         .from("invoiceTable")
@@ -66,7 +69,7 @@ export const PaymentMetrics = () => {
           overduePayments.amount += Number(amount);
           overduePayments.count++;
           overduePayments.invoices.push(invoice);
-        } else {
+        } else if (!invoice.invMarkcleared) {
           pendingPayments.amount += Number(amount);
           pendingPayments.count++;
           pendingPayments.invoices.push(invoice);
@@ -165,7 +168,7 @@ export const PaymentMetrics = () => {
           </DialogHeader>
           <div className="flex-1 overflow-auto">
             <PaymentDetailsTable 
-              data={metrics?.[0]?.invoices || []}
+              data={metrics?.[0].invoices || []}
             />
           </div>
         </DialogContent>
@@ -188,7 +191,7 @@ export const PaymentMetrics = () => {
           </DialogHeader>
           <div className="flex-1 overflow-auto">
             <PaymentDetailsTable 
-              data={metrics?.[1]?.invoices || []}
+              data={metrics?.[1].invoices || []}
             />
           </div>
         </DialogContent>
@@ -219,3 +222,5 @@ export const PaymentMetrics = () => {
     </>
   );
 };
+
+export default PaymentMetrics;

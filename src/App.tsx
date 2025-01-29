@@ -21,9 +21,9 @@ const queryClient = new QueryClient({
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <FinancialYearProvider>
-        <Router>
-          <AuthProvider>
+      <Router>
+        <AuthProvider>
+          <FinancialYearProvider>
             <SidebarProvider>
               <Routes>
                 <Route path="/login" element={<Login />} />
@@ -34,9 +34,9 @@ function App() {
                 </Route>
               </Routes>
             </SidebarProvider>
-          </AuthProvider>
-        </Router>
-      </FinancialYearProvider>
+          </FinancialYearProvider>
+        </AuthProvider>
+      </Router>
     </QueryClientProvider>
   );
 }

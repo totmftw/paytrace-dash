@@ -24,7 +24,7 @@ export const AppLayout = () => {
       <main className="flex-1 overflow-hidden">
         <div className="flex h-16 items-center justify-between gap-4 border-b px-6 bg-card">
           <div className="flex items-center gap-4">
-            <SidebarTrigger />
+            <SidebarTrigger onClick={toggleSidebar} />
             <h1 className="text-xl font-semibold text-foreground">BI Suite</h1>
           </div>
           <div className="flex items-center gap-4">

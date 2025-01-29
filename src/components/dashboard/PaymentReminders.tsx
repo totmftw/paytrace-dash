@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,10 +5,12 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export function PaymentReminders() {
-  const [financialYear, setFinancialYear] = useState(new Date().getFullYear());
+interface PaymentRemindersProps {
+  financialYear: number;
+}
+
+export function PaymentReminders({ financialYear }: PaymentRemindersProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -153,21 +154,6 @@ export function PaymentReminders() {
     <Card>
       <CardHeader>
         <CardTitle>Payment Reminders</CardTitle>
-        <Select
-          value={financialYear.toString()}
-          onValueChange={(value) => setFinancialYear(parseInt(value))}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select Financial Year" />
-          </SelectTrigger>
-          <SelectContent>
-            {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map(year => (
-              <SelectItem key={year} value={year.toString()}>
-                {year}-{year + 1}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">

@@ -4,12 +4,12 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recha
 import { formatCurrency } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useState } from "react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export function SalesOverview() {
-  const [financialYear, setFinancialYear] = useState(new Date().getFullYear());
+interface SalesOverviewProps {
+  financialYear: number;
+}
 
+export function SalesOverview({ financialYear }: SalesOverviewProps) {
   const getFinancialYearStart = (year: number) => new Date(`${year}-04-01`).toISOString();
   const getFinancialYearEnd = (year: number) => new Date(`${year + 1}-03-31`).toISOString();
 
@@ -28,11 +28,11 @@ export function SalesOverview() {
       if (error) throw error;
 
       const monthlyData = {};
-
+      
       invoices?.forEach(invoice => {
         const date = new Date(invoice.invDate);
         const monthKey = date.toLocaleString('default', { month: 'short' });
-
+        
         if (!monthlyData[monthKey]) {
           monthlyData[monthKey] = {
             month: monthKey,
@@ -61,27 +61,12 @@ export function SalesOverview() {
   });
 
   return (
-    <Card>
+    <>
       <CardHeader>
         <CardTitle>Sales Overview</CardTitle>
-        <Select
-          value={financialYear.toString()}
-          onValueChange={(value) => setFinancialYear(parseInt(value))}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select Financial Year" />
-          </SelectTrigger>
-          <SelectContent>
-            {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map(year => (
-              <SelectItem key={year} value={year.toString()}>
-                {year}-{year + 1}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </CardHeader>
       <CardContent>
-        <div className="w-full h-full">
+        <div className="h-[250px]">
           <ChartContainer
             config={{
               sales: { color: "#22c55e" },
@@ -126,6 +111,6 @@ export function SalesOverview() {
           </ChartContainer>
         </div>
       </CardContent>
-    </Card>
+    </>
   );
 }

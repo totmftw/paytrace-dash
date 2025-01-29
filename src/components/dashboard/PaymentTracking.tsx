@@ -1,15 +1,15 @@
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertCircle, CheckCircle2, Clock } from "lucide-react";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export function PaymentTracking() {
-  const [financialYear, setFinancialYear] = useState(new Date().getFullYear());
+interface PaymentTrackingProps {
+  financialYear: number;
+}
 
+export function PaymentTracking({ financialYear }: PaymentTrackingProps) {
   const getFinancialYearStart = (year: number) => new Date(`${year}-04-01`).toISOString();
   const getFinancialYearEnd = (year: number) => new Date(`${year + 1}-03-31`).toISOString();
 
@@ -60,21 +60,6 @@ export function PaymentTracking() {
     <Card>
       <CardHeader>
         <CardTitle>Payment Tracking</CardTitle>
-        <Select
-          value={financialYear.toString()}
-          onValueChange={(value) => setFinancialYear(parseInt(value))}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select Financial Year" />
-          </SelectTrigger>
-          <SelectContent>
-            {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map(year => (
-              <SelectItem key={year} value={year.toString()}>
-                {year}-{year + 1}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-[400px] pr-4">

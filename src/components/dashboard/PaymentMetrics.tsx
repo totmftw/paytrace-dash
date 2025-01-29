@@ -24,8 +24,8 @@ export const PaymentMetrics = () => {
     queryKey: ["payment-metrics", selectedYear],
     queryFn: async () => {
       const year = parseInt(selectedYear.split('-')[0]);
-      const startDate = new Date(year, 3, 1).toISOString(); // April 1st
-      const endDate = new Date(year + 1, 2, 31).toISOString(); // March 31st
+      const startDate = new Date(year, 3, 1); // April 1st
+      const endDate = new Date(year + 1, 2, 31); // March 31st
 
       const { data: invoices, error } = await supabase
         .from("invoiceTable")
@@ -36,8 +36,9 @@ export const PaymentMetrics = () => {
             custCreditperiod
           )
         `)
-        .gte("invDate", startDate)
-        .lte("invDate", endDate);
+        .gte('invDate', startDate.toISOString().split('T')[0])
+        .lte('invDate', endDate.toISOString().split('T')[0])
+        .order('invDuedate', { ascending: true });
 
       if (error) throw error;
 

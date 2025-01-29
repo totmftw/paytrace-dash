@@ -8,17 +8,8 @@ import { ExcelUpload } from "@/components/dashboard/ExcelUpload";
 import { InvoiceTable } from "@/components/invoices/InvoiceTable";
 import { columns, type Invoice } from "@/components/invoices/InvoiceColumns";
 import type { PostgrestError } from "@supabase/supabase-js";
-const Invoices = () => {
-  return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-foreground">Invoices</h2>
-      {/* Add invoices content here */}
-    </div>
-  );
-};
 
-export default Invoices;
-const Invoices = () => {
+export default function Invoices() {
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -140,6 +131,4 @@ const Invoices = () => {
       </div>
     </div>
   );
-};
-
-export default Invoices;
+}

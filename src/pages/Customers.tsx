@@ -1,21 +1,12 @@
+import { useState } from "react";
 import { CustomerExcelUpload } from "@/components/customers/CustomerExcelUpload";
 import { CustomerFilters, type CustomerFilters as FilterType } from "@/components/customers/CustomerFilters";
 import { CustomerTable } from "@/components/customers/CustomerTable";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
-import { useState } from "react";
 import { CustomerDialog } from "@/components/customers/CustomerDialog";
-const Customers = () => {
-  return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold">Customers</h2>
-      {/* Add customer content here */}
-    </div>
-  );
-};
 
-export default Customers;
-const Customers = () => {
+export default function Customers() {
   const [activeFilters, setActiveFilters] = useState<FilterType>({
     location: "",
     type: "",
@@ -49,12 +40,9 @@ const Customers = () => {
           onClose={() => setShowAddDialog(false)}
           onSave={() => {
             setShowAddDialog(false);
-            // Refresh the table
           }}
         />
       )}
     </div>
   );
-};
-
-export default Customers;
+}

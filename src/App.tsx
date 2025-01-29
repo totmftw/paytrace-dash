@@ -2,6 +2,13 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import { AppLayout } from "./components/AppLayout";
 import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
+import Customers from "./pages/Customers";
+import Products from "./pages/Products";
+import Invoices from "./pages/Invoices";
+import Payments from "./pages/Payments";
+import UserManagement from "./pages/UserManagement";
+import UserProfiles from "./pages/UserProfiles";
+import WhatsappReminders from "./pages/WhatsappReminders";
 import { AuthProvider } from "./contexts/AuthContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SidebarProvider } from "./components/ui/sidebar";
@@ -48,7 +55,5 @@ function App() {
     </QueryClientProvider>
   );
 }
-
-export default App;
 
 export default App;

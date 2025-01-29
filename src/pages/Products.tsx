@@ -21,17 +21,8 @@ import {
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-const Products = () => {
-  return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-foreground">Products</h2>
-      {/* Add products content here */}
-    </div>
-  );
-};
 
-export default Products;
-const Products = () => {
+export default function Products() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const { toast } = useToast();
 
@@ -262,6 +253,4 @@ const Products = () => {
       </Table>
     </div>
   );
-};
-
-export default Products;
+}

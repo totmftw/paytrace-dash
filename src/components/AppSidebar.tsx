@@ -11,10 +11,6 @@ import {
   ChevronLeft,
   ChevronRight
 } from "lucide-react";
-// src/components/AppSidebar.tsx
-import { Link } from "react-router-dom";
-import { Button } from "./ui/button";
-import { LayoutDashboard, Users, Package, FileText, CreditCard, Bell, User } from "lucide-react";
 
 export const AppSidebar = () => {
   const navigationItems = [

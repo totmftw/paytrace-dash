@@ -3,14 +3,16 @@ import { AppSidebar } from "./AppSidebar";
 import { SidebarTrigger } from "./ui/sidebar";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "./ui/button";
-import { LogOut, User } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 import { Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback } from "./ui/avatar";
+import { useSidebar } from "./ui/sidebar";
 
 export const AppLayout = () => {
   const { user, signOut } = useAuth();
   const { isTransitioning } = useFinancialYear();
+  const { state } = useSidebar();
 
   return (
     <div className="min-h-screen flex w-full bg-background">
@@ -31,7 +33,7 @@ export const AppLayout = () => {
               <div className="flex flex-col">
                 <span className="text-sm font-medium text-foreground">{user?.full_name}</span>
                 <span className="text-xs text-muted-foreground">
-                  {user?.role.replace('_', ' ')}
+                  {user?.role?.replace('_', ' ')}
                 </span>
               </div>
             </div>

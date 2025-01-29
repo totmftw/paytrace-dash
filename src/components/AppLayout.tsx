@@ -1,6 +1,6 @@
+// AppLayout.tsx
 import { Outlet } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
-import { SidebarTrigger } from "./ui/sidebar";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "./ui/button";
 import { LogOut } from "lucide-react";

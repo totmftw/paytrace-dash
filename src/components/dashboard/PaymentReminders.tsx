@@ -163,28 +163,35 @@ export function PaymentReminders() {
                   </p>
                   {getReminderStatus(invoice)}
                 </div>
-                <Button
-                  onClick={() => {
-                    if (!invoice.customerMaster?.custWhatsapp) {
-                      toast({
-                        variant: "destructive",
-                        title: "Error",
-                        description: "No WhatsApp number available for this customer.",
-                      });
-                      return;
-                    }
+                <div>
+                  {getReminderStatus(invoice) && (
+                    <p className="text-xs text-muted-foreground">
+                      Previous reminders sent: {getReminderStatus(invoice)?.props.children}
+                    </p>
+                  )}
+                  <Button
+                    onClick={() => {
+                      if (!invoice.customerMaster?.custWhatsapp) {
+                        toast({
+                          variant: "destructive",
+                          title: "Error",
+                          description: "No WhatsApp number available for this customer.",
+                        });
+                        return;
+                      }
 
-                    sendReminderMutation.mutate({
-                      invId: invoice.invId,
-                      phone: String(invoice.customerMaster.custWhatsapp),
-                      message: getReminderMessage(invoice, reminderNumber),
-                      reminderNumber,
-                    });
-                  }}
-                  disabled={sendReminderMutation.isPending}
-                >
-                  Send Reminder
-                </Button>
+                      sendReminderMutation.mutate({
+                        invId: invoice.invId,
+                        phone: String(invoice.customerMaster.custWhatsapp),
+                        message: getReminderMessage(invoice, reminderNumber),
+                        reminderNumber,
+                      });
+                    }}
+                    disabled={sendReminderMutation.isPending}
+                  >
+                    Send Reminder
+                  </Button>
+                </div>
               </div>
             );
           })}

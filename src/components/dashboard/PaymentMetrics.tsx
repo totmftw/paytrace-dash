@@ -19,6 +19,7 @@ const PaymentMetrics = () => {
   const { selectedYear } = useFinancialYear();
   const [showPendingPayments, setShowPendingPayments] = useState(false);
   const [showOverduePayments, setShowOverduePayments] = useState(false);
+  const [showOrders, setShowOrders] = useState(false);
 
   const getFinancialYearStart = (year: number) => new Date(`${year}-04-01`).toISOString();
   const getFinancialYearEnd = (year: number) => new Date(`${year + 1}-03-31`).toISOString();
@@ -38,7 +39,6 @@ const PaymentMetrics = () => {
             custCreditperiod
           )
         `)
-        .eq("invMarkcleared", false)
         .gte("invDate", startDate)
         .lte("invDate", endDate);
 
@@ -56,6 +56,11 @@ const PaymentMetrics = () => {
         invoices: []
       };
 
+      const orders = {
+        count: 0,
+        invoices: []
+      };
+
       invoices?.forEach(invoice => {
         const dueDate = new Date(invoice.invDuedate);
         const amount = invoice.invTotal;
@@ -69,6 +74,9 @@ const PaymentMetrics = () => {
           pendingPayments.count++;
           pendingPayments.invoices.push(invoice);
         }
+
+        orders.count++;
+        orders.invoices.push(invoice);
       });
 
       return [
@@ -86,6 +94,11 @@ const PaymentMetrics = () => {
           count: overduePayments.count,
           invoices: overduePayments.invoices
         },
+        {
+          title: "Orders",
+          count: orders.count,
+          invoices: orders.invoices
+        }
       ];
     },
     refetchInterval: 300000,
@@ -93,34 +106,42 @@ const PaymentMetrics = () => {
 
   return (
     <>
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-3">
         {metrics?.map((metric, index) => (
           <Card key={metric.title}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-medium text-black">
                 {metric.title}
               </CardTitle>
-              <AlertCircle
-                className={`h-4 w-4 ${
-                  metric.status === "warning"
-                    ? "text-yellow-500"
-                    : "text-red-500"
-                }`}
-              />
+              {metric.status && (
+                <AlertCircle
+                  className={`h-4 w-4 ${
+                    metric.status === "warning"
+                      ? "text-yellow-500"
+                      : "text-red-500"
+                  }`}
+                />
+              )}
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold text-black">
-                {formatCurrency(metric.amount)}
+                {metric.title === "Orders" ? metric.count : formatCurrency(metric.amount)}
               </div>
               <div className="flex items-center justify-between">
-                <p className="text-xs text-muted-foreground">
-                  {metric.count} invoices
-                </p>
+                {metric.title !== "Orders" && (
+                  <p className="text-xs text-muted-foreground">
+                    {metric.count} invoices
+                  </p>
+                )}
                 <Button 
                   variant="ghost" 
                   size="sm" 
                   className="h-8 w-8 p-0"
-                  onClick={() => index === 0 ? setShowPendingPayments(true) : setShowOverduePayments(true)}
+                  onClick={() => {
+                    if (index === 0) setShowPendingPayments(true);
+                    else if (index === 1) setShowOverduePayments(true);
+                    else if (index === 2) setShowOrders(true);
+                  }}
                 >
                   <ArrowRight className="h-4 w-4" />
                 </Button>
@@ -171,6 +192,29 @@ const PaymentMetrics = () => {
           <div className="flex-1 overflow-auto">
             <PaymentDetailsTable 
               data={metrics?.[1].invoices || []}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog 
+        open={showOrders} 
+        onOpenChange={setShowOrders}
+      >
+        <DialogContent className="max-w-[95vw] h-[90vh] flex flex-col">
+          <DialogHeader className="flex flex-row items-center justify-between">
+            <DialogTitle className="text-black">Orders</DialogTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowOrders(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto">
+            <PaymentDetailsTable 
+              data={metrics?.[2].invoices || []}
             />
           </div>
         </DialogContent>

@@ -14,7 +14,27 @@ import { useLocalStorage } from "@/hooks/use-local-storage";
 import { toast } from "sonner";
 import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 import { FinancialYearProvider, useFinancialYear } from "@/contexts/FinancialYearContext";
+import { useAuth } from "@/hooks/use-auth";
+import { useAuth } from "@/hooks/use-auth";
 
+const Dashboard = () => {
+  const { user } = useAuth();
+
+  return (
+    <div>
+      <h1>Dashboard</h1>
+      {user && (
+        <div>
+          <p>User ID: {user.id}</p>
+          <p>User Name: {user.name}</p>
+          <p>User Role: {user.role}</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Dashboard;
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
 interface LayoutItem {
@@ -41,7 +61,7 @@ const defaultLayout: LayoutItem[] = [
 ];
 
 const defaultWidgets: DashboardWidget[] = [
-  { id: "payment-metrics", type: "payment-metrics", title: "Payment Metrics" },
+  { id: "payment-metrics", type: "payment-metrics", title: "Metrics" },
   { id: "sales-overview", type: "sales-overview", title: "Sales Overview" },
   { id: "payment-tracking", type: "payment-tracking", title: "Payment Tracking" },
   { id: "payment-reminders", type: "payment-reminders", title: "Payment Reminders" }
@@ -51,6 +71,8 @@ const Dashboard = () => {
   const [layout, setLayout] = useLocalStorage("dashboard-layout", defaultLayout);
   const [widgets, setWidgets] = useLocalStorage("dashboard-widgets", defaultWidgets);
   const [isAddWidgetOpen, setIsAddWidgetOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const { user } = useAuth();
 
   const handleLayoutChange = (newLayout: LayoutItem[]) => {
     setLayout(newLayout);
@@ -86,6 +108,11 @@ const Dashboard = () => {
     toast.success("Widget removed successfully");
   };
 
+  const handleApplyChanges = () => {
+    setIsEditing(false);
+    toast.success("Changes applied successfully");
+  };
+
   const renderWidget = (widget: DashboardWidget) => {
     switch (widget.type) {
       case "payment-metrics":
@@ -107,9 +134,14 @@ const Dashboard = () => {
         <div className="flex items-center justify-between">
           <h1 className="text-3xl font-bold">Dashboard</h1>
           <FinancialYearSelector />
-          <Button onClick={() => setIsAddWidgetOpen(true)}>
-            <PlusCircle className="mr-2 h-4 w-4" />
-            Add Widget
+          {user?.role === "IT admin" && (
+            <Button onClick={() => setIsAddWidgetOpen(true)}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Add Widget
+            </Button>
+          )}
+          <Button onClick={() => setIsEditing(!isEditing)}>
+            {isEditing ? "Apply Changes" : "Edit Layout"}
           </Button>
         </div>
 
@@ -120,8 +152,8 @@ const Dashboard = () => {
           cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
           rowHeight={60}
           onLayoutChange={(_, layouts) => handleLayoutChange(layouts.lg)}
-          isDraggable
-          isResizable
+          isDraggable={isEditing}
+          isResizable={isEditing}
           draggableHandle=".drag-handle"
         >
           {widgets.map((widget) => (

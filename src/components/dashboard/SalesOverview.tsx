@@ -99,6 +99,14 @@ const SalesOverview = () => {
                             {formatCurrency(payload[1]?.value as number)}
                           </span>
                         </div>
+                        <div className="flex flex-col">
+                          <span className="text-[0.70rem] uppercase text-muted-foreground">
+                            Overdue
+                          </span>
+                          <span className="font-bold text-muted-foreground">
+                            {formatCurrency(payload[2]?.value as number)}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   );

@@ -3,13 +3,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
-type LedgerEntry = {
+// Separate the base type to prevent circular references
+type BaseLedgerEntry = {
   id: number;
   date: string;
   description: string;
   amount: number;
-  balance: number;
   transactionType: 'invoice' | 'payment';
+};
+
+// Extend the base type to include the calculated balance
+type LedgerEntry = BaseLedgerEntry & {
+  balance: number;
 };
 
 interface CustomerLedgerProps {
@@ -39,7 +44,7 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
             .order("paymentDate")
         ]);
 
-        const entries: LedgerEntry[] = [];
+        const entries: BaseLedgerEntry[] = [];
 
         // Process invoices
         if (invoicesResult.data) {
@@ -49,7 +54,6 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
               date: format(new Date(inv.invDate), 'yyyy-MM-dd'),
               description: `Invoice #${inv.invId}`,
               amount: inv.invTotal,
-              balance: 0,
               transactionType: 'invoice'
             });
           });
@@ -63,7 +67,6 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
               date: format(new Date(pay.paymentDate), 'yyyy-MM-dd'),
               description: `Payment #${pay.paymentId}`,
               amount: pay.amount,
-              balance: 0,
               transactionType: 'payment'
             });
           });
@@ -72,14 +75,14 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
         // Sort by date and calculate running balance
         entries.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
         let runningBalance = 0;
-        entries.forEach(entry => {
+        const entriesWithBalance: LedgerEntry[] = entries.map(entry => {
           runningBalance = entry.transactionType === 'invoice' 
             ? runningBalance + entry.amount 
             : runningBalance - entry.amount;
-          entry.balance = runningBalance;
+          return { ...entry, balance: runningBalance };
         });
 
-        setLedgerEntries(entries);
+        setLedgerEntries(entriesWithBalance);
       } catch (error) {
         console.error("Error fetching ledger entries:", error);
       } finally {

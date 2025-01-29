@@ -66,57 +66,27 @@ const SalesOverview = () => {
         <CardTitle>Sales Overview</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-full">
-          <ChartContainer
-            config={{
-              sales: { color: "#22c55e" },
-              pending: { color: "#eab308" },
-              overdue: { color: "#ef4444" },
-            }}
-          >
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={salesData || []}>
-                <XAxis dataKey="month" />
-                <YAxis tickFormatter={(value) => `₹${value / 1000}k`} />
-                <Tooltip content={({ active, payload }) => {
-                  if (!active || !payload) return null;
-                  return (
-                    <div className="rounded-lg border bg-background p-2 shadow-sm">
-                      <div className="grid grid-cols-3 gap-2">
-                        <div className="flex flex-col">
-                          <span className="text-[0.70rem] uppercase text-muted-foreground">
-                            Sales
-                          </span>
-                          <span className="font-bold text-muted-foreground">
-                            {formatCurrency(payload[0]?.value as number)}
-                          </span>
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-[0.70rem] uppercase text-muted-foreground">
-                            Pending
-                          </span>
-                          <span className="font-bold text-muted-foreground">
-                            {formatCurrency(payload[1]?.value as number)}
-                          </span>
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="text-[0.70rem] uppercase text-muted-foreground">
-                            Overdue
-                          </span>
-                          <span className="font-bold text-muted-foreground">
-                            {formatCurrency(payload[2]?.value as number)}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                }} />
-                <Bar dataKey="sales" fill="var(--color-sales)" />
-                <Bar dataKey="pending" fill="var(--color-pending)" />
-                <Bar dataKey="overdue" fill="var(--color-overdue)" />
-              </BarChart>
-            </ResponsiveContainer>
-          </ChartContainer>
+        <div className="h-full relative">
+          {salesData && (
+            <ChartContainer
+              config={{
+                sales: { color: "#22c55e" },
+                pending: { color: "#eab308" },
+                overdue: { color: "#ef4444" },
+              }}
+            >
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={salesData}>
+                  <XAxis dataKey="month" />
+                  <YAxis tickFormatter={(value) => `₹${value / 1000}k`} />
+                  <Tooltip formatter={(value) => formatCurrency(value)} />
+                  <Bar dataKey="sales" fill="var(--color-sales)" />
+                  <Bar dataKey="pending" fill="var(--color-pending)" />
+                  <Bar dataKey="overdue" fill="var(--color-overdue)" />
+                </BarChart>
+              </ResponsiveContainer>
+            </ChartContainer>
+          )}
         </div>
       </CardContent>
     </>

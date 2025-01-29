@@ -55,9 +55,8 @@ const Dashboard = () => {
   const [widgets, setWidgets] = useLocalStorage("dashboard-widgets", defaultWidgets);
   const [isAddWidgetOpen, setIsAddWidgetOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [isConfigured, setIsConfigured] = useState(false);
-  const { user } = useAuth();
   const [isApplyDialogOpen, setIsApplyDialogOpen] = useState(false);
+  const { user } = useAuth();
 
   const handleLayoutChange = (newLayout: LayoutItem[]) => {
     setLayout(newLayout);
@@ -95,7 +94,6 @@ const Dashboard = () => {
 
   const handleApplyChanges = async () => {
     setIsEditing(false);
-    setIsConfigured(true);
 
     try {
       const { error } = await supabase.from("dashboard_config").upsert({
@@ -169,7 +167,7 @@ const Dashboard = () => {
                   Remove
                 </Button>
               </div>
-              <div className="overflow-auto h-[calc(100%-4rem)]">
+              <div className="overflow-auto h-full">
                 {renderWidget(widget)}
               </div>
             </div>

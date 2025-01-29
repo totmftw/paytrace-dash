@@ -7,7 +7,16 @@ import UserManagementForm from "@/components/users/UserManagementForm";
 import UsersList from "@/components/users/UsersList";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+const UserManagement = () => {
+  return (
+    <div className="space-y-4">
+      <h2 className="text-2xl font-bold text-foreground">User Management</h2>
+      {/* Add user management content here */}
+    </div>
+  );
+};
 
+export default UserManagement;
 export default function UserManagement() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const { user } = useAuth();

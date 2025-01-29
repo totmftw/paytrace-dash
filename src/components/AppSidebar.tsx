@@ -11,7 +11,42 @@ import {
   ChevronLeft,
   ChevronRight
 } from "lucide-react";
+// src/components/AppSidebar.tsx
+import { Link } from "react-router-dom";
+import { Button } from "./ui/button";
+import { LayoutDashboard, Users, Package, FileText, CreditCard, Bell, User } from "lucide-react";
 
+export const AppSidebar = () => {
+  const navigationItems = [
+    { path: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+    { path: "/customers", icon: Users, label: "Customers" },
+    { path: "/products", icon: Package, label: "Products" },
+    { path: "/invoices", icon: FileText, label: "Invoices" },
+    { path: "/payments", icon: CreditCard, label: "Payments" },
+    { path: "/users", icon: User, label: "Users" },
+    { path: "/whatsapp-reminders", icon: Bell, label: "Reminders" },
+  ];
+
+  return (
+    <div className="w-64 border-r bg-card h-screen p-4">
+      <nav className="space-y-1">
+        {navigationItems.map((item) => (
+          <Button
+            key={item.path}
+            asChild
+            variant="ghost"
+            className="w-full justify-start"
+          >
+            <Link to={item.path}>
+              <item.icon className="h-4 w-4 mr-2" />
+              {item.label}
+            </Link>
+          </Button>
+        ))}
+      </nav>
+    </div>
+  );
+};
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Customers", href: "/customers", icon: Users },

@@ -27,7 +27,15 @@ function App() {
                 <Route path="/" element={<AppLayout />}>
                   <Route index element={<Navigate to="/dashboard" replace />} />
                   <Route path="dashboard" element={<Dashboard />} />
-                  {/* Other routes */}
+                  <Route path="customers" element={<Customers />} />
+                  <Route path="products" element={<Products />} />
+                  <Route path="invoices" element={<Invoices />} />
+                  <Route path="payments" element={<Payments />} />
+                  <Route path="users" element={<UserManagement />} />
+                  <Route path="user-profiles" element={<UserProfiles />} />
+                  <Route path="whatsapp-reminders" element={<WhatsappReminders />} />
+                  {/* Add 404 fallback */}
+                  <Route path="*" element={<Navigate to="/dashboard" replace />} />
                 </Route>
               </Routes>
             </SidebarProvider>
@@ -37,5 +45,7 @@ function App() {
     </QueryClientProvider>
   );
 }
+
+export default App;
 
 export default App;

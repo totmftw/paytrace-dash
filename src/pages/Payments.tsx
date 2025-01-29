@@ -23,7 +23,16 @@ import {
 } from "@tanstack/react-table";
 import { Input } from "@/components/ui/input";
 import { DropdownMenu, DropdownMenuCheckboxItem, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+const Payments = () => {
+  return (
+    <div className="space-y-4">
+      <h2 className="text-2xl font-bold text-foreground">Payments</h2>
+      {/* Add payments content here */}
+    </div>
+  );
+};
 
+export default Payments;
 export default function Payments() {
   const [selectedCustomer, setSelectedCustomer] = useState<{
     id: number;

@@ -5,7 +5,16 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import { useState } from "react";
 import { CustomerDialog } from "@/components/customers/CustomerDialog";
+const Customers = () => {
+  return (
+    <div className="space-y-4">
+      <h2 className="text-2xl font-bold">Customers</h2>
+      {/* Add customer content here */}
+    </div>
+  );
+};
 
+export default Customers;
 const Customers = () => {
   const [activeFilters, setActiveFilters] = useState<FilterType>({
     location: "",

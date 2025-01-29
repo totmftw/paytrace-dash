@@ -66,7 +66,7 @@ const SalesOverview = () => {
         <CardTitle>Sales Overview</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="h-[250px]">
+        <div className="h-full">
           <ChartContainer
             config={{
               sales: { color: "#22c55e" },
@@ -82,7 +82,7 @@ const SalesOverview = () => {
                   if (!active || !payload) return null;
                   return (
                     <div className="rounded-lg border bg-background p-2 shadow-sm">
-                      <div className="grid grid-cols-2 gap-2">
+                      <div className="grid grid-cols-3 gap-2">
                         <div className="flex flex-col">
                           <span className="text-[0.70rem] uppercase text-muted-foreground">
                             Sales

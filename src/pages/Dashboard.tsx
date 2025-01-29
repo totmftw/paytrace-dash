@@ -13,7 +13,7 @@ import { AddWidgetDialog } from "@/components/dashboard/AddWidgetDialog";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { toast } from "sonner";
 import { FinancialYearSelector } from "@/components/FinancialYearSelector";
-import { FinancialYearProvider, useFinancialYear } from "@/contexts/FinancialYearContext";
+import { FinancialYearProvider } from "@/contexts/FinancialYearContext";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";

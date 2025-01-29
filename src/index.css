@@ -4,26 +4,26 @@
  
 @layer base {
   :root {
-    --background: 225 25% 11%;
-    --foreground: 210 40% 98%;
-    --card: 225 25% 11%;
-    --card-foreground: 210 40% 98%;
-    --popover: 225 25% 11%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
-    --radius: 0.5rem;
+    --background: 225 25% 11%; /* Dark background */
+    --foreground: 210 40% 98%; /* Light text */
+    --card: 225 25% 11%; /* Dark card background */
+    --card-foreground: 210 40% 98%; /* Light card text */
+    --popover: 225 25% 11%; /* Dark popover background */
+    --popover-foreground: 210 40% 98%; /* Light popover text */
+    --primary: 210 70% 40%; /* Primary color */
+    --primary-foreground: 210 40% 98%; /* Primary text color */
+    --secondary: 210 40% 20%; /* Secondary color */
+    --secondary-foreground: 210 40% 98%; /* Secondary text color */
+    --muted: 210 40% 20%; /* Muted color */
+    --muted-foreground: 210 40% 60%; /* Muted text color */
+    --accent: 210 40% 20%; /* Accent color */
+    --accent-foreground: 210 40% 98%; /* Accent text color */
+    --destructive: 0 62.8% 30.6%; /* Destructive color */
+    --destructive-foreground: 210 40% 98%; /* Destructive text color */
+    --border: 210 40% 20%; /* Border color */
+    --input: 210 40% 20%; /* Input background */
+    --ring: 224.3 76.3% 48%; /* Ring color */
+    --radius: 0.5rem; /* Radius for rounded corners */
   }
 }
 

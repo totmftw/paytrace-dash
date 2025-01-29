@@ -23,7 +23,7 @@ export const AppSidebar = () => {
     { path: "/products", icon: Package, label: "Products" },
     { path: "/invoices", icon: FileText, label: "Invoices" },
     { path: "/payments", icon: CreditCard, label: "Payments" },
-    { path: "/users", icon: User, label: "Users" },
+    { path: "/users-profiles", icon: User, label: "Users" },
     { path: "/whatsapp-reminders", icon: Bell, label: "Reminders" },
   ];
 

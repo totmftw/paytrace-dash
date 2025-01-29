@@ -21,16 +21,7 @@ import {
   BadgeCheck,
   Clock
 } from "lucide-react";
-const UserProfiles = () => {
-  return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-foreground">User Profiles</h2>
-      {/* Add user profiles content here */}
-    </div>
-  );
-};
 
-export default UserProfiles;
 export default function UserProfiles() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 

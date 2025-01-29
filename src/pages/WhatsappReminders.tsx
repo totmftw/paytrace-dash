@@ -8,16 +8,7 @@ import { Input } from "@/components/ui/input";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-const WhatsappReminders = () => {
-  return (
-    <div className="space-y-4">
-      <h2 className="text-2xl font-bold text-foreground">WhatsApp Reminders</h2>
-      {/* Add WhatsApp reminders content here */}
-    </div>
-  );
-};
 
-export default WhatsappReminders;
 export default function WhatsappReminders() {
   const { toast } = useToast();
   const [isConfiguring, setIsConfiguring] = useState(false);

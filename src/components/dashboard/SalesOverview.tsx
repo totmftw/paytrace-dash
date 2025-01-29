@@ -77,8 +77,8 @@ export const SalesOverview = () => {
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={salesData}>
                   <XAxis dataKey="month" />
-                  <YAxis tickFormatter={(value) => `₹${value / 1000}k`} />
-                  <Tooltip formatter={(value) => formatCurrency(value)} />
+                  <YAxis tickFormatter={(value: number) => `₹${value / 1000}k`} />
+                  <Tooltip formatter={(value: number) => formatCurrency(value)} />
                   <Bar dataKey="sales" fill="var(--color-sales)" />
                   <Bar dataKey="pending" fill="var(--color-pending)" />
                   <Bar dataKey="overdue" fill="var(--color-overdue)" />

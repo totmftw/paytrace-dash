@@ -1,4 +1,3 @@
-// AppLayout.tsx
 import { Outlet } from "react-router-dom";
 import { AppSidebar } from "./AppSidebar";
 import { useAuth } from "@/contexts/AuthContext";
@@ -7,7 +6,7 @@ import { LogOut } from "lucide-react";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 import { Loader2 } from "lucide-react";
 import { Avatar, AvatarFallback } from "./ui/avatar";
-import { useSidebar } from "./ui/sidebar";
+import { useSidebar, SidebarTrigger } from "./ui/sidebar";
 
 export const AppLayout = () => {
   const { user, signOut } = useAuth();

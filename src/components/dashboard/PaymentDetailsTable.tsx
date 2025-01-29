@@ -41,9 +41,10 @@ interface Payment {
 
 interface PaymentDetailsTableProps {
   data: Payment[];
+  financialYear: number;
 }
 
-export function PaymentDetailsTable({ data }: PaymentDetailsTableProps) {
+export function PaymentDetailsTable({ data, financialYear }: PaymentDetailsTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});

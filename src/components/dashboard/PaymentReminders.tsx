@@ -5,14 +5,22 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function PaymentReminders() {
+  const [financialYear, setFinancialYear] = useState(new Date().getFullYear());
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  const getFinancialYearStart = (year: number) => new Date(`${year}-04-01`).toISOString();
+  const getFinancialYearEnd = (year: number) => new Date(`${year + 1}-03-31`).toISOString();
+
   const { data: reminders } = useQuery({
-    queryKey: ["payment-reminders"],
+    queryKey: ["payment-reminders", financialYear],
     queryFn: async () => {
+      const startDate = getFinancialYearStart(financialYear);
+      const endDate = getFinancialYearEnd(financialYear);
+
       const { data: invoices, error } = await supabase
         .from("invoiceTable")
         .select(`
@@ -24,6 +32,8 @@ export function PaymentReminders() {
           )
         `)
         .eq("invMarkcleared", false)
+        .gte("invDate", startDate)
+        .lte("invDate", endDate)
         .order("invDuedate", { ascending: true });
 
       if (error) throw error;
@@ -91,7 +101,7 @@ export function PaymentReminders() {
       return response.data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["payment-reminders"] });
+      queryClient.invalidateQueries({ queryKey: ["payment-reminders", financialYear] });
       toast({
         title: "Reminder sent",
         description: "The payment reminder has been sent successfully.",
@@ -142,6 +152,21 @@ export function PaymentReminders() {
     <Card>
       <CardHeader>
         <CardTitle>Payment Reminders</CardTitle>
+        <Select
+          value={financialYear.toString()}
+          onValueChange={(value) => setFinancialYear(parseInt(value))}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select Financial Year" />
+          </SelectTrigger>
+          <SelectContent>
+            {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map(year => (
+              <SelectItem key={year} value={year.toString()}>
+                {year}-{year + 1}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">

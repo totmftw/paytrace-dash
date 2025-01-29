@@ -12,16 +12,22 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { PaymentDetailsTable } from "./PaymentDetailsTable";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export function PaymentMetrics() {
   const [showPendingPayments, setShowPendingPayments] = useState(false);
   const [showOverduePayments, setShowOverduePayments] = useState(false);
+  const [financialYear, setFinancialYear] = useState(new Date().getFullYear());
+
+  const getFinancialYearStart = (year: number) => new Date(`${year}-04-01`).toISOString();
+  const getFinancialYearEnd = (year: number) => new Date(`${year + 1}-03-31`).toISOString();
 
   const { data: metrics } = useQuery({
-    queryKey: ["payment-metrics"],
+    queryKey: ["payment-metrics", financialYear],
     queryFn: async () => {
-      const today = new Date();
-      
+      const startDate = getFinancialYearStart(financialYear);
+      const endDate = getFinancialYearEnd(financialYear);
+
       const { data: invoices, error } = await supabase
         .from("invoiceTable")
         .select(`
@@ -31,7 +37,9 @@ export function PaymentMetrics() {
             custCreditperiod
           )
         `)
-        .eq("invMarkcleared", false);
+        .eq("invMarkcleared", false)
+        .gte("invDate", startDate)
+        .lte("invDate", endDate);
 
       if (error) throw error;
 
@@ -51,7 +59,7 @@ export function PaymentMetrics() {
         const dueDate = new Date(invoice.invDuedate);
         const amount = invoice.invTotal;
 
-        if (dueDate < today) {
+        if (dueDate < new Date()) {
           overduePayments.amount += Number(amount);
           overduePayments.count++;
           overduePayments.invoices.push(invoice);
@@ -85,6 +93,21 @@ export function PaymentMetrics() {
   return (
     <>
       <div className="grid gap-4 md:grid-cols-2">
+        <Select
+          value={financialYear.toString()}
+          onValueChange={(value) => setFinancialYear(parseInt(value))}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select Financial Year" />
+          </SelectTrigger>
+          <SelectContent>
+            {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map(year => (
+              <SelectItem key={year} value={year.toString()}>
+                {year}-{year + 1}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         {metrics?.map((metric, index) => (
           <Card key={metric.title}>
             <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -139,6 +162,7 @@ export function PaymentMetrics() {
           <div className="flex-1 overflow-auto">
             <PaymentDetailsTable 
               data={metrics?.[0].invoices || []}
+              financialYear={financialYear}
             />
           </div>
         </DialogContent>
@@ -162,6 +186,7 @@ export function PaymentMetrics() {
           <div className="flex-1 overflow-auto">
             <PaymentDetailsTable 
               data={metrics?.[1].invoices || []}
+              financialYear={financialYear}
             />
           </div>
         </DialogContent>

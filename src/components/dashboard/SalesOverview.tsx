@@ -12,8 +12,9 @@ export const SalesOverview = () => {
   const { data: salesData } = useQuery({
     queryKey: ["sales-overview", selectedYear],
     queryFn: async () => {
-      const startDate = new Date(selectedYear, 3, 1).toISOString(); // April 1st
-      const endDate = new Date(selectedYear + 1, 2, 31).toISOString(); // March 31st
+      const year = parseInt(selectedYear.split('-')[0]);
+      const startDate = new Date(year, 3, 1).toISOString(); // April 1st
+      const endDate = new Date(year + 1, 2, 31).toISOString(); // March 31st
 
       const { data: invoices, error } = await supabase
         .from("invoiceTable")

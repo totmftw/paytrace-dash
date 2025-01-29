@@ -22,8 +22,9 @@ export const PaymentMetrics = () => {
   const { data: metrics } = useQuery({
     queryKey: ["payment-metrics", selectedYear],
     queryFn: async () => {
-      const startDate = new Date(selectedYear, 3, 1).toISOString(); // April 1st
-      const endDate = new Date(selectedYear + 1, 2, 31).toISOString(); // March 31st
+      const year = parseInt(selectedYear.split('-')[0]);
+      const startDate = new Date(year, 3, 1).toISOString(); // April 1st
+      const endDate = new Date(year + 1, 2, 31).toISOString(); // March 31st
 
       const { data: invoices, error } = await supabase
         .from("invoiceTable")
@@ -143,7 +144,7 @@ export const PaymentMetrics = () => {
           </DialogHeader>
           <div className="flex-1 overflow-auto">
             <PaymentDetailsTable 
-              data={metrics?.[0].invoices || []}
+              data={metrics?.[0]?.invoices || []}
             />
           </div>
         </DialogContent>
@@ -166,7 +167,7 @@ export const PaymentMetrics = () => {
           </DialogHeader>
           <div className="flex-1 overflow-auto">
             <PaymentDetailsTable 
-              data={metrics?.[1].invoices || []}
+              data={metrics?.[1]?.invoices || []}
             />
           </div>
         </DialogContent>

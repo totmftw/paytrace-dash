@@ -3,25 +3,31 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
-// Simplified type definitions
-type LedgerEntry = {
+// Define simplified types for database results
+type TransactionType = 'invoice' | 'payment';
+
+interface LedgerEntry {
   id: number;
   date: string;
   description: string;
   amount: number;
-  type: 'invoice' | 'payment';
+  type: TransactionType;
   balance: number;
-};
+}
 
-type Props = {
+interface CustomerLedgerProps {
   customerId: number;
   customerName: string;
   whatsappNumber: string;
   onClose: () => void;
-};
+}
 
-export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber, onClose }: Props) {
-  const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>([]);
+// Explicitly define database response types
+type InvoiceData = { invId: number; invDate: string; invTotal: number };
+type PaymentData = { paymentId: number; paymentDate: string; amount: number };
+
+export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber, onClose }: CustomerLedgerProps) {
+  const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>(() => []);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -30,59 +36,49 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
         const [invoicesResult, paymentsResult] = await Promise.all([
           supabase
             .from("invoiceTable")
-            .select("invId, invDate, invTotal")
+            .select<InvoiceData[]>("invId, invDate, invTotal")
             .eq("invCustid", customerId)
             .order("invDate"),
           supabase
             .from("paymentTransactions")
-            .select("paymentId, paymentDate, amount")
+            .select<PaymentData[]>("paymentId, paymentDate, amount")
             .eq("custId", customerId)
             .order("paymentDate")
         ]);
 
+        let runningBalance = 0;
         const entries: LedgerEntry[] = [];
 
-        // Process invoices
-        if (invoicesResult.data) {
-          invoicesResult.data.forEach(inv => {
-            entries.push({
-              id: inv.invId,
-              date: format(new Date(inv.invDate), 'yyyy-MM-dd'),
-              description: `Invoice #${inv.invId}`,
-              amount: inv.invTotal,
-              type: 'invoice',
-              balance: 0 // Will be calculated later
-            });
+        invoicesResult.data?.forEach(inv => {
+          runningBalance += inv.invTotal;
+          entries.push({
+            id: inv.invId,
+            date: format(new Date(inv.invDate), 'yyyy-MM-dd'),
+            description: `Invoice #${inv.invId}`,
+            amount: inv.invTotal,
+            type: 'invoice',
+            balance: runningBalance
           });
-        }
-
-        // Process payments
-        if (paymentsResult.data) {
-          paymentsResult.data.forEach(pay => {
-            entries.push({
-              id: pay.paymentId,
-              date: format(new Date(pay.paymentDate), 'yyyy-MM-dd'),
-              description: `Payment #${pay.paymentId}`,
-              amount: pay.amount,
-              type: 'payment',
-              balance: 0 // Will be calculated later
-            });
-          });
-        }
-
-        // Sort entries by date
-        entries.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-        // Calculate running balance
-        let balance = 0;
-        entries.forEach(entry => {
-          if (entry.type === 'invoice') {
-            balance += entry.amount;
-          } else {
-            balance -= entry.amount;
-          }
-          entry.balance = balance;
         });
+
+        paymentsResult.data?.forEach(pay => {
+          runningBalance -= pay.amount;
+          entries.push({
+            id: pay.paymentId,
+            date: format(new Date(pay.paymentDate), 'yyyy-MM-dd'),
+            description: `Payment #${pay.paymentId}`,
+            amount: pay.amount,
+            type: 'payment',
+            balance: runningBalance
+          });
+        });
+
+        // Sort and compute balance in one pass
+        entries.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+               .reduce((balance, entry) => {
+                  entry.balance = entry.type === 'invoice' ? balance + entry.amount : balance - entry.amount;
+                  return entry.balance;
+               }, 0);
 
         setLedgerEntries(entries);
       } catch (error) {
@@ -96,7 +92,7 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
   }, [customerId]);
 
   return (
-    <Dialog open onOpenChange={() => onClose()}>
+    <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-auto">
         <DialogHeader>
           <DialogTitle>Customer Ledger - {customerName}</DialogTitle>
@@ -120,12 +116,8 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
                   <tr key={`${entry.type}-${entry.id}`} className="border-b">
                     <td className="p-2">{entry.date}</td>
                     <td className="p-2">{entry.description}</td>
-                    <td className="text-right p-2">
-                      {entry.type === 'invoice' ? entry.amount.toFixed(2) : '-'}
-                    </td>
-                    <td className="text-right p-2">
-                      {entry.type === 'payment' ? entry.amount.toFixed(2) : '-'}
-                    </td>
+                    <td className="text-right p-2">{entry.type === 'invoice' ? entry.amount.toFixed(2) : '-'}</td>
+                    <td className="text-right p-2">{entry.type === 'payment' ? entry.amount.toFixed(2) : '-'}</td>
                     <td className="text-right p-2">{entry.balance.toFixed(2)}</td>
                   </tr>
                 ))}

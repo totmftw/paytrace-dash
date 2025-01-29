@@ -3,7 +3,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
-// Define simplified types for database results
 type TransactionType = 'invoice' | 'payment';
 
 interface LedgerEntry {
@@ -15,72 +14,40 @@ interface LedgerEntry {
   balance: number;
 }
 
-interface CustomerLedgerProps {
+type CustomerLedgerProps = {
   customerId: number;
   customerName: string;
   whatsappNumber: string;
   onClose: () => void;
 }
 
-// Explicitly define database response types
-type InvoiceData = { invId: number; invDate: string; invTotal: number };
-type PaymentData = { paymentId: number; paymentDate: string; amount: number };
-
 export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber, onClose }: CustomerLedgerProps) {
-  const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>(() => []);
+  const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function fetchLedgerEntries() {
       try {
-        const [invoicesResult, paymentsResult] = await Promise.all([
-          supabase
-            .from("invoiceTable")
-            .select<InvoiceData[]>("invId, invDate, invTotal")
-            .eq("invCustid", customerId)
-            .order("invDate"),
-          supabase
-            .from("paymentTransactions")
-            .select<PaymentData[]>("paymentId, paymentDate, amount")
-            .eq("custId", customerId)
-            .order("paymentDate")
-        ]);
+        const { data: ledgerData, error } = await supabase
+          .from('paymentLedger')
+          .select('*')
+          .eq('custId', customerId)
+          .order('createdAt');
 
-        let runningBalance = 0;
-        const entries: LedgerEntry[] = [];
+        if (error) throw error;
 
-        invoicesResult.data?.forEach(inv => {
-          runningBalance += inv.invTotal;
-          entries.push({
-            id: inv.invId,
-            date: format(new Date(inv.invDate), 'yyyy-MM-dd'),
-            description: `Invoice #${inv.invId}`,
-            amount: inv.invTotal,
-            type: 'invoice',
-            balance: runningBalance
-          });
-        });
+        if (ledgerData) {
+          const entries: LedgerEntry[] = ledgerData.map(entry => ({
+            id: entry.ledgerId,
+            date: format(new Date(entry.createdAt), 'yyyy-MM-dd'),
+            description: entry.description || `${entry.transactionType} #${entry.ledgerId}`,
+            amount: entry.amount,
+            type: entry.transactionType as TransactionType,
+            balance: entry.runningBalance
+          }));
 
-        paymentsResult.data?.forEach(pay => {
-          runningBalance -= pay.amount;
-          entries.push({
-            id: pay.paymentId,
-            date: format(new Date(pay.paymentDate), 'yyyy-MM-dd'),
-            description: `Payment #${pay.paymentId}`,
-            amount: pay.amount,
-            type: 'payment',
-            balance: runningBalance
-          });
-        });
-
-        // Sort and compute balance in one pass
-        entries.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-               .reduce((balance, entry) => {
-                  entry.balance = entry.type === 'invoice' ? balance + entry.amount : balance - entry.amount;
-                  return entry.balance;
-               }, 0);
-
-        setLedgerEntries(entries);
+          setLedgerEntries(entries);
+        }
       } catch (error) {
         console.error("Error fetching ledger entries:", error);
       } finally {

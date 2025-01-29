@@ -10,25 +10,28 @@ import UserManagement from "./pages/UserManagement";
 import WhatsappReminders from "./pages/WhatsappReminders";
 import UserProfiles from "./pages/UserProfiles";
 import Login from "./pages/Login";
+import { AuthProvider } from "./contexts/AuthContext";
 
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={<AppLayout />}>
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="customers" element={<Customers />} />
-          <Route path="products" element={<Products />} />
-          <Route path="invoices" element={<Invoices />} />
-          <Route path="invoices-payments" element={<InvoicesAndPayments />} />
-          <Route path="payments" element={<Payments />} />
-          <Route path="users" element={<UserManagement />} />
-          <Route path="user-profiles" element={<UserProfiles />} />
-          <Route path="whatsapp-reminders" element={<WhatsappReminders />} />
-        </Route>
-      </Routes>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<AppLayout />}>
+            <Route index element={<Navigate to="/dashboard" replace />} />
+            <Route path="dashboard" element={<Dashboard />} />
+            <Route path="customers" element={<Customers />} />
+            <Route path="products" element={<Products />} />
+            <Route path="invoices" element={<Invoices />} />
+            <Route path="invoices-payments" element={<InvoicesAndPayments />} />
+            <Route path="payments" element={<Payments />} />
+            <Route path="users" element={<UserManagement />} />
+            <Route path="user-profiles" element={<UserProfiles />} />
+            <Route path="whatsapp-reminders" element={<WhatsappReminders />} />
+          </Route>
+        </Routes>
+      </AuthProvider>
     </Router>
   );
 }

@@ -3,10 +3,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
-// Simple literal type for transaction types
+// Define transaction type as a simple union type
 type TransactionType = 'invoice' | 'payment';
 
-// Single, flat interface for ledger entries
+// Define ledger entry as a simple type alias with only required fields
 type LedgerEntry = {
   id: number;
   date: string;
@@ -16,12 +16,12 @@ type LedgerEntry = {
   balance: number;
 };
 
-interface CustomerLedgerProps {
+type CustomerLedgerProps = {
   customerId: number;
   customerName: string;
   whatsappNumber: string;
   onClose: () => void;
-}
+};
 
 export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber, onClose }: CustomerLedgerProps) {
   const [ledgerEntries, setLedgerEntries] = useState<LedgerEntry[]>([]);

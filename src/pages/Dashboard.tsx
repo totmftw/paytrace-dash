@@ -1,4 +1,3 @@
-// Dashboard.tsx
 import { useState } from "react";
 import { Responsive, WidthProvider } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
@@ -16,8 +15,6 @@ import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 import { FinancialYearProvider, useFinancialYear } from "@/contexts/FinancialYearContext";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
-
-const ResponsiveGridLayout = WidthProvider(Responsive);
 
 interface LayoutItem {
   i: string;

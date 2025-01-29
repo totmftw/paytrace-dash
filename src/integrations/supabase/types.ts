@@ -113,6 +113,27 @@ export type Database = {
         }
         Relationships: []
       }
+      dashboard_config: {
+        Row: {
+          id: number
+          layout: Json
+          userid: string
+          widgets: Json
+        }
+        Insert: {
+          id?: number
+          layout: Json
+          userid: string
+          widgets: Json
+        }
+        Update: {
+          id?: number
+          layout?: Json
+          userid?: string
+          widgets?: Json
+        }
+        Relationships: []
+      }
       invoiceTable: {
         Row: {
           invAddamount: number | null

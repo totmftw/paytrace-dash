@@ -1,4 +1,3 @@
-// SalesOverview.tsx
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartContainer } from "@/components/ui/chart";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
@@ -7,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 
-const SalesOverview = () => {
+export const SalesOverview = () => {
   const { selectedYear } = useFinancialYear();
 
   const getFinancialYearStart = (year: number) => new Date(`${year}-04-01`).toISOString();
@@ -16,8 +15,8 @@ const SalesOverview = () => {
   const { data: salesData } = useQuery({
     queryKey: ["sales-overview", selectedYear],
     queryFn: async () => {
-      const startDate = getFinancialYearStart(selectedYear);
-      const endDate = getFinancialYearEnd(selectedYear);
+      const startDate = getFinancialYearStart(Number(selectedYear));
+      const endDate = getFinancialYearEnd(Number(selectedYear));
 
       const { data: invoices, error } = await supabase
         .from("invoiceTable")
@@ -92,5 +91,3 @@ const SalesOverview = () => {
     </>
   );
 };
-
-export default SalesOverview;

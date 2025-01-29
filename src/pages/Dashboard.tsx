@@ -1,19 +1,18 @@
-// Dashboard.tsx
 import { useState } from "react";
 import { Responsive, WidthProvider } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import { PaymentMetrics } from "@/components/dashboard/PaymentMetrics";
-import SalesOverview from "@/components/dashboard/SalesOverview";
+import { SalesOverview } from "@/components/dashboard/SalesOverview";
 import { PaymentTracking } from "@/components/dashboard/PaymentTracking";
 import { PaymentReminders } from "@/components/dashboard/PaymentReminders";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Wrench, Check } from "lucide-react";
+import { PlusCircle, Wrench } from "lucide-react";
 import { AddWidgetDialog } from "@/components/dashboard/AddWidgetDialog";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { toast } from "sonner";
 import { FinancialYearSelector } from "@/components/FinancialYearSelector";
-import { FinancialYearProvider, useFinancialYear } from "@/contexts/FinancialYearContext";
+import { FinancialYearProvider } from "@/contexts/FinancialYearContext";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -97,7 +96,7 @@ const Dashboard = () => {
 
     try {
       const { error } = await supabase.from("dashboard_config").upsert({
-        userId: user.id,
+        userid: user.id,
         layout: JSON.stringify(layout),
         widgets: JSON.stringify(widgets)
       });
@@ -139,7 +138,7 @@ const Dashboard = () => {
                   <PlusCircle className="h-4 w-4" />
                 </Button>
                 <Button onClick={() => setIsEditing(!isEditing)}>
-                  {isEditing ? <Check className="h-4 w-4" /> : <Wrench className="h-4 w-4" />}
+                  <Wrench className="h-4 w-4" />
                 </Button>
               </>
             )}

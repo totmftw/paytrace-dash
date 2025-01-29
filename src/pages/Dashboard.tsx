@@ -4,7 +4,7 @@ import { Responsive, WidthProvider } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import { PaymentMetrics } from "@/components/dashboard/PaymentMetrics";
-import { SalesOverview } from "@/components/dashboard/SalesOverview";
+import SalesOverview from "@/components/dashboard/SalesOverview";
 import { PaymentTracking } from "@/components/dashboard/PaymentTracking";
 import { PaymentReminders } from "@/components/dashboard/PaymentReminders";
 import { Button } from "@/components/ui/button";

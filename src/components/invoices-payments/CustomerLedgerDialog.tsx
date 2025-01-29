@@ -3,18 +3,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
-// Simplified transaction type
+// Simple literal type for transaction types
 type TransactionType = 'invoice' | 'payment';
 
-// Flat interface structure for ledger entries
-interface LedgerEntry {
+// Single, flat interface for ledger entries
+type LedgerEntry = {
   id: number;
   date: string;
   description: string;
   amount: number;
   type: TransactionType;
   balance: number;
-}
+};
 
 interface CustomerLedgerProps {
   customerId: number;
@@ -44,19 +44,17 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
         ]);
 
         const entries: LedgerEntry[] = [];
-        let runningBalance = 0;
 
         // Process invoices
         if (invoicesResult.data) {
           invoicesResult.data.forEach(inv => {
-            runningBalance += inv.invTotal;
             entries.push({
               id: inv.invId,
               date: format(new Date(inv.invDate), 'yyyy-MM-dd'),
               description: `Invoice #${inv.invId}`,
               amount: inv.invTotal,
               type: 'invoice',
-              balance: runningBalance
+              balance: 0 // Will be calculated later
             });
           });
         }
@@ -64,27 +62,28 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
         // Process payments
         if (paymentsResult.data) {
           paymentsResult.data.forEach(pay => {
-            runningBalance -= pay.amount;
             entries.push({
               id: pay.paymentId,
               date: format(new Date(pay.paymentDate), 'yyyy-MM-dd'),
               description: `Payment #${pay.paymentId}`,
               amount: pay.amount,
               type: 'payment',
-              balance: runningBalance
+              balance: 0 // Will be calculated later
             });
           });
         }
 
-        // Sort by date
+        // Sort entries by date
         entries.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
-        // Recalculate running balance after sorting
+        // Calculate running balance
         let balance = 0;
         entries.forEach(entry => {
-          balance = entry.type === 'invoice' 
-            ? balance + entry.amount 
-            : balance - entry.amount;
+          if (entry.type === 'invoice') {
+            balance += entry.amount;
+          } else {
+            balance -= entry.amount;
+          }
           entry.balance = balance;
         });
 

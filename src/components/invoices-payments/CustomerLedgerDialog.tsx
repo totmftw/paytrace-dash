@@ -3,19 +3,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
 
-// Simple type for transaction types
+// Simplified transaction type
 type TransactionType = 'invoice' | 'payment';
 
-// Base transaction interface without circular references
-interface BaseTransaction {
-  id: number;
-  date: string;
-  description: string;
-  amount: number;
-  type: TransactionType;
-}
-
-// Separate interface for ledger entries
+// Flat interface structure for ledger entries
 interface LedgerEntry {
   id: number;
   date: string;
@@ -52,17 +43,20 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
             .order("paymentDate")
         ]);
 
-        const transactions: BaseTransaction[] = [];
+        const entries: LedgerEntry[] = [];
+        let runningBalance = 0;
 
         // Process invoices
         if (invoicesResult.data) {
           invoicesResult.data.forEach(inv => {
-            transactions.push({
+            runningBalance += inv.invTotal;
+            entries.push({
               id: inv.invId,
               date: format(new Date(inv.invDate), 'yyyy-MM-dd'),
               description: `Invoice #${inv.invId}`,
               amount: inv.invTotal,
-              type: 'invoice'
+              type: 'invoice',
+              balance: runningBalance
             });
           });
         }
@@ -70,32 +64,31 @@ export function CustomerLedgerDialog({ customerId, customerName, whatsappNumber,
         // Process payments
         if (paymentsResult.data) {
           paymentsResult.data.forEach(pay => {
-            transactions.push({
+            runningBalance -= pay.amount;
+            entries.push({
               id: pay.paymentId,
               date: format(new Date(pay.paymentDate), 'yyyy-MM-dd'),
               description: `Payment #${pay.paymentId}`,
               amount: pay.amount,
-              type: 'payment'
+              type: 'payment',
+              balance: runningBalance
             });
           });
         }
 
-        // Sort by date and calculate running balance
-        transactions.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-        
-        let runningBalance = 0;
-        const entriesWithBalance: LedgerEntry[] = transactions.map(transaction => {
-          runningBalance = transaction.type === 'invoice' 
-            ? runningBalance + transaction.amount 
-            : runningBalance - transaction.amount;
-          
-          return {
-            ...transaction,
-            balance: runningBalance
-          };
+        // Sort by date
+        entries.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+        // Recalculate running balance after sorting
+        let balance = 0;
+        entries.forEach(entry => {
+          balance = entry.type === 'invoice' 
+            ? balance + entry.amount 
+            : balance - entry.amount;
+          entry.balance = balance;
         });
 
-        setLedgerEntries(entriesWithBalance);
+        setLedgerEntries(entries);
       } catch (error) {
         console.error("Error fetching ledger entries:", error);
       } finally {

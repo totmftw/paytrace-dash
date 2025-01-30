@@ -23,7 +23,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatCurrency } from "@/lib/utils";
+import { useState } from "react";
+import { useReactTable } from "@tanstack/react-table";
+import { Button } from "@/components/ui/button";
+import { PDFExport } from "./PDFExport";
 
+export function TransactionInvoiceTable(props) {
 interface TransactionInvoiceTableProps {
   data: any[];
   onCustomerClick: (customer: any) => void;
@@ -49,7 +54,42 @@ export function TransactionInvoiceTable({
 }: TransactionInvoiceTableProps) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [columnVisibility, setColumnVisibility] = useState({});
+  const [isColumnConfigOpen, setIsColumnConfigOpen] = useState(false);
+
+  const table = useReactTable({
+    data,
+    columns,
+    state: {
+      sorting,
+      columnVisibility,
+    },
+    onSortingChange: setSorting,
+    onColumnVisibilityChange: setColumnVisibility,
+    enableColumnResizing: true,
+  });
+
+  return (
+    <div className="space-y-4">
+      {/* ... existing code ... */}
+
+      <div className="flex items-center justify-end space-x-2">
+        <PDFExport data={data} />
+        <Button 
+          variant="ghost"
+          onClick={() => setIsColumnConfigOpen(true)}
+        >
+          Configure Columns
+        </Button>
+        {isColumnConfigOpen && (
+          <div>
+            {/* Column configuration modal */}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
   const [rowSelection, setRowSelection] = useState({});
 
   const formatInvoiceNumber = (invNumber: InvoiceData['invNumber']): string => {

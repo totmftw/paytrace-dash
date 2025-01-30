@@ -34,53 +34,11 @@ export function CustomerDialog({ onClose, onSave }: CustomerDialogProps) {
     custCreditperiod: "",
   });
 
-  const validateBusinessName = async (businessName: string) => {
-    const { data } = await supabase
-      .from("customerMaster")
-      .select("custBusinessname")
-      .eq("custBusinessname", businessName)
-      .single();
-    
-    return !data;
-  };
-
-  const validateEmail = async (email: string) => {
-    const { data } = await supabase
-      .from("customerMaster")
-      .select("custEmail")
-      .eq("custEmail", email)
-      .single();
-    
-    return !data;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      // Validate business name
-      const isBusinessNameValid = await validateBusinessName(formData.custBusinessname);
-      if (!isBusinessNameValid) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "A customer with this business name already exists.",
-        });
-        return;
-      }
-
-      // Validate email
-      const isEmailValid = await validateEmail(formData.custEmail);
-      if (!isEmailValid) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "A customer with this email already exists.",
-        });
-        return;
-      }
-
       const { error } = await supabase
         .from("customerMaster")
         .insert([{
@@ -95,13 +53,25 @@ export function CustomerDialog({ onClose, onSave }: CustomerDialogProps) {
 
       if (error) {
         if (error.code === "23505") {
-          toast({
-            variant: "destructive",
-            title: "Error",
-            description: error.message.includes("custBusinessname") 
-              ? "A customer with this business name already exists."
-              : "A customer with this email already exists.",
-          });
+          if (error.message.includes("custBusinessname")) {
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: "A customer with this business name already exists.",
+            });
+          } else if (error.message.includes("custEmail")) {
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: "A customer with this email already exists.",
+            });
+          } else {
+            toast({
+              variant: "destructive",
+              title: "Error",
+              description: "A duplicate entry was detected. Please check your input.",
+            });
+          }
         } else {
           throw error;
         }

@@ -2,9 +2,10 @@ import * as XLSX from 'xlsx';
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
+// Create a type that includes both Tables and Views
 type TableNames = keyof (Database['public']['Tables'] & Database['public']['Views']);
 
-export const generateTemplateFromTable = async (tableName: TableNames, exampleData: any = {}) => {
+export const generateTemplateFromTable = async <T extends TableNames>(tableName: T, exampleData: any = {}) => {
   try {
     // Fetch table structure
     const { data: columns, error } = await supabase

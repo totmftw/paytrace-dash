@@ -44,7 +44,7 @@
 
   /* Global link styling */
   a, .table-link, button[variant="link"] {
-    @apply text-table-link hover:text-table-link/80;
+    @apply text-forest-green hover:text-forest-green/80;
   }
 }
 

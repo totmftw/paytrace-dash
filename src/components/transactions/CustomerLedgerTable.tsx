@@ -7,18 +7,15 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatCurrency } from "@/lib/utils";
 import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Check, ChevronsUpDown, Download, Send } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Download, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { CustomerSelector } from "./CustomerSelector";
 
 interface CustomerLedgerTableProps {
   onCustomerClick: (customer: { id: number; name: string; whatsappNumber: number }) => void;
 }
 
 export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProps) {
-  const [open, setOpen] = useState(false);
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
   const { selectedYear, getFYDates } = useFinancialYear();
   const { start, end } = getFYDates();
@@ -55,8 +52,7 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
     enabled: !!selectedCustomerId,
   });
 
-  const handleCustomerSelect = (value: string) => {
-    const customerId = parseInt(value, 10);
+  const handleCustomerSelect = (customerId: number) => {
     const customer = customers.find(c => c.id === customerId);
     if (customer) {
       setSelectedCustomerId(customerId);
@@ -66,7 +62,6 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
         whatsappNumber: customer.custWhatsapp
       });
     }
-    setOpen(false);
   };
 
   const handleDownloadPDF = async () => {
@@ -133,54 +128,16 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
     }
   };
 
-  const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId);
-
-  if (isLoadingCustomers) {
-    return <div className="text-center py-4">Loading customers...</div>;
-  }
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                role="combobox"
-                aria-expanded={open}
-                className="w-[300px] justify-between"
-              >
-                {selectedCustomer
-                  ? selectedCustomer.custBusinessname
-                  : "Select customer..."}
-                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-[300px] p-0">
-              <Command>
-                <CommandInput placeholder="Search customer..." />
-                <CommandEmpty>No customer found.</CommandEmpty>
-                <CommandGroup>
-                  {customers.map((customer) => (
-                    <CommandItem
-                      key={customer.id}
-                      value={customer.id.toString()}
-                      onSelect={handleCustomerSelect}
-                    >
-                      <Check
-                        className={cn(
-                          "mr-2 h-4 w-4",
-                          selectedCustomerId === customer.id ? "opacity-100" : "opacity-0"
-                        )}
-                      />
-                      {customer.custBusinessname}
-                    </CommandItem>
-                  ))}
-                </CommandGroup>
-              </Command>
-            </PopoverContent>
-          </Popover>
+          <CustomerSelector
+            customers={customers}
+            selectedCustomerId={selectedCustomerId}
+            onSelect={handleCustomerSelect}
+            isLoading={isLoadingCustomers}
+          />
           <FinancialYearSelector />
         </div>
         {selectedCustomerId && (
@@ -243,7 +200,7 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
                 <tr key={`${entry.transaction_date}-${index}`}>
                   <td>{new Date(entry.transaction_date).toLocaleDateString()}</td>
                   <td>{entry.description}</td>
-                  <td>{entry.invoice_number || '-'}</td>
+                  <td className="text-forest-green">{entry.invoice_number || '-'}</td>
                   <td className="text-right">
                     {entry.debit > 0 ? formatCurrency(entry.debit) : '-'}
                   </td>

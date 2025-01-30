@@ -44,26 +44,37 @@ export function TransactionInvoiceTable({
     {
       accessorKey: "customerMaster.custBusinessname",
       header: "Customer Name",
-      cell: ({ row }) => (
-        <Button
-          variant="link"
-          onClick={() => onCustomerClick(row.original.customerMaster)}
-        >
-          {row.getValue("customerMaster.custBusinessname") as string}
-        </Button>
-      ),
+      cell: ({ row }) => {
+        const businessName = row.original.customerMaster?.custBusinessname;
+        return businessName ? (
+          <Button
+            variant="link"
+            onClick={() => onCustomerClick(row.original.customerMaster)}
+          >
+            {businessName}
+          </Button>
+        ) : (
+          "N/A"
+        );
+      },
     },
     {
       accessorKey: "invNumber",
       header: "Invoice Number",
       cell: ({ row }) => {
         const invNumber = row.getValue("invNumber");
+        const displayNumber = Array.isArray(invNumber) 
+          ? invNumber.join("-")
+          : typeof invNumber === 'string' 
+            ? invNumber 
+            : String(invNumber);
+            
         return (
           <Button
             variant="link"
             onClick={() => onInvoiceClick(row.original)}
           >
-            {typeof invNumber === 'string' ? invNumber : String(invNumber)}
+            {displayNumber}
           </Button>
         );
       },

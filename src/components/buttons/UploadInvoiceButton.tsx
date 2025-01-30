@@ -1,91 +1,75 @@
-import React from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
-import * as XLSX from 'xlsx';
 import { supabase } from '@/integrations/supabase/client';
+import * as XLSX from 'xlsx';
 
-type UploadInvoiceButtonProps = {
+interface UploadInvoiceButtonProps {
   tableName: 'invoiceTable' | 'paymentTransactions';
-};
+}
 
-export default function UploadInvoiceButton({ tableName }: UploadInvoiceButtonProps) {
-  const [file, setFile] = React.useState<File | null>(null);
+const UploadInvoiceButton = ({ tableName }: UploadInvoiceButtonProps) => {
   const { toast } = useToast();
+  const [isUploading, setIsUploading] = useState(false);
 
-  const handleUpload = async () => {
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
     if (!file) return;
 
+    setIsUploading(true);
     try {
       const reader = new FileReader();
-      reader.onload = async (event) => {
-        const data = event.target?.result as ArrayBuffer;
-        const workbook = XLSX.read(data, { type: 'array' });
+      reader.onload = async (e) => {
+        const data = e.target?.result;
+        const workbook = XLSX.read(data, { type: 'binary' });
         const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+        const sheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(sheet);
 
-        // Extract headers and data rows
-        const headers = jsonData[0];
-        const rows = jsonData.slice(1);
+        if (Array.isArray(jsonData) && jsonData.length > 0) {
+          const { error } = await supabase.from(tableName).insert(
+            jsonData.map(item => ({
+              ...item,
+              fy: new Date().getFullYear().toString(),
+              invGst: 0,
+              invValue: 0,
+              invTotal: 0
+            }))
+          );
+          if (error) throw error;
 
-        // Format data rows into objects with headers as keys
-        const formattedData = rows.map((row: any[]) => {
-          const obj: any = {};
-          headers.forEach((header: string, index: number) => {
-            obj[header] = row[index];
-          });
-          return obj;
-        });
-
-        // Get existing data to check for duplicates
-        const { data: existingData } = await supabase.from(tableName).select();
-
-        // Define unique key (modify if needed)
-        const primaryKey = tableName === 'invoiceTable' ? 'invNumber' : 'transactionId';
-
-        // Check for duplicates
-        const existingKeys = new Set(existingData?.map((item: any) => item[primaryKey]) || []);
-        const duplicates = formattedData.filter((item: any) => existingKeys.has(item[primaryKey]));
-        const uniqueData = formattedData.filter((item: any) => !existingKeys.has(item[primaryKey]));
-
-        if (duplicates.length > 0) {
           toast({
-            title: 'Duplicate Entries',
-            description: `Found ${duplicates.length} duplicate entries`,
-            variant: 'destructive',
-          });
-        }
-
-        if (uniqueData.length > 0) {
-          await supabase.from(tableName).insert(uniqueData);
-          toast({
-            title: 'Upload Successful',
-            description: `Added ${uniqueData.length} new entries`,
+            title: 'Success',
+            description: 'File uploaded successfully',
           });
         }
       };
-
-      reader.readAsArrayBuffer(file);
+      reader.readAsBinaryString(file);
     } catch (error) {
       console.error(error);
       toast({
-        title: 'Upload Failed',
-        description: 'An error occurred while processing the file',
+        title: 'Error',
+        description: 'Failed to upload file',
         variant: 'destructive',
       });
+    } finally {
+      setIsUploading(false);
     }
   };
 
   return (
-    <div className="flex items-center gap-4">
-      <input
-        type="file"
-        accept=".xls,.xlsx"
-        onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-      />
-      <Button variant="ghost" onClick={handleUpload}>
-        Upload
-      </Button>
-    </div>
+    <Button variant="ghost" asChild disabled={isUploading}>
+      <label>
+        Upload Excel
+        <input
+          type="file"
+          accept=".xlsx,.xls"
+          onChange={handleFileUpload}
+          className="hidden"
+        />
+      </label>
+    </Button>
   );
-}
+};
+
+export default UploadInvoiceButton;

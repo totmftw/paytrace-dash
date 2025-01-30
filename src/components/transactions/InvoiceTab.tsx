@@ -2,9 +2,9 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { TransactionInvoiceTable } from "./TransactionInvoiceTable";
-import { AddInvoiceButton } from "../buttons/AddInvoiceButton";
-import { DownloadTemplateButton } from "../buttons/DownloadTemplateButton";
-import { UploadInvoiceButton } from "../buttons/UploadInvoiceButton";
+import AddInvoiceButton from "../buttons/AddInvoiceButton";
+import DownloadTemplateButton from "../buttons/DownloadTemplateButton";
+import UploadInvoiceButton from "../buttons/UploadInvoiceButton";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 
 export default function InvoiceTab() {
@@ -28,7 +28,7 @@ export default function InvoiceTab() {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4">
-        <AddInvoiceButton />
+        <AddInvoiceButton tableName="invoiceTable" />
         <DownloadTemplateButton tableName="invoiceTable" />
         <UploadInvoiceButton tableName="invoiceTable" />
       </div>

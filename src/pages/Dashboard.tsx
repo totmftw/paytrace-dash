@@ -16,6 +16,16 @@ import { FinancialYearProvider } from "@/contexts/FinancialYearContext";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
+import { Outlet } from "react-router-dom";
+
+export default function DashboardLayout() {
+  return (
+    <div className="p-6">
+      <Outlet />
+    </div>
+  );
+}
+
 import {
   Dialog,
   DialogContent,

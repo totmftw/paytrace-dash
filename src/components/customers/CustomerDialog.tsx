@@ -13,6 +13,7 @@ interface CustomerDialogProps {
 
 export function CustomerDialog({ onClose, onSave }: CustomerDialogProps) {
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     custBusinessname: "",
     custOwnername: "",
@@ -33,35 +34,71 @@ export function CustomerDialog({ onClose, onSave }: CustomerDialogProps) {
     custCreditperiod: "",
   });
 
+  const validateEmail = async (email: string) => {
+    const { data } = await supabase
+      .from("customerMaster")
+      .select("custEmail")
+      .eq("custEmail", email)
+      .single();
+    
+    return !data;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
+
     try {
+      // First validate email
+      const isEmailValid = await validateEmail(formData.custEmail);
+      if (!isEmailValid) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "A customer with this email already exists.",
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from("customerMaster")
         .insert([{
           ...formData,
-          custPhone: Number(formData.custPhone),
-          custWhatsapp: Number(formData.custWhatsapp),
-          custOwnerphone: Number(formData.custOwnerphone),
-          custOwnerwhatsapp: Number(formData.custOwnerwhatsapp),
-          custPincode: Number(formData.custPincode),
-          custCreditperiod: Number(formData.custCreditperiod),
+          custPhone: Number(formData.custPhone) || null,
+          custWhatsapp: Number(formData.custWhatsapp) || null,
+          custOwnerphone: Number(formData.custOwnerphone) || null,
+          custOwnerwhatsapp: Number(formData.custOwnerwhatsapp) || null,
+          custPincode: Number(formData.custPincode) || null,
+          custCreditperiod: Number(formData.custCreditperiod) || null,
         }]);
 
-      if (error) throw error;
+      if (error) {
+        if (error.code === "23505") {
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: "A customer with this email already exists.",
+          });
+        } else {
+          throw error;
+        }
+        return;
+      }
 
       toast({
         title: "Success",
         description: "Customer added successfully",
       });
       onSave();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding customer:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to add customer. Please try again.",
+        description: error.message || "Failed to add customer. Please try again.",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -150,11 +187,11 @@ export function CustomerDialog({ onClose, onSave }: CustomerDialogProps) {
             </div>
           </div>
           <div className="flex justify-end space-x-2">
-            <Button variant="outline" onClick={onClose}>
+            <Button variant="outline" onClick={onClose} disabled={isLoading}>
               Cancel
             </Button>
-            <Button type="submit">
-              Save Customer
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Saving..." : "Save Customer"}
             </Button>
           </div>
         </form>

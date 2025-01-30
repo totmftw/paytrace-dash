@@ -8,7 +8,7 @@ import { CustomerDialog } from "@/components/customers/CustomerDialog";
 
 export default function Customers() {
   const [activeFilters, setActiveFilters] = useState<FilterType>({
-    location: "",
+    name: "",
     type: "",
     status: "",
   });

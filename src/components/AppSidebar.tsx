@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -17,14 +17,7 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-// src/components/AppSidebar.tsx
-{isAdmin && (
-  <nav className="flex flex-col gap-2 mt-4">
-    <Button variant="ghost" onClick={() => setColumnConfigOpen(true)}>
-      Configure Columns
-    </Button>
-  </nav>
-)}
+
 const getBaseNavigation = () => [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Customers", href: "/customers", icon: Users },
@@ -36,9 +29,10 @@ const getBaseNavigation = () => [
 interface AppSidebarProps {
   isCollapsed: boolean;
   toggleSidebar: () => void;
+  setColumnConfigOpen?: (open: boolean) => void;
 }
 
-export function AppSidebar({ isCollapsed, toggleSidebar }: AppSidebarProps) {
+export function AppSidebar({ isCollapsed, toggleSidebar, setColumnConfigOpen }: AppSidebarProps) {
   const { data: userProfile } = useQuery({
     queryKey: ['userProfile'],
     queryFn: async () => {
@@ -111,6 +105,13 @@ export function AppSidebar({ isCollapsed, toggleSidebar }: AppSidebarProps) {
               ))}
             </ul>
           </li>
+          {isAdmin && setColumnConfigOpen && (
+            <li className="px-2">
+              <Button variant="ghost" onClick={() => setColumnConfigOpen(true)}>
+                Configure Columns
+              </Button>
+            </li>
+          )}
         </ul>
       </nav>
     </div>

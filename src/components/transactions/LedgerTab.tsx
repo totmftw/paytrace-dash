@@ -9,7 +9,14 @@ import { jsPDF } from 'jspdf';
 import 'jspdf-autotable';
 import { formatCurrency } from '@/lib/utils';
 
-interface LedgerEntry {
+interface CustomerData {
+  custBusinessname: string;
+  custAddress: string;
+  custGst: string;
+  custPhonenumber: string;
+}
+
+interface DatabaseLedgerEntry {
   transaction_date: string;
   description: string;
   invoice_number: string;
@@ -18,17 +25,26 @@ interface LedgerEntry {
   balance: number;
 }
 
-interface CustomerData {
-  custBusinessname: string;
-  custAddress: string;
-  custGst: string;
-  custPhonenumber: string;
-}
-
 export default function LedgerTab() {
   const { selectedYear, getFYDates } = useFinancialYear();
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
   const { start, end } = getFYDates();
+
+  const { data: customerData } = useQuery({
+    queryKey: ['customer', selectedCustomerId],
+    queryFn: async () => {
+      if (!selectedCustomerId) return null;
+      const { data, error } = await supabase
+        .from('customerMaster')
+        .select('custBusinessname, custAddress, custGst, custPhonenumber')
+        .eq('id', selectedCustomerId)
+        .single();
+      
+      if (error) throw error;
+      return data as CustomerData;
+    },
+    enabled: !!selectedCustomerId
+  });
 
   const { data: ledgerData } = useQuery({
     queryKey: ['ledger', selectedCustomerId, selectedYear],
@@ -40,22 +56,7 @@ export default function LedgerTab() {
         p_end_date: end.toISOString()
       });
       if (error) throw error;
-      return data as LedgerEntry[];
-    },
-    enabled: !!selectedCustomerId
-  });
-
-  const { data: customerData } = useQuery({
-    queryKey: ['customer', selectedCustomerId],
-    queryFn: async () => {
-      if (!selectedCustomerId) return null;
-      const { data, error } = await supabase
-        .from('customerMaster')
-        .select('custBusinessname, custAddress, custGst, custPhonenumber')
-        .eq('id', selectedCustomerId)
-        .single();
-      if (error) throw error;
-      return data as CustomerData;
+      return data as DatabaseLedgerEntry[];
     },
     enabled: !!selectedCustomerId
   });
@@ -65,12 +66,12 @@ export default function LedgerTab() {
     const doc = new jsPDF();
     doc.autoTable({
       head: [['Date', 'Description', 'Debit', 'Credit', 'Balance']],
-      body: ledgerData.map(row => [
-        new Date(row.transaction_date).toLocaleDateString(),
-        row.description,
-        row.debit ? formatCurrency(row.debit) : '-',
-        row.credit ? formatCurrency(row.credit) : '-',
-        formatCurrency(row.balance)
+      body: ledgerData.map(entry => [
+        new Date(entry.transaction_date).toLocaleDateString(),
+        entry.description,
+        entry.debit ? formatCurrency(entry.debit) : '-',
+        entry.credit ? formatCurrency(entry.credit) : '-',
+        formatCurrency(entry.balance)
       ])
     });
     doc.save(`${customerData.custBusinessname}-ledger.pdf`);
@@ -80,7 +81,7 @@ export default function LedgerTab() {
     {
       key: 'transaction_date',
       header: 'Date',
-      cell: (row: LedgerEntry) => new Date(row.transaction_date).toLocaleDateString()
+      cell: (row: DatabaseLedgerEntry) => new Date(row.transaction_date).toLocaleDateString()
     },
     {
       key: 'description',
@@ -89,17 +90,17 @@ export default function LedgerTab() {
     {
       key: 'debit',
       header: 'Debit',
-      cell: (row: LedgerEntry) => row.debit ? formatCurrency(row.debit) : '-'
+      cell: (row: DatabaseLedgerEntry) => row.debit ? formatCurrency(row.debit) : '-'
     },
     {
       key: 'credit',
       header: 'Credit',
-      cell: (row: LedgerEntry) => row.credit ? formatCurrency(row.credit) : '-'
+      cell: (row: DatabaseLedgerEntry) => row.credit ? formatCurrency(row.credit) : '-'
     },
     {
       key: 'balance',
       header: 'Balance',
-      cell: (row: LedgerEntry) => formatCurrency(row.balance)
+      cell: (row: DatabaseLedgerEntry) => formatCurrency(row.balance)
     }
   ];
 
@@ -109,11 +110,9 @@ export default function LedgerTab() {
         selectedCustomerId={selectedCustomerId}
         onSelect={setSelectedCustomerId}
       />
-      <div className="flex gap-2">
-        <Button onClick={handlePDFDownload} variant="outline">
-          Download PDF
-        </Button>
-      </div>
+      {ledgerData && ledgerData.length > 0 && (
+        <Button onClick={handlePDFDownload}>Download PDF</Button>
+      )}
       <DataTable
         columns={columns}
         data={ledgerData || []}

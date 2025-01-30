@@ -11,33 +11,31 @@ export default function PaymentTab() {
   const { toast } = useToast();
   const { start, end } = getFYDates();
 
-  // src/components/transactions/PaymentTab.tsx
-const { data: payments, isLoading, error } = useQuery({
-  queryKey: ['payments', selectedYear],
-  queryFn: async () => {
-    // Corrected table name to paymentTransactions
-    const { data, error } = await supabase
-      .from('paymentTransactions')
-      .select('*')
-      .gte('paymentDate', start.toISOString())
-      .lte('paymentDate', end.toISOString());
+  const { data: payments, isLoading, error } = useQuery({
+    queryKey: ['payments', selectedYear],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('paymentTransactions')
+        .select('*')
+        .gte('paymentDate', start.toISOString())
+        .lte('paymentDate', end.toISOString());
 
-    if (error) {
-      toast({
-        variant: "destructive",
-        title: "Error fetching payments",
-        description: error.message
-      });
-      throw error;
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error fetching payments",
+          description: error.message
+        });
+        throw error;
+      }
+      return data || [];
     }
-    return data || [];
-  }
-});
+  });
 
   if (error) {
     return (
       <div className="p-4 text-red-500">
-        Failed to load invoices. Please try again later.
+        Failed to load payments. Please try again later.
       </div>
     );
   }
@@ -46,7 +44,7 @@ const { data: payments, isLoading, error } = useQuery({
     <div className="space-y-4">
       <ColumnConfigProvider>
         <TransactionInvoiceTable 
-          data={invoices || []}
+          data={payments || []}
           onCustomerClick={(customer) => {
             // Handle customer click
           }}

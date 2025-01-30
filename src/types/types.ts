@@ -1,9 +1,15 @@
-export interface CustomerInvoice {
-    invoiceId: string;
-    customerName: string;
-    invoiceNumber: string;
-    invoiceTotalValue: number;
-    outstandingAmount: number;
-  }
-  
-  export type UserRoles = "Owner" | "ITAdmin" | "User";
+export type TableNames = 
+  | "invoiceTable" 
+  | "paymentTransactions" 
+  | "customerMaster" 
+  | "user_profiles" 
+  | "user_management"
+  | "dashboard_metrics"
+  | "whatsapp_config"
+  | "role_permissions"
+  | "feature_permissions"
+  | "custom_permissions"
+  | "dashboard_layouts"
+  | "financial_year_ranges"
+  | "customer_ledger"
+  | "invoice_reminder_status";

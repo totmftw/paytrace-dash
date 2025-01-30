@@ -1,16 +1,14 @@
 import React from "react";
-import { jsPDF } from "jspdf";
-import "jspdf-autotable";
+import { Button } from "@/components/ui/button";
 
 interface PDFExportProps {
   data: any[];
 }
 
-export default function PDFExport({ data }: PDFExportProps) {
+export function PDFExport({ data }: PDFExportProps) {
   const handleExport = () => {
-    const doc = new jsPDF();
-    doc.autoTable({ head: [['Invoice', 'Customer']], body: data });
-    doc.save("ledger.pdf");
+    // Add PDF export logic here
+    console.log('Exporting data:', data);
   };
 
   return (

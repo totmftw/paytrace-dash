@@ -49,9 +49,9 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
   });
 
   return (
-    <Card>
+    <Card className="bg-[#E8F3E8]"> {/* Pastel moss green background */}
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle>Customer Ledger</CardTitle>
+        <CardTitle className="text-[#1B4D3E]">Customer Ledger</CardTitle> {/* Dark pastel forest green text */}
         <FinancialYearSelector />
       </CardHeader>
       <CardContent>
@@ -62,11 +62,13 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
             onSelect={setSelectedCustomerId}
             isLoading={isLoadingCustomers}
           />
-          <DataTable
-            columns={columns}
-            data={ledgerData}
-            isLoading={isLoadingLedger}
-          />
+          <div className="rounded-md border border-[#4A7862]"> {/* Dark green border */}
+            <DataTable
+              columns={columns}
+              data={ledgerData}
+              isLoading={isLoadingLedger}
+            />
+          </div>
         </div>
       </CardContent>
     </Card>

@@ -39,11 +39,11 @@ export default function Transactions() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-[#E8F3E8] min-h-screen p-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">Transactions</h2>
-          <p className="text-muted-foreground">
+          <h2 className="text-3xl font-bold tracking-tight text-[#1B4D3E]">Transactions</h2>
+          <p className="text-[#4A7862]">
             View and manage all transactions
           </p>
         </div>
@@ -51,10 +51,16 @@ export default function Transactions() {
       </div>
 
       <Tabs defaultValue="invoices" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="invoices">Invoices</TabsTrigger>
-          <TabsTrigger value="payments">Payments</TabsTrigger>
-          <TabsTrigger value="ledger">Customer Ledger</TabsTrigger>
+        <TabsList className="bg-[#90BE6D]">
+          <TabsTrigger value="invoices" className="text-[#1B4D3E] data-[state=active]:bg-[#E8F3E8]">
+            Invoices
+          </TabsTrigger>
+          <TabsTrigger value="payments" className="text-[#1B4D3E] data-[state=active]:bg-[#E8F3E8]">
+            Payments
+          </TabsTrigger>
+          <TabsTrigger value="ledger" className="text-[#1B4D3E] data-[state=active]:bg-[#E8F3E8]">
+            Customer Ledger
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="invoices" className="space-y-4">
           <TransactionInvoiceTable 
@@ -64,7 +70,7 @@ export default function Transactions() {
           />
         </TabsContent>
         <TabsContent value="payments" className="space-y-4">
-          <Card className="p-6">
+          <Card className="p-6 bg-[#E8F3E8]">
             <PaymentUploadSection />
             <PaymentHistorySection />
           </Card>

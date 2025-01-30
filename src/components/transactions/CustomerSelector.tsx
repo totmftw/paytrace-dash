@@ -27,7 +27,7 @@ interface CustomerSelectorProps {
 }
 
 export function CustomerSelector({
-  customers = [], // Provide default empty array
+  customers = [],
   selectedCustomerId,
   onSelect,
   isLoading = false,
@@ -40,7 +40,11 @@ export function CustomerSelector({
 
   if (isLoading) {
     return (
-      <Button variant="outline" className="w-[300px] justify-between" disabled>
+      <Button 
+        variant="outline" 
+        className="w-[300px] justify-between bg-[#90BE6D] text-[#1B4D3E]" 
+        disabled
+      >
         Loading customers...
         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
       </Button>
@@ -54,7 +58,7 @@ export function CustomerSelector({
           variant="outline"
           role="combobox"
           aria-expanded={open}
-          className="w-[300px] justify-between"
+          className="w-[300px] justify-between bg-[#90BE6D] text-[#1B4D3E] hover:bg-[#7CAE5B]"
         >
           {selectedCustomer
             ? selectedCustomer.custBusinessname
@@ -62,12 +66,12 @@ export function CustomerSelector({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-0">
+      <PopoverContent className="w-[300px] p-0 bg-[#E8F3E8]">
         <Command>
-          <CommandInput placeholder="Search customers..." />
+          <CommandInput placeholder="Search customers..." className="text-[#1B4D3E]" />
           <CommandEmpty>No customer found.</CommandEmpty>
           <CommandGroup>
-            {(customers || []).map((customer) => (
+            {customers.map((customer) => (
               <CommandItem
                 key={customer.id}
                 value={customer.custBusinessname}
@@ -75,6 +79,7 @@ export function CustomerSelector({
                   onSelect(customer.id);
                   setOpen(false);
                 }}
+                className="text-[#1B4D3E] hover:bg-[#90BE6D]"
               >
                 <Check
                   className={cn(

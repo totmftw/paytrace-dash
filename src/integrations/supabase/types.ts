@@ -134,6 +134,47 @@ export type Database = {
         }
         Relationships: []
       }
+      feature_permissions: {
+        Row: {
+          created_at: string | null
+          feature_name: string
+          feature_path: string
+          id: string
+          is_enabled: boolean | null
+          parent_id: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          feature_name: string
+          feature_path: string
+          id?: string
+          is_enabled?: boolean | null
+          parent_id?: string | null
+          role: Database["public"]["Enums"]["app_role"]
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          feature_name?: string
+          feature_path?: string
+          id?: string
+          is_enabled?: boolean | null
+          parent_id?: string | null
+          role?: Database["public"]["Enums"]["app_role"]
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feature_permissions_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "feature_permissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoiceTable: {
         Row: {
           invAddamount: number | null

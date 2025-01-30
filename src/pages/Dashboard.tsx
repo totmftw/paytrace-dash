@@ -13,7 +13,10 @@ import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
 import { OutstandingPayments } from "@/components/dashboard/OutstandingPayments";
 import { TopCustomers } from "@/components/dashboard/TopCustomers";
 import { PaymentTrends } from "@/components/dashboard/PaymentTrends";
-import { Json } from "@/integrations/supabase/types";
+import { PaymentMetrics } from "@/components/dashboard/PaymentMetrics";
+import { PaymentTracking } from "@/components/dashboard/PaymentTracking";
+import { ExcelUpload } from "@/components/dashboard/ExcelUpload";
+import type { Json } from "@/integrations/supabase/types";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -31,12 +34,14 @@ type Layouts = {
 
 const defaultLayouts: Layouts = {
   lg: [
-    { i: "revenue", x: 0, y: 0, w: 8, h: 8 },
-    { i: "customerStats", x: 8, y: 0, w: 4, h: 4 },
-    { i: "recentTransactions", x: 8, y: 4, w: 4, h: 4 },
-    { i: "outstandingPayments", x: 0, y: 8, w: 4, h: 6 },
-    { i: "topCustomers", x: 4, y: 8, w: 4, h: 6 },
-    { i: "paymentTrends", x: 8, y: 8, w: 4, h: 6 }
+    { i: "paymentMetrics", x: 0, y: 0, w: 12, h: 4 },
+    { i: "paymentTracking", x: 0, y: 4, w: 12, h: 6 },
+    { i: "revenue", x: 0, y: 10, w: 8, h: 6 },
+    { i: "customerStats", x: 8, y: 10, w: 4, h: 3 },
+    { i: "recentTransactions", x: 8, y: 13, w: 4, h: 3 },
+    { i: "outstandingPayments", x: 0, y: 16, w: 4, h: 6 },
+    { i: "topCustomers", x: 4, y: 16, w: 4, h: 6 },
+    { i: "paymentTrends", x: 8, y: 16, w: 4, h: 6 }
   ]
 };
 
@@ -86,7 +91,7 @@ export default function Dashboard() {
         .from('dashboard_config')
         .upsert({
           user_id: user.id,
-          layout: layout as unknown as Json,
+          layout: layout as Json,
           widgets: {} as Json
         });
 
@@ -124,13 +129,14 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="space-y-4 h-full">
+    <div className="space-y-4 h-[calc(100vh-6rem)] overflow-hidden">
       <div className="flex justify-between items-center mb-6">
         <div className="space-y-1">
           <h2 className="text-3xl font-bold tracking-tight">TOTM Dashboard</h2>
           <p className="text-sm text-muted-foreground">Top of The Mind Solutions</p>
         </div>
         <div className="flex items-center gap-4">
+          <ExcelUpload />
           <FinancialYearSelector />
           <Button
             variant="outline"
@@ -147,7 +153,7 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="h-[calc(100vh-12rem)] overflow-auto">
+      <div className="h-full overflow-auto pb-6">
         <ResponsiveGridLayout
           className="layout"
           layouts={layouts}
@@ -159,6 +165,12 @@ export default function Dashboard() {
           rowHeight={30}
           margin={[16, 16]}
         >
+          <Card key="paymentMetrics" className="p-4 overflow-auto">
+            <PaymentMetrics />
+          </Card>
+          <Card key="paymentTracking" className="p-4 overflow-auto">
+            <PaymentTracking />
+          </Card>
           <Card key="revenue" className="p-4 overflow-auto">
             <RevenueChart />
           </Card>

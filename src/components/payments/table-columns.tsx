@@ -46,7 +46,7 @@ export const paymentColumns = [
   {
     key: "invoiceTable.invNumber",
     header: "Invoice Number",
-    cell: (item: any) => item.invoiceTable?.invNumber?.join("-"),
+    cell: (item: any) => item.invoiceTable?.invNumber || '-',
   },
   {
     key: "invoiceTable.customerMaster.custBusinessname",

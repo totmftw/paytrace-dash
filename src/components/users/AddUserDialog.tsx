@@ -22,7 +22,7 @@ const formSchema = z.object({
   address: z.string().min(5),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+type FormData = z.infer<typeof formSchema>;
 
 interface AddUserDialogProps {
   open: boolean;
@@ -33,14 +33,14 @@ const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   
-  const form = useForm<FormValues>({
+  const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       role: "team_member",
     },
   });
 
-  const handleSubmit = async (data: FormValues) => {
+  const handleSubmit = async (data: FormData) => {
     setIsLoading(true);
     try {
       const { count } = await supabase
@@ -69,9 +69,7 @@ const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
         user_address: data.address,
       });
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       toast({
         title: "Success",

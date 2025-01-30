@@ -14,55 +14,62 @@ export function ProtectedRoute({ children, adminOnly = false }: { children: Reac
     queryKey: ['userProfile', user?.id],
     queryFn: async () => {
       if (!user) return null;
-      try {
-        const { data, error } = await supabase
-          .from('user_profiles')
-          .select('role')
-          .eq('id', user.id)
-          .maybeSingle();
+      
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle();
 
-        if (error) {
-          console.error('Error fetching user profile:', error);
-          toast({
-            title: "Error",
-            description: "Failed to fetch user profile. Please try logging in again.",
-            variant: "destructive",
-          });
-          throw error;
-        }
-
-        return data;
-      } catch (error) {
-        console.error('Network error:', error);
-        toast({
-          title: "Network Error",
-          description: "Failed to connect to the server. Please check your internet connection.",
-          variant: "destructive",
-        });
+      if (error) {
+        console.error('Error fetching user profile:', error);
         throw error;
       }
+
+      return data;
     },
     enabled: !!user,
-    retry: 1,
-    retryDelay: 1000,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * (2 ** attemptIndex), 30000),
+    staleTime: 300000, // 5 minutes
+    cacheTime: 3600000, // 1 hour
   });
 
   useEffect(() => {
     if (!loading && !user) {
       navigate("/login");
-    }
-
-    if (!loading && !profileLoading && adminOnly && userProfile?.role !== 'it_admin') {
-      navigate("/dashboard");
+      return;
     }
 
     if (error) {
-      navigate("/login");
+      console.error('Profile fetch error:', error);
+      toast({
+        title: "Connection Error",
+        description: "Unable to verify your permissions. Please check your internet connection and try again.",
+        variant: "destructive",
+      });
+      return;
     }
-  }, [user, loading, navigate, adminOnly, userProfile, profileLoading, error]);
+
+    if (!loading && !profileLoading && adminOnly && userProfile?.role !== 'it_admin') {
+      toast({
+        title: "Access Denied",
+        description: "You don't have permission to access this page.",
+        variant: "destructive",
+      });
+      navigate("/dashboard");
+    }
+  }, [user, loading, navigate, adminOnly, userProfile, profileLoading, error, toast]);
 
   if (loading || (adminOnly && profileLoading)) {
-    return <div className="p-8 flex items-center justify-center">Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center space-y-4">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto"></div>
+          <p className="text-sm text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
   }
 
   return <>{children}</>;

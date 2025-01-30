@@ -1,243 +1,146 @@
-import { useState } from "react";
-import { Responsive, WidthProvider, Layout } from "react-grid-layout";
-import "react-grid-layout/css/styles.css";
-import "react-resizable/css/styles.css";
-import { PaymentMetrics } from "@/components/dashboard/PaymentMetrics";
-import SalesOverview from "@/components/dashboard/SalesOverview";
-import { PaymentTracking } from "@/components/dashboard/PaymentTracking";
-import { PaymentReminders } from "@/components/dashboard/PaymentReminders";
+import { useState, useEffect } from "react";
+import { Responsive, WidthProvider } from "react-grid-layout";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Wrench, Check, X } from "lucide-react";
-import { AddWidgetDialog } from "@/components/dashboard/AddWidgetDialog";
-import { useLocalStorage } from "@/hooks/use-local-storage";
-import { toast } from "sonner";
-import { FinancialYearSelector } from "@/components/FinancialYearSelector";
-import { FinancialYearProvider } from "@/contexts/FinancialYearContext";
-import { useAuth } from "@/hooks/use-auth";
+import { Settings, Check } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import type { Json } from "@/integrations/supabase/types";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { useAuth } from "@/hooks/use-auth";
+import { Card } from "@/components/ui/card";
+import { FinancialYearSelector } from "@/components/FinancialYearSelector";
+import { RevenueChart } from "@/components/dashboard/RevenueChart";
+import { CustomerStats } from "@/components/dashboard/CustomerStats";
+import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
+import { OutstandingPayments } from "@/components/dashboard/OutstandingPayments";
+import { TopCustomers } from "@/components/dashboard/TopCustomers";
+import { PaymentTrends } from "@/components/dashboard/PaymentTrends";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
-interface LayoutItem extends Omit<Layout, 'moved' | 'static' | 'isDraggable' | 'isResizable' | 'isBounded' | 'resizeHandles'> {
-  [key: string]: string | number | undefined;
-}
+const defaultLayouts = {
+  lg: [
+    { i: "revenue", x: 0, y: 0, w: 8, h: 8 },
+    { i: "customerStats", x: 8, y: 0, w: 4, h: 4 },
+    { i: "recentTransactions", x: 8, y: 4, w: 4, h: 4 },
+    { i: "outstandingPayments", x: 0, y: 8, w: 4, h: 6 },
+    { i: "topCustomers", x: 4, y: 8, w: 4, h: 6 },
+    { i: "paymentTrends", x: 8, y: 8, w: 4, h: 6 }
+  ]
+};
 
-interface DashboardWidget {
-  id: string;
-  type: string;
-  title: string;
-  [key: string]: string | number | undefined;
-}
-
-const defaultLayout: LayoutItem[] = [
-  { i: "payment-metrics", x: 0, y: 0, w: 12, h: 4, minH: 4 },
-  { i: "sales-overview", x: 0, y: 4, w: 8, h: 8, minH: 6 },
-  { i: "payment-tracking", x: 8, y: 4, w: 4, h: 8, minH: 6 },
-  { i: "payment-reminders", x: 0, y: 12, w: 12, h: 8, minH: 6 },
-];
-
-const defaultWidgets: DashboardWidget[] = [
-  { id: "payment-metrics", type: "payment-metrics", title: "Metrics" },
-  { id: "sales-overview", type: "sales-overview", title: "Sales Overview" },
-  { id: "payment-tracking", type: "payment-tracking", title: "Payment Tracking" },
-  { id: "payment-reminders", type: "payment-reminders", title: "Payment Reminders" },
-];
-
-const Dashboard = () => {
-  const [layout, setLayout] = useLocalStorage("dashboard-layout", defaultLayout);
-  const [widgets, setWidgets] = useLocalStorage("dashboard-widgets", defaultWidgets);
-  const [isAddWidgetOpen, setIsAddWidgetOpen] = useState(false);
+export default function Dashboard() {
   const [isEditing, setIsEditing] = useState(false);
-  const [isApplyDialogOpen, setIsApplyDialogOpen] = useState(false);
-  const [widgetToRemove, setWidgetToRemove] = useState<string | null>(null);
+  const [layouts, setLayouts] = useState(defaultLayouts);
+  const { toast } = useToast();
   const { user } = useAuth();
 
-  const handleLayoutChange = (newLayout: Layout[]) => {
-    if (isEditing) {
-      setLayout(newLayout as LayoutItem[]);
-    }
-  };
+  useEffect(() => {
+    const loadLayout = async () => {
+      if (!user?.id) return;
+      
+      const { data, error } = await supabase
+        .from('dashboard_config')
+        .select('layout')
+        .eq('user_id', user.id)
+        .single();
 
-  const handleApplyChanges = async () => {
-    if (!user?.id) {
-      toast.error("User not authenticated");
-      return;
-    }
+      if (data?.layout) {
+        setLayouts(data.layout);
+      }
+    };
+
+    loadLayout();
+  }, [user?.id]);
+
+  const saveLayout = async (layout: any) => {
+    if (!user?.id) return;
 
     try {
-      const { error } = await supabase.from("dashboard_config").upsert({
-        user_id: user.id,
-        layout: layout as unknown as Json,
-        widgets: widgets as unknown as Json
-      });
+      const { error } = await supabase
+        .from('dashboard_config')
+        .upsert({
+          user_id: user.id,
+          layout: layout,
+        });
 
       if (error) throw error;
 
-      setIsEditing(false);
-      toast.success("Changes applied successfully");
-      setIsApplyDialogOpen(true);
+      toast({
+        title: "Success",
+        description: "Dashboard layout saved successfully",
+      });
     } catch (error) {
-      console.error("Error saving dashboard config:", error);
-      toast.error("Failed to apply changes");
+      console.error('Error saving layout:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to save dashboard layout",
+      });
     }
   };
 
-  const renderWidget = (widget: DashboardWidget) => {
-    switch (widget.type) {
-      case "payment-metrics":
-        return <PaymentMetrics />;
-      case "sales-overview":
-        return <SalesOverview />;
-      case "payment-tracking":
-        return <PaymentTracking />;
-      case "payment-reminders":
-        return <PaymentReminders />;
-      default:
-        return <div>Unknown widget type</div>;
+  const handleLayoutChange = (layout: any) => {
+    if (isEditing) {
+      setLayouts({ ...layouts, lg: layout });
     }
+  };
+
+  const toggleEdit = () => {
+    if (isEditing) {
+      saveLayout(layouts);
+    }
+    setIsEditing(!isEditing);
   };
 
   return (
-    <FinancialYearProvider>
-      <div className="space-y-8 p-6">
-        <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold">Dashboard</h1>
-          <div className="flex items-center gap-4">
-            <FinancialYearSelector />
-            {user?.role === "IT admin" && (
-              <>
-                <Button onClick={() => setIsAddWidgetOpen(true)}>
-                  <PlusCircle className="h-4 w-4" />
-                </Button>
-                {isEditing ? (
-                  <Button onClick={handleApplyChanges}>
-                    <Check className="h-4 w-4" />
-                  </Button>
-                ) : (
-                  <Button onClick={() => setIsEditing(true)}>
-                    <Wrench className="h-4 w-4" />
-                  </Button>
-                )}
-              </>
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+        <div className="flex items-center gap-4">
+          <FinancialYearSelector />
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={toggleEdit}
+            className={isEditing ? "bg-green-500 text-white" : ""}
+          >
+            {isEditing ? (
+              <Check className="h-4 w-4" />
+            ) : (
+              <Settings className="h-4 w-4" />
             )}
-          </div>
+          </Button>
         </div>
-
-        <ResponsiveGridLayout
-          className="layout"
-          layouts={{ lg: layout }}
-          breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-          cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
-          rowHeight={60}
-          onLayoutChange={(_, layouts) => handleLayoutChange(layouts.lg)}
-          isDraggable={isEditing}
-          isResizable={isEditing}
-          draggableHandle=".drag-handle"
-        >
-          {widgets.map((widget) => (
-            <div key={widget.id} className="dashboard-card">
-              <div className="drag-handle" title="Drag to move" />
-              <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">{widget.title}</h3>
-                {isEditing && (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-6 w-6 text-muted-foreground hover:text-foreground"
-                    onClick={() => setWidgetToRemove(widget.id)}
-                  >
-                    <X className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-              <div className="overflow-auto h-[calc(100%-4rem)]">
-                {renderWidget(widget)}
-              </div>
-            </div>
-          ))}
-        </ResponsiveGridLayout>
-
-        <AddWidgetDialog
-          open={isAddWidgetOpen}
-          onOpenChange={setIsAddWidgetOpen}
-          onAdd={(widget) => {
-            const newWidget = {
-              ...widget,
-              id: `${widget.type}-${Date.now()}`
-            };
-
-            const newLayout = [
-              ...layout,
-              {
-                i: newWidget.id,
-                x: 0,
-                y: Infinity,
-                w: 6,
-                h: 6,
-                minH: 4
-              }
-            ];
-
-            setWidgets([...widgets, newWidget]);
-            setLayout(newLayout);
-            setIsAddWidgetOpen(false);
-            toast.success("Widget added successfully");
-          }}
-        />
-
-        <Dialog open={isApplyDialogOpen} onOpenChange={setIsApplyDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Configuration Applied</DialogTitle>
-              <DialogDescription>
-                The configuration has been applied and will not be editable.
-              </DialogDescription>
-            </DialogHeader>
-          </DialogContent>
-        </Dialog>
-
-        <AlertDialog open={!!widgetToRemove} onOpenChange={() => setWidgetToRemove(null)}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Remove Widget</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to remove this widget? This action cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={() => {
-                if (widgetToRemove) {
-                  setWidgets(widgets.filter(w => w.id !== widgetToRemove));
-                  setLayout(layout.filter(l => l.i !== widgetToRemove));
-                  setWidgetToRemove(null);
-                  toast.success("Widget removed successfully");
-                }
-              }}>Remove</AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
       </div>
-    </FinancialYearProvider>
-  );
-};
 
-export default Dashboard;
+      <ResponsiveGridLayout
+        className="layout"
+        layouts={layouts}
+        onLayoutChange={handleLayoutChange}
+        isDraggable={isEditing}
+        isResizable={isEditing}
+        breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
+        cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
+        rowHeight={30}
+      >
+        <Card key="revenue" className="p-4">
+          <RevenueChart />
+        </Card>
+        <Card key="customerStats" className="p-4">
+          <CustomerStats />
+        </Card>
+        <Card key="recentTransactions" className="p-4">
+          <RecentTransactions />
+        </Card>
+        <Card key="outstandingPayments" className="p-4">
+          <OutstandingPayments />
+        </Card>
+        <Card key="topCustomers" className="p-4">
+          <TopCustomers />
+        </Card>
+        <Card key="paymentTrends" className="p-4">
+          <PaymentTrends />
+        </Card>
+      </ResponsiveGridLayout>
+    </div>
+  );
+}

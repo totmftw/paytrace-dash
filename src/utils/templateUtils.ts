@@ -34,7 +34,7 @@ export const generateTemplateFromTable = async (
       }), {})
     };
 
-    // Create workbook
+    // Create workbook with all columns
     const ws = XLSX.utils.json_to_sheet([template]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Template");

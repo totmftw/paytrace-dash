@@ -7,6 +7,7 @@ import Customers from "./pages/Customers";
 import Products from "./pages/Products";
 import Invoices from "./pages/Invoices";
 import Payments from "./pages/Payments";
+import Transactions from "./pages/Transactions";
 import UserManagement from "./pages/UserManagement";
 import UserProfiles from "./pages/UserProfiles";
 import WhatsappReminders from "./pages/WhatsappReminders";
@@ -45,9 +46,31 @@ function App() {
                   <Route index element={<Navigate to="/dashboard" replace />} />
                   <Route path="dashboard" element={<Dashboard />} />
                   <Route path="customers" element={<Customers />} />
-                  <Route path="products" element={<Products />} />
-                  <Route path="invoices" element={<Invoices />} />
-                  <Route path="payments" element={<Payments />} />
+                  <Route path="transactions" element={<Transactions />} />
+                  <Route 
+                    path="products" 
+                    element={
+                      <ProtectedRoute adminOnly>
+                        <Products />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="invoices" 
+                    element={
+                      <ProtectedRoute adminOnly>
+                        <Invoices />
+                      </ProtectedRoute>
+                    } 
+                  />
+                  <Route 
+                    path="payments" 
+                    element={
+                      <ProtectedRoute adminOnly>
+                        <Payments />
+                      </ProtectedRoute>
+                    } 
+                  />
                   <Route path="users" element={<UserManagement />} />
                   <Route path="user-profiles" element={<UserProfiles />} />
                   <Route path="whatsapp-reminders" element={<WhatsappReminders />} />

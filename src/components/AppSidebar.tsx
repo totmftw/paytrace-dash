@@ -1,4 +1,3 @@
-// AppSidebar.tsx
 import React from "react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -16,13 +15,13 @@ import {
   CreditCard,
   Bell
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
-const navigation = [
+const getBaseNavigation = () => [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Customers", href: "/customers", icon: Users },
-  { name: "Invoices", href: "/invoices", icon: FileText },
-  { name: "Payments", href: "/payments", icon: CreditCard },
-  { name: "Products", href: "/products", icon: Package },
+  { name: "Transactions", href: "/transactions", icon: IndianRupee },
   { name: "WhatsApp Reminders", href: "/whatsapp-reminders", icon: Bell },
   { name: "User Management", href: "/user-management", icon: UserCircle },
 ];
@@ -33,6 +32,33 @@ interface AppSidebarProps {
 }
 
 export function AppSidebar({ isCollapsed, toggleSidebar }: AppSidebarProps) {
+  const { data: userProfile } = useQuery({
+    queryKey: ['userProfile'],
+    queryFn: async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return null;
+      
+      const { data } = await supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .single();
+      
+      return data;
+    }
+  });
+
+  const isAdmin = userProfile?.role === 'it_admin';
+
+  const navigation = [
+    ...getBaseNavigation(),
+    ...(isAdmin ? [
+      { name: "Products", href: "/products", icon: Package },
+      { name: "Invoices", href: "/invoices", icon: FileText },
+      { name: "Payments", href: "/payments", icon: CreditCard },
+    ] : [])
+  ];
+
   return (
     <div className={cn("h-full bg-[#1A1F2C] flex flex-col transition-all duration-300", isCollapsed ? "w-16" : "w-64")}>
       <div className="flex justify-between items-center h-16 px-4">

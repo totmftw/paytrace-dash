@@ -1,102 +1,67 @@
+// src/pages/Transactions/CustomerSelector.tsx
 import { useState } from "react";
-import { Check, ChevronsUpDown } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
+import { Check } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CustomerSelectorProps {
-  customers: Array<{
-    id: number;
-    custBusinessname: string;
-    custWhatsapp: number;
-  }>;
   selectedCustomerId: number | null;
   onSelect: (customerId: number) => void;
-  isLoading?: boolean;
 }
 
-export function CustomerSelector({
-  customers = [],
-  selectedCustomerId,
-  onSelect,
-  isLoading = false,
-}: CustomerSelectorProps) {
-  const [open, setOpen] = useState(false);
-  const [value, setValue] = useState("");
-  
-  const selectedCustomer = customers?.find(
-    (customer) => customer.id === selectedCustomerId
-  );
+export function CustomerSelector({ selectedCustomerId, onSelect }: CustomerSelectorProps) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  if (isLoading) {
-    return (
-      <Button 
-        variant="outline" 
-        className="w-[300px] justify-between bg-[#90BE6D] text-[#1B4D3E]" 
-        disabled
-      >
-        Loading customers...
-        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-      </Button>
-    );
-  }
+  const { data: customers = [], isLoading } = useQuery({
+    queryKey: ["customers", searchQuery],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("customerMaster")
+        .select("*")
+        .ilike("custBusinessname", `%${searchQuery}%`)
+        .order("custBusinessname");
+      if (error) throw error;
+      return data || [];
+    },
+    keepPreviousData: true,
+  });
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-[300px] justify-between bg-[#90BE6D] text-[#1B4D3E] hover:bg-[#7CAE5B]"
-        >
-          {selectedCustomer
-            ? selectedCustomer.custBusinessname
-            : "Select customer..."}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[300px] p-0 bg-[#E8F3E8]">
-        <Command value={value} onValueChange={setValue}>
-          <CommandInput 
-            placeholder="Search customers..." 
-            className="text-[#1B4D3E]"
-          />
-          <CommandEmpty>No customer found.</CommandEmpty>
-          <CommandGroup>
-            {customers.map((customer) => (
-              <CommandItem
-                key={customer.id}
-                value={customer.custBusinessname}
-                onSelect={() => {
-                  onSelect(customer.id);
-                  setOpen(false);
-                }}
-                className="text-[#1B4D3E] hover:bg-[#90BE6D]"
-              >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    selectedCustomerId === customer.id ? "opacity-100" : "opacity-0"
-                  )}
-                />
-                {customer.custBusinessname}
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        </Command>
-      </PopoverContent>
-    </Popover>
+    <div>
+      <div className="mb-4">
+        <Input
+          placeholder="Search for a business name..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
+      <Select
+        onOpenChange={(open) => open && setSearchQuery("")}
+        onValueChange={(value) => {
+          onSelect(Number(value));
+          setIsDropdownOpen(false);
+        }}
+        value={String(selectedCustomerId)}
+      >
+        <SelectTrigger>
+          <SelectValue placeholder="Select a customer" />
+        </SelectTrigger>
+        <SelectContent>
+          {isLoading ? (
+            <SelectItem disabled>Loading...</SelectItem>
+          ) : (
+            customers.map((customer) => (
+              <SelectItem key={customer.id} value={String(customer.id)}>
+                <Check className="mr-2 h-4 w-4 opacity-0" />
+                {`${customer.custBusinessname} (${customer.custOwnername})`}
+              </SelectItem>
+            ))
+          )}
+        </SelectContent>
+      </Select>
+    </div>
   );
 }

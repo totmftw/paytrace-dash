@@ -11,7 +11,7 @@ export default function DownloadTemplateButton({ tableName }: DownloadTemplateBu
   return (
     <Button 
       variant="ghost"
-      onClick={() => generateTemplateFromTable(tableName)}
+      onClick={() => generateTemplateFromTable(tableName, {})}
     >
       Download Template
     </Button>

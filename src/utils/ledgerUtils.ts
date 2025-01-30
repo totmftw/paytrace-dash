@@ -55,3 +55,20 @@ export const formatLedgerEntries = (
   // Calculate running balance
   return calculateRunningBalance(entries);
 };
+export const processInvoiceAndPaymentData = (invoices: any[], payments: any[]) => {
+  const combinedEntries = [...invoices, ...payments];
+
+  // Sort combined entries by date
+  combinedEntries.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+  // Calculate running balance
+  let balance = 0;
+  return combinedEntries.map((entry) => {
+    if (entry.type === "invoice") {
+      balance += entry.amount;
+    } else if (entry.type === "payment") {
+      balance -= entry.amount;
+    }
+    return { ...entry, balance };
+  });
+};

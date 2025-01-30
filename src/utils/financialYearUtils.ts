@@ -1,4 +1,4 @@
-import { startOfDay, endOfDay, format } from 'date-fns';
+import { startOfDay, endOfDay } from 'date-fns';
 
 export type TimeFrame = 'week' | 'month' | 'quarter';
 
@@ -14,65 +14,65 @@ export const getCurrentFinancialYear = (): string => {
   const currentMonth = today.getMonth();
   const currentYear = today.getFullYear();
   
-  // If current month is January to March (0-2), we're in the previous year's FY
   if (currentMonth <= 2) {
     return `${currentYear - 1}-${currentYear}`;
   }
   return `${currentYear}-${currentYear + 1}`;
 };
 
-export const formatFinancialYearDate = (date: Date): string => {
-  return format(date, 'MMM dd, yyyy');
+export const getTimeFrameDates = (timeFrame: TimeFrame, date: Date = new Date()) => {
+  const currentDate = new Date(date);
+  let start = new Date(currentDate);
+  let end = new Date(currentDate);
+
+  switch (timeFrame) {
+    case 'week':
+      const day = currentDate.getDay();
+      start.setDate(currentDate.getDate() - day);
+      end.setDate(currentDate.getDate() + (6 - day));
+      break;
+    case 'month':
+      start.setDate(1);
+      end.setMonth(currentDate.getMonth() + 1);
+      end.setDate(0);
+      break;
+    case 'quarter':
+      const quarter = Math.floor(currentDate.getMonth() / 3);
+      start.setMonth(quarter * 3);
+      start.setDate(1);
+      end.setMonth(quarter * 3 + 3);
+      end.setDate(0);
+      break;
+  }
+
+  return {
+    start: startOfDay(start),
+    end: endOfDay(end)
+  };
 };
 
-export const getDateRangeForTimeFrame = (date: Date, timeFrame: TimeFrame) => {
+export const formatFinancialYear = (date: Date): string => {
   const year = date.getFullYear();
   const month = date.getMonth();
   
-  switch (timeFrame) {
-    case 'week':
-      const weekStart = new Date(date);
-      weekStart.setDate(date.getDate() - date.getDay());
-      const weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekStart.getDate() + 6);
-      return { start: weekStart, end: weekEnd };
-      
-    case 'month':
-      return {
-        start: new Date(year, month, 1),
-        end: new Date(year, month + 1, 0)
-      };
-      
-    case 'quarter':
-      const quarterMonth = Math.floor(month / 3) * 3;
-      return {
-        start: new Date(year, quarterMonth, 1),
-        end: new Date(year, quarterMonth + 3, 0)
-      };
-      
-    default:
-      throw new Error(`Invalid timeframe: ${timeFrame}`);
+  if (month <= 2) {
+    return `${year - 1}-${year}`;
   }
+  return `${year}-${year + 1}`;
 };
 
-export const groupByTimeFrame = (data: any[], timeframe: TimeFrame) => {
-  return data.reduce((acc, item) => {
-    const date = new Date(item.transaction_date);
-    let key: string;
+export const getFinancialYearRange = (startYear: number, endYear: number): string[] => {
+  const years: string[] = [];
+  for (let year = startYear; year <= endYear; year++) {
+    years.push(`${year}-${year + 1}`);
+  }
+  return years;
+};
 
-    switch (timeframe) {
-      case 'week':
-        key = date.toISOString().substr(0, 10);
-        break;
-      case 'month':
-        key = `${date.getFullYear()}-${date.getMonth() + 1}`;
-        break;
-      case 'quarter':
-        const quarter = Math.floor((date.getMonth() + 1) / 3);
-        key = `${date.getFullYear()}-Q${quarter + 1}`;
-        break;
-    }
-    acc[key] = (acc[key] || 0) + item.amount;
-    return acc;
-  }, {} as Record<string, number>);
+export const isWithinFinancialYear = (date: Date, fyYear: string): boolean => {
+  const [startYear] = fyYear.split('-').map(Number);
+  const fyStart = new Date(startYear, 3, 1);
+  const fyEnd = new Date(startYear + 1, 2, 31);
+  
+  return date >= fyStart && date <= fyEnd;
 };

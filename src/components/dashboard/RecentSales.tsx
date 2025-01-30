@@ -9,8 +9,8 @@ export function RecentSales() {
   const { data: recentSales = [], isLoading } = useQuery({
     queryKey: ['recent-sales', selectedYear],
     queryFn: async () => {
-      const startDate = new Date(Number(selectedYear), 3, 1); // Financial year starts from April
-      const endDate = new Date(Number(selectedYear) + 1, 2, 31); // Ends in March next year
+      const startDate = new Date(Number(selectedYear), 3, 1);
+      const endDate = new Date(Number(selectedYear) + 1, 2, 31);
 
       const { data, error } = await supabase
         .from('invoiceTable')
@@ -19,7 +19,7 @@ export function RecentSales() {
           invNumber,
           invTotal,
           invDate,
-          customerMaster:invCustid (
+          customerMaster!invoiceTable_invCustid_fkey (
             custBusinessname
           )
         `)

@@ -29,6 +29,7 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { getCurrentFinancialYear } from "@/utils/financialYearUtils";
 
 const formSchema = z.object({
   customerId: z.string().min(1, "Customer is required"),
@@ -137,6 +138,7 @@ export function NewSaleForm() {
       }
 
       const invoiceNumber = await generateInvoiceNumber();
+      const currentFY = getCurrentFinancialYear();
       
       const { error } = await supabase.from("invoiceTable").insert({
         invCustid: parseInt(data.customerId),
@@ -147,6 +149,7 @@ export function NewSaleForm() {
         invGst: data.gst,
         invTotal: data.amount + data.gst,
         invMessage1: "New sale entry",
+        fy: currentFY
       });
 
       if (error) throw error;

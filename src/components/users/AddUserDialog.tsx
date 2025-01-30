@@ -32,6 +32,7 @@ interface AddUserDialogProps {
 const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -39,20 +40,15 @@ const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
     },
   });
 
-  const onSubmit = async (values: FormValues) => {
+  const onSubmit = async (data: FormValues) => {
     setIsLoading(true);
     try {
-      const { data: existingUser, error: checkError } = await supabase
+      const { count } = await supabase
         .from('user_profiles')
-        .select('id')
-        .eq('email', values.email)
-        .maybeSingle();
+        .select('*', { count: 'exact', head: true })
+        .eq('email', data.email);
 
-      if (checkError) {
-        throw checkError;
-      }
-
-      if (existingUser) {
+      if (count && count > 0) {
         toast({
           variant: "destructive",
           title: "Error",
@@ -62,15 +58,15 @@ const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
       }
 
       const { error } = await supabase.rpc("create_new_user_with_profile", {
-        user_email: values.email,
-        user_password: values.password,
-        user_full_name: values.full_name,
-        user_role: values.role,
-        user_phone: values.phone_number,
-        user_designation: values.designation,
-        user_department: values.department,
-        user_emergency_contact: values.emergency_contact,
-        user_address: values.address,
+        user_email: data.email,
+        user_password: data.password,
+        user_full_name: data.full_name,
+        user_role: data.role,
+        user_phone: data.phone_number,
+        user_designation: data.designation,
+        user_department: data.department,
+        user_emergency_contact: data.emergency_contact,
+        user_address: data.address,
       });
 
       if (error) {

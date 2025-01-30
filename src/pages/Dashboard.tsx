@@ -59,8 +59,9 @@ export default function Dashboard() {
         if (error) throw error;
 
         if (data?.layout) {
-          const layoutData = data.layout as { [key: string]: Layout[] };
-          if ('lg' in layoutData) {
+          // Safely cast the JSON data to our expected layout type
+          const layoutData = data.layout as unknown as { [key: string]: Layout[] };
+          if (layoutData && typeof layoutData === 'object' && 'lg' in layoutData) {
             setLayouts(layoutData as ReactGridLayouts);
           }
         }
@@ -85,7 +86,7 @@ export default function Dashboard() {
         .from('dashboard_config')
         .upsert({
           user_id: user.id,
-          layout: layout as any,
+          layout: layout as unknown as Record<string, unknown>,
           widgets: {}
         });
 

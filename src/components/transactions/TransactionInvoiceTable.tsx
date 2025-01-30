@@ -14,6 +14,7 @@ import { formatCurrency } from "@/lib/utils";
 import * as XLSX from 'xlsx';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
 
 interface TransactionInvoiceTableProps {
   data: any[];
@@ -29,6 +30,18 @@ export function TransactionInvoiceTable({
   const [searchTerm, setSearchTerm] = useState("");
   const { toast } = useToast();
 
+  // Use useQuery to fetch customers for validation
+  const { data: customers } = useQuery({
+    queryKey: ["customers"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("customerMaster")
+        .select("id, custBusinessname");
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const filteredData = data.filter((invoice) =>
     invoice.customerMaster?.custBusinessname
       .toLowerCase()
@@ -37,7 +50,7 @@ export function TransactionInvoiceTable({
 
   const downloadTemplate = () => {
     const template = [{
-      invCustid: 'Customer ID',
+      invCustid: 'Customer ID (number)',
       invNumber: 'Invoice Number',
       invDate: 'YYYY-MM-DD',
       invDuedate: 'YYYY-MM-DD',
@@ -62,10 +75,7 @@ export function TransactionInvoiceTable({
     const ws = XLSX.utils.json_to_sheet(template);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Template");
-
-    // Add column widths for better readability
     ws['!cols'] = Object.keys(template[0]).map(() => ({ wch: 20 }));
-
     XLSX.writeFile(wb, "invoice-template.xlsx");
   };
 
@@ -86,29 +96,39 @@ export function TransactionInvoiceTable({
           throw new Error("No valid data found in the Excel file");
         }
 
+        // Validate customer IDs before processing
+        const customerIds = customers?.map(c => c.id) || [];
+        
         // Process and validate each row
-        const invoices = jsonData.map((row: any) => ({
-          invCustid: row.invCustid,
-          invNumber: row.invNumber?.toString(),
-          invDate: row.invDate,
-          invDuedate: row.invDuedate,
-          invValue: Number(row.invValue) || 0,
-          invGst: Number(row.invGst) || 0,
-          invAddamount: Number(row.invAddamount) || 0,
-          invSubamount: Number(row.invSubamount) || 0,
-          invTotal: Number(row.invTotal) || 0,
-          invReminder1: Boolean(row.invReminder1),
-          invRemainder2: Boolean(row.invRemainder2),
-          invRemainder3: Boolean(row.invRemainder3),
-          invMarkcleared: Boolean(row.invMarkcleared),
-          invAlert: row.invAlert || '',
-          invMessage1: row.invMessage1 || '',
-          invMessage2: row.invMessage2 || '',
-          invMessage3: row.invMessage3 || '',
-          invBalanceAmount: Number(row.invBalanceAmount) || 0,
-          invPaymentDifference: Number(row.invPaymentDifference) || 0,
-          invPaymentStatus: row.invPaymentStatus || 'pending'
-        }));
+        const invoices = jsonData.map((row: any) => {
+          const custId = Number(row.invCustid);
+          if (!customerIds.includes(custId)) {
+            throw new Error(`Invalid customer ID: ${custId}`);
+          }
+
+          return {
+            invCustid: custId,
+            invNumber: row.invNumber?.toString(),
+            invDate: row.invDate,
+            invDuedate: row.invDuedate,
+            invValue: Number(row.invValue) || 0,
+            invGst: Number(row.invGst) || 0,
+            invAddamount: Number(row.invAddamount) || 0,
+            invSubamount: Number(row.invSubamount) || 0,
+            invTotal: Number(row.invTotal) || 0,
+            invReminder1: Boolean(row.invReminder1),
+            invRemainder2: Boolean(row.invRemainder2),
+            invRemainder3: Boolean(row.invRemainder3),
+            invMarkcleared: Boolean(row.invMarkcleared),
+            invAlert: row.invAlert || '',
+            invMessage1: row.invMessage1 || '',
+            invMessage2: row.invMessage2 || '',
+            invMessage3: row.invMessage3 || '',
+            invBalanceAmount: Number(row.invBalanceAmount) || 0,
+            invPaymentDifference: Number(row.invPaymentDifference) || 0,
+            invPaymentStatus: row.invPaymentStatus || 'pending'
+          };
+        });
 
         const { error } = await supabase
           .from('invoiceTable')
@@ -120,7 +140,6 @@ export function TransactionInvoiceTable({
           title: "Success",
           description: `Successfully uploaded ${invoices.length} invoices`,
         });
-
       };
 
       reader.onerror = (error) => {
@@ -133,12 +152,12 @@ export function TransactionInvoiceTable({
       };
 
       reader.readAsArrayBuffer(file);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload error:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to upload invoice data",
+        description: error.message || "Failed to upload invoice data",
       });
     } finally {
       // Reset the input

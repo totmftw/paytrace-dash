@@ -19,18 +19,19 @@ const AppRoutes = () => {
       <Route path="/" element={<Index />} />
       <Route path="/login" element={<Login />} />
       <Route
+        path="/"
         element={
           <ProtectedRoute>
             <AppLayout>
               <DashboardLayout>
                 <Routes>
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/customers" element={<Customers />} />
-                  <Route path="/products" element={<Products />} />
-                  <Route path="/transactions" element={<Transactions />} />
-                  <Route path="/whatsapp-reminders" element={<WhatsappReminders />} />
+                  <Route path="dashboard" element={<Dashboard />} />
+                  <Route path="customers" element={<Customers />} />
+                  <Route path="products" element={<Products />} />
+                  <Route path="transactions" element={<Transactions />} />
+                  <Route path="whatsapp-reminders" element={<WhatsappReminders />} />
                   <Route
-                    path="/user-management"
+                    path="user-management"
                     element={
                       <ProtectedRoute adminOnly>
                         <UserManagement />

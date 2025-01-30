@@ -58,10 +58,10 @@ export function CustomerExcelUpload() {
 
           console.log("Processed customer data:", customers);
 
-          // Get existing business names (case-insensitive)
+          // Get existing business names and emails
           const { data: existingCustomers, error: fetchError } = await supabase
             .from('customerMaster')
-            .select('custBusinessname');
+            .select('custBusinessname, custEmail');
 
           if (fetchError) {
             throw new Error(`Failed to fetch existing customers: ${fetchError.message}`);
@@ -70,17 +70,21 @@ export function CustomerExcelUpload() {
           const existingBusinessNames = new Set(
             existingCustomers?.map(c => c.custBusinessname.toLowerCase()) || []
           );
+          const existingEmails = new Set(
+            existingCustomers?.map(c => c.custEmail.toLowerCase()) || []
+          );
 
-          // Filter out duplicates (case-insensitive)
+          // Filter out duplicates (both business names and emails)
           const newCustomers = customers.filter(customer => 
-            !existingBusinessNames.has(customer.custBusinessname.toLowerCase())
+            !existingBusinessNames.has(customer.custBusinessname.toLowerCase()) &&
+            !existingEmails.has(customer.custEmail.toLowerCase())
           );
 
           if (newCustomers.length === 0) {
             toast({
               variant: "destructive",
               title: "No new customers to add",
-              description: "All business names in the file already exist in the database.",
+              description: "All business names or emails in the file already exist in the database.",
             });
             return;
           }
@@ -115,7 +119,6 @@ export function CustomerExcelUpload() {
           // Invalidate and refetch customers query
           await queryClient.invalidateQueries({ queryKey: ["customers"] });
 
-          // Show appropriate toast messages
           if (successfulInserts.length > 0) {
             toast({
               title: "Success",

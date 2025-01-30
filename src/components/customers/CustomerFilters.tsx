@@ -29,12 +29,12 @@ export function CustomerFilters({ onFilterChange }: { onFilterChange: (filters: 
   };
 
   return (
-    <div className="flex flex-wrap gap-4 mb-6">
+    <div className="flex flex-wrap gap-4 mb-6 w-full">
       <Input
         placeholder="Search by business name..."
         value={filters.name}
         onChange={(e) => handleFilterChange("name", e.target.value)}
-        className="max-w-xs"
+        className="max-w-xs flex-1"
       />
       <Select
         value={filters.type}

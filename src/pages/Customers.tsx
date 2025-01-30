@@ -19,7 +19,7 @@ export default function Customers() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex h-full w-full flex-col space-y-6 overflow-hidden">
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold tracking-tight">Customers</h2>
         <div className="flex gap-4">
@@ -34,7 +34,9 @@ export default function Customers() {
         </div>
       </div>
       <CustomerFilters onFilterChange={handleFilterChange} />
-      <CustomerTable />
+      <div className="flex-1 min-h-0">
+        <CustomerTable />
+      </div>
       {showAddDialog && (
         <CustomerDialog
           onClose={() => setShowAddDialog(false)}

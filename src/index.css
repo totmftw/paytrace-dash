@@ -39,9 +39,14 @@
     @apply bg-background text-foreground antialiased;
   }
 
+  #root {
+    @apply h-full w-full;
+  }
+
   /* Table Styles */
   .table-container {
-    @apply w-full overflow-auto max-h-[calc(100vh-16rem)];
+    @apply w-full overflow-auto;
+    height: calc(100vh - 16rem);
     
     table {
       @apply w-full border-collapse min-w-full;
@@ -72,6 +77,15 @@
     
     &.isResizing {
       @apply bg-primary;
+    }
+  }
+
+  /* Dashboard Grid */
+  .dashboard-grid {
+    @apply w-full h-full overflow-hidden;
+    
+    .react-grid-item {
+      @apply bg-white rounded-lg shadow-sm border border-border;
     }
   }
 }

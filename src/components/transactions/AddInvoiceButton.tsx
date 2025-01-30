@@ -1,83 +1,118 @@
-// src/pages/Transactions/buttons/AddInvoiceButton.tsx
 import React, { useState } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useToast } from "@/components/ui/use-toast";
-import { Form, FormControl, FormField, FormLabel } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/contexts/AuthContext";
-import { columns } from "./TransactionInvoiceTable"; // Adjust import path as needed
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { useToast } from "@/hooks/use-toast";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { supabase } from "@/integrations/supabase/client";
 
-export default function AddInvoiceButton() {
+const formSchema = z.object({
+  invNumber: z.string().min(1, "Invoice number is required"),
+  invValue: z.number().min(0, "Value must be positive"),
+  invGst: z.number().min(0, "GST must be positive"),
+  invAddamount: z.number().optional(),
+  invSubamount: z.number().optional(),
+  invCustid: z.number().min(1, "Customer is required"),
+  invDate: z.string().min(1, "Date is required"),
+  invDuedate: z.string().min(1, "Due date is required"),
+});
+
+export function AddInvoiceButton() {
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
-  const { user } = useAuth();
-  const [formValues, setFormValues] = useState({});
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      invValue: 0,
+      invGst: 0,
+      invAddamount: 0,
+      invSubamount: 0,
+    },
+  });
 
-  const handleSubmit = async () => {
-    if (!user) return;
-
+  const onSubmit = async (data: z.infer<typeof formSchema>) => {
     try {
-      await supabase.from('invoiceTable').insert([{
-        ...formValues,
-        user_id: user.id,
-      }]);
+      const { error } = await supabase
+        .from("invoiceTable")
+        .insert([{
+          ...data,
+          invTotal: data.invValue + data.invGst + 
+            (data.invAddamount || 0) - (data.invSubamount || 0),
+          invBalanceAmount: 0,
+          invPaymentStatus: 'pending'
+        }]);
+
+      if (error) throw error;
+
       toast({
-        title: "Invoice Added",
-        description: "Your invoice has been added",
+        title: "Success",
+        description: "Invoice added successfully",
       });
       setIsOpen(false);
     } catch (error) {
-      console.error(error);
       toast({
-        title: "Error",
-        description: "Failed to add invoice",
         variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to add invoice",
       });
     }
   };
 
   return (
     <>
-      <Button variant="ghost" onClick={() => setIsOpen(true)}>
-        Add Single Invoice
+      <Button 
+        variant="outline" 
+        onClick={() => setIsOpen(true)}
+        className="bg-[#98D8AA] text-[#1B4332] hover:bg-[#75C2A0]"
+      >
+        Add Invoice
       </Button>
+      
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Invoice</DialogTitle>
+            <DialogTitle>Add New Invoice</DialogTitle>
           </DialogHeader>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSubmit();
-            }}
-          >
-            {columns.map((column) => (
+          
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
-                key={column.accessorKey}
-                name={column.accessorKey}
+                control={form.control}
+                name="invNumber"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>{column.header}</FormLabel>
+                    <FormLabel>Invoice Number</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder={column.header}
-                        {...field}
-                        onChange={(e) => {
-                          setFormValues((prev) => ({
-                            ...prev,
-                            [column.accessorKey]: e.target.value,
-                          }));
-                        }}
-                      />
+                      <Input {...field} />
                     </FormControl>
                   </FormItem>
                 )}
               />
-            ))}
-            <Button type="submit">Submit</Button>
-          </form>
+              
+              {/* Add other form fields here */}
+              
+              <Button 
+                type="submit"
+                className="bg-[#98D8AA] text-[#1B4332] hover:bg-[#75C2A0]"
+              >
+                Submit
+              </Button>
+            </form>
+          </Form>
         </DialogContent>
       </Dialog>
     </>

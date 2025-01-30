@@ -6,12 +6,15 @@ import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ColumnConfigProvider } from "@/contexts/columnConfigContext";
-import CustomerTable from "@/components/customers/CustomerTable";
+import { CustomerTable } from "@/components/customers/CustomerTable";
 import CustomerBalanceTable from "@/components/customers/CustomerBalanceTable";
 
 export default function Customers() {
   const navigate = useNavigate();
   const { selectedYear } = useFinancialYear();
+
+  // Convert selectedYear string to number for the CustomerBalanceTable
+  const financialYear = selectedYear ? parseInt(selectedYear.split('-')[0]) : new Date().getFullYear();
 
   return (
     <div className="space-y-6 bg-[#E8F3E8] min-h-screen p-6">
@@ -35,7 +38,7 @@ export default function Customers() {
             <CustomerTable />
           </TabsContent>
           <TabsContent value="balances">
-            <CustomerBalanceTable />
+            <CustomerBalanceTable financialYear={financialYear} />
           </TabsContent>
         </Tabs>
       </ColumnConfigProvider>

@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/toaster";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import AppRoutes from "./AppRoutes";
 
 const queryClient = new QueryClient();
@@ -13,8 +14,12 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <AuthProvider>
-            <AppRoutes />
-            <Toaster />
+            <SidebarProvider>
+              <div className="min-h-screen flex w-full">
+                <AppRoutes />
+                <Toaster />
+              </div>
+            </SidebarProvider>
           </AuthProvider>
         </ThemeProvider>
       </QueryClientProvider>

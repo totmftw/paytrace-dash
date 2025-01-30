@@ -1,12 +1,11 @@
-// src/components/ColumnConfig.tsx
 import React from "react";
-import { useColumnConfig } from "@/contexts/columnConfigContext";
+import { ColumnConfigProvider, useColumnConfig } from "@/contexts/columnConfigContext";
 
 type ColumnConfigProps = {
   columns: string[];
 };
 
-export default function ColumnConfig({ columns }: ColumnConfigProps) {
+function ColumnConfigContent({ columns }: ColumnConfigProps) {
   const { visibleColumns, setVisibleColumns } = useColumnConfig();
 
   return (
@@ -30,5 +29,13 @@ export default function ColumnConfig({ columns }: ColumnConfigProps) {
         </label>
       ))}
     </div>
+  );
+}
+
+export default function ColumnConfig(props: ColumnConfigProps) {
+  return (
+    <ColumnConfigProvider>
+      <ColumnConfigContent {...props} />
+    </ColumnConfigProvider>
   );
 }

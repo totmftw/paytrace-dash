@@ -19,7 +19,14 @@ import { useToast } from "@/hooks/use-toast";
 
 const ROLES = ['business_owner', 'business_manager', 'order_manager', 'it_admin', 'team_member'] as const;
 
-const DEFAULT_PERMISSIONS = [
+interface Permission {
+  id: string;
+  name: string;
+  children?: Permission[];
+  checked?: boolean;
+}
+
+const DEFAULT_PERMISSIONS: Permission[] = [
   {
     id: 'dashboard',
     name: 'Dashboard',
@@ -64,7 +71,7 @@ interface RolePermissionsDialogProps {
 
 export function RolePermissionsDialog({ isOpen, onClose }: RolePermissionsDialogProps) {
   const [selectedRole, setSelectedRole] = useState<typeof ROLES[number]>('team_member');
-  const [permissions, setPermissions] = useState(DEFAULT_PERMISSIONS);
+  const [permissions, setPermissions] = useState<Permission[]>(DEFAULT_PERMISSIONS);
   const { toast } = useToast();
 
   useEffect(() => {

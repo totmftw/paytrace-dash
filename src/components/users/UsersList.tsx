@@ -24,6 +24,7 @@ import {
 
 type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"] & {
   reports_to: { full_name: string } | null;
+  email?: string; // Make email optional since it comes from auth.users
 };
 
 interface UsersListProps {

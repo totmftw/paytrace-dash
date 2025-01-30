@@ -51,7 +51,7 @@ export default function Dashboard() {
     loadLayout();
   }, [user?.id]);
 
-  const saveLayout = async (layout: any) => {
+  const saveLayout = async (layout: typeof defaultLayouts) => {
     if (!user?.id) return;
 
     try {
@@ -60,7 +60,7 @@ export default function Dashboard() {
         .upsert({
           user_id: user.id,
           layout: layout,
-          widgets: {} // Required field
+          widgets: {} // Required field with empty object as default
         });
 
       if (error) throw error;

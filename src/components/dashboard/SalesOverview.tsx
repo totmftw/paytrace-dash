@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card } from "@/components/ui/card";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } from 'recharts';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, LineChart, Line, CompositeChart } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useFinancialYear } from '@/contexts/FinancialYearContext';
@@ -16,7 +16,15 @@ const SalesOverview = () => {
 
       const { data: invoices, error } = await supabase
         .from('invoiceTable')
-        .select('invTotal, invBalanceAmount, invDate')
+        .select(`
+          invTotal,
+          invBalanceAmount,
+          invDate,
+          paymentTransactions (
+            amount,
+            paymentDate
+          )
+        `)
         .gte('invDate', startDate.toISOString())
         .lte('invDate', endDate.toISOString());
 
@@ -36,24 +44,17 @@ const SalesOverview = () => {
         });
 
         const sales = monthInvoices.reduce((sum, inv) => sum + Number(inv.invTotal), 0);
-        const pending = monthInvoices.reduce((sum, inv) => {
-          const balance = Number(inv.invBalanceAmount);
-          const dueDate = new Date(inv.invDate);
-          dueDate.setDate(dueDate.getDate() + 30); // Assuming 30 days credit period
-          return sum + (balance > 0 && new Date() <= dueDate ? balance : 0);
+        const collections = monthInvoices.reduce((sum, inv) => {
+          const payments = inv.paymentTransactions || [];
+          return sum + payments.reduce((pSum, p) => pSum + Number(p.amount), 0);
         }, 0);
-        const overdue = monthInvoices.reduce((sum, inv) => {
-          const balance = Number(inv.invBalanceAmount);
-          const dueDate = new Date(inv.invDate);
-          dueDate.setDate(dueDate.getDate() + 30); // Assuming 30 days credit period
-          return sum + (balance > 0 && new Date() > dueDate ? balance : 0);
-        }, 0);
+        const pending = monthInvoices.reduce((sum, inv) => sum + Number(inv.invBalanceAmount), 0);
 
         return {
           month: monthName,
           sales: Math.round(sales),
-          pending: Math.round(pending),
-          overdue: Math.round(overdue)
+          collections: Math.round(collections),
+          pending: Math.round(pending)
         };
       });
 
@@ -70,22 +71,31 @@ const SalesOverview = () => {
   return (
     <Card className="w-full h-[400px] p-4">
       <div className="h-full">
-        <h3 className="text-lg font-semibold mb-4">Sales Overview</h3>
+        <h3 className="text-lg font-semibold mb-4">Sales & Collections Overview</h3>
         <div className="h-[320px]">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={salesData}>
+            <CompositeChart data={salesData}>
               <XAxis dataKey="month" />
               <YAxis tickFormatter={(value) => `₹${value / 1000}k`} />
-              <Tooltip formatter={(value: number) => formatCurrency(value)} />
-              <Bar dataKey="sales" fill="#22c55e" />
-              <Bar dataKey="pending" fill="#eab308" />
-              <Bar dataKey="overdue" fill="#ef4444" />
-              <Legend payload={[
-                { value: 'Sales', type: 'square', color: '#22c55e' },
-                { value: 'Pending', type: 'square', color: '#eab308' },
-                { value: 'Overdue', type: 'square', color: '#ef4444' }
-              ]} />
-            </BarChart>
+              <Tooltip 
+                formatter={(value: number) => formatCurrency(value)}
+                contentStyle={{
+                  backgroundColor: 'hsl(var(--background))',
+                  border: '1px solid hsl(var(--border))',
+                  borderRadius: '0.5rem'
+                }}
+              />
+              <Bar dataKey="sales" fill="#22c55e" name="Sales" />
+              <Bar dataKey="pending" fill="#eab308" name="Pending" />
+              <Line 
+                type="monotone" 
+                dataKey="collections" 
+                stroke="#3b82f6" 
+                strokeWidth={2}
+                name="Collections"
+              />
+              <Legend />
+            </CompositeChart>
           </ResponsiveContainer>
         </div>
       </div>

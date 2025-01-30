@@ -10,14 +10,14 @@ import {
 } from "@/components/ui/select";
 
 export type CustomerFilters = {
-  location: string;
+  name: string;
   type: string;
   status: string;
 };
 
 export function CustomerFilters({ onFilterChange }: { onFilterChange: (filters: CustomerFilters) => void }) {
   const [filters, setFilters] = useState<CustomerFilters>({
-    location: "",
+    name: "",
     type: "",
     status: "",
   });
@@ -31,9 +31,9 @@ export function CustomerFilters({ onFilterChange }: { onFilterChange: (filters: 
   return (
     <div className="flex flex-wrap gap-4 mb-6">
       <Input
-        placeholder="Search by location..."
-        value={filters.location}
-        onChange={(e) => handleFilterChange("location", e.target.value)}
+        placeholder="Search by business name..."
+        value={filters.name}
+        onChange={(e) => handleFilterChange("name", e.target.value)}
         className="max-w-xs"
       />
       <Select
@@ -64,7 +64,7 @@ export function CustomerFilters({ onFilterChange }: { onFilterChange: (filters: 
       <Button
         variant="outline"
         onClick={() => {
-          const resetFilters = { location: "", type: "", status: "" };
+          const resetFilters = { name: "", type: "", status: "" };
           setFilters(resetFilters);
           onFilterChange(resetFilters);
         }}

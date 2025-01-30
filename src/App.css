@@ -1,5 +1,4 @@
-#root {
-  max-width: 100%;
+#%;
   min-height: 100vh;
   margin: 0;
   padding: 0;
@@ -27,15 +26,44 @@
     @apply border-border/50;
   }
 }
+
+/* Full Width Container */
+.full-width-container {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  padding: 1rem;
+}
+
+/* Table Container with Scroll */
+.table-container {
+  width: 100%;
+  overflow: auto;
+  max-height: calc(100vh - 12rem);
+  border-radius: 0.5rem;
+  border: 1px solid hsl(var(--border));
+}
+
+/* Responsive Grid Layout */
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+  width: 100%;
+  padding: 1rem;
+}
+
 .logo {
   height: 6em;
   padding: 1.5em;
   will-change: filter;
   transition: filter 300ms;
 }
+
 .logo:hover {
   filter: drop-shadow(0 0 2em #646cffaa);
 }
+
 .logo.react:hover {
   filter: drop-shadow(0 0 2em #61dafbaa);
 }

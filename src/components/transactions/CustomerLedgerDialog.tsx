@@ -5,22 +5,16 @@ import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateRunningBalance, formatLedgerDate, sortLedgerEntries } from "@/utils/ledgerCalculations";
-import { LedgerEntry } from "@/types/ledger";
+import { LedgerEntry, CustomerLedgerProps } from "@/types/ledger";
 import * as XLSX from 'xlsx';
-
-interface CustomerLedgerDialogProps {
-  customerId: number;
-  customerName: string;
-  isOpen: boolean;
-  onClose: () => void;
-}
 
 export function CustomerLedgerDialog({
   customerId,
   customerName,
+  whatsappNumber,
   isOpen,
   onClose,
-}: CustomerLedgerDialogProps) {
+}: CustomerLedgerProps) {
   const [entries, setEntries] = useState<LedgerEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 

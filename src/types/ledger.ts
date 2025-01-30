@@ -10,7 +10,8 @@ export interface LedgerEntry {
 export interface CustomerLedgerProps {
   customerId: number;
   customerName: string;
-  whatsappNumber: string;
+  whatsappNumber: number;
+  isOpen: boolean;
   onClose: () => void;
 }
 

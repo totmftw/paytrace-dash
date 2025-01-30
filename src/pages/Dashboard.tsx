@@ -13,6 +13,7 @@ import { RecentTransactions } from "@/components/dashboard/RecentTransactions";
 import { OutstandingPayments } from "@/components/dashboard/OutstandingPayments";
 import { TopCustomers } from "@/components/dashboard/TopCustomers";
 import { PaymentTrends } from "@/components/dashboard/PaymentTrends";
+import { Json } from "@/integrations/supabase/types";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -86,8 +87,8 @@ export default function Dashboard() {
         .from('dashboard_config')
         .upsert({
           user_id: user.id,
-          layout: layout as unknown as Record<string, unknown>,
-          widgets: {}
+          layout: layout as unknown as Json,
+          widgets: {} as Json
         });
 
       if (error) throw error;

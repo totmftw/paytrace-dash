@@ -134,6 +134,41 @@ export type Database = {
         }
         Relationships: []
       }
+      dashboard_layouts: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          layout: Json
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          layout: Json
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          layout?: Json
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dashboard_layouts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_management"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       feature_permissions: {
         Row: {
           created_at: string | null
@@ -787,6 +822,12 @@ export type Database = {
           can_delete: boolean
           custom_permissions: Json
         }[]
+      }
+      update_dashboard_layout: {
+        Args: {
+          new_layout: Json
+        }
+        Returns: string
       }
       update_user_role: {
         Args: {

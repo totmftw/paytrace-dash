@@ -8,7 +8,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Combobox } from "@/components/ui/combobox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface CustomerData {
   id: number;
@@ -84,20 +83,16 @@ export default function Transactions() {
         <TabsContent value="ledger" className="space-y-6">
           <div className="flex gap-4 items-center">
             <div className="w-96">
-              {customersLoading ? (
-                <Skeleton className="h-10 w-full" />
-              ) : (
-                <Combobox
-                  items={customerOptions}
-                  placeholder="Search customer..."
-                  onSelect={(value) => {
-                    const customer = customerOptions.find(c => c.value === value);
-                    if (customer) {
-                      setSelectedCustomer(customer.data);
-                    }
-                  }}
-                />
-              )}
+              <Combobox
+                items={customerOptions}
+                placeholder="Search customer..."
+                onSelect={(value) => {
+                  const customer = customerOptions.find(c => c.value === value);
+                  if (customer) {
+                    setSelectedCustomer(customer.data);
+                  }
+                }}
+              />
             </div>
             <Select value={selectedYear} onValueChange={setSelectedYear}>
               <SelectTrigger className="w-48 bg-[#D3E4FD]">

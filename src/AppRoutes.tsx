@@ -1,3 +1,4 @@
+// src/AppRoutes.tsx
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/AppLayout";
@@ -9,9 +10,10 @@ import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import Customers from "@/pages/Customers";
 import Products from "@/pages/Products";
-import Transactions from "@/pages/Transactions";
-import UserManagement from "@/pages/UserProfiles";
 import WhatsappReminders from "@/pages/WhatsappReminders";
+import TransactionsPage from "@/pages/Transactions"; // Updated import
+
+import UserManagement from "@/pages/UserProfiles"; // Ensure this import is correct
 
 const AppRoutes = () => {
   return (
@@ -30,8 +32,8 @@ const AppRoutes = () => {
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="customers" element={<Customers />} />
           <Route path="products" element={<Products />} />
-          <Route path="transactions" element={<Transactions />} />
           <Route path="whatsapp-reminders" element={<WhatsappReminders />} />
+          <Route path="transactions" element={<TransactionsPage />} /> {/* Updated route */}
           <Route
             path="user-management"
             element={

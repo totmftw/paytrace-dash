@@ -1,39 +1,18 @@
+// src/pages/Transactions.tsx
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
-import { CustomerLedgerTable } from "@/components/transactions/CustomerLedgerTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import InvoiceTab from "@/components/transactions/InvoiceTab";
+import PaymentTab from "@/components/transactions/PaymentTab";
+import LedgerTab from "@/components/transactions/LedgerTab";
 
 export default function Transactions() {
   const navigate = useNavigate();
-  const [selectedCustomer, setSelectedCustomer] = useState(null);
-  const [selectedInvoice, setSelectedInvoice] = useState(null);
-  const { selectedYear, getFYDates } = useFinancialYear();
-  const { start, end } = getFYDates();
-
-  const { data: invoices, isLoading } = useQuery({
-    queryKey: ['invoices', selectedYear],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('invoiceTable')
-        .select(`
-          *,
-          customerMaster!invoiceTable_invCustid_fkey (
-            id, 
-            custBusinessname, 
-            custWhatsapp
-          )
-        `)
-        .gte('invDate', start.toISOString())
-        .lte('invDate', end.toISOString());
-
-      if (error) throw error;
-      return data;
-    }
-  });
+  const { selectedYear } = useFinancialYear();
 
   return (
     <div className="space-y-6 bg-[#E8F3E8] min-h-screen p-6">
@@ -50,14 +29,17 @@ export default function Transactions() {
       <Tabs defaultValue="invoices" className="space-y-4">
         <TabsList>
           <TabsTrigger value="invoices">Invoices</TabsTrigger>
-          <TabsTrigger value="customers">Customers</TabsTrigger>
+          <TabsTrigger value="payments">Payments</TabsTrigger>
+          <TabsTrigger value="ledger">Ledger</TabsTrigger>
         </TabsList>
-        <TabsContent value="customers">
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
-            <CustomerLedgerTable 
-              onCustomerClick={(customer) => navigate(`/customer/${customer.id}`)}
-            />
-          </div>
+        <TabsContent value="invoices">
+          <InvoiceTab />
+        </TabsContent>
+        <TabsContent value="payments">
+          <PaymentTab />
+        </TabsContent>
+        <TabsContent value="ledger">
+          <LedgerTab />
         </TabsContent>
       </Tabs>
     </div>

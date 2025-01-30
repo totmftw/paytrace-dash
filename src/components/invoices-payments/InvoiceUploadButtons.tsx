@@ -3,7 +3,19 @@ import { Input } from "@/components/ui/input";
 import { Upload, Download } from "lucide-react";
 import * as XLSX from 'xlsx';
 import { useToast } from "@/hooks/use-toast";
+// InvoiceUploadButtons.tsx
+import { Button } from "@/components/ui/button";
+import { ExcelUpload } from "@/components/dashboard/ExcelUpload";
 
+export function InvoiceUploadButtons() {
+  return (
+    <div className="flex gap-4">
+      <Button>Download Template</Button>
+      <ExcelUpload type="invoice" />
+      <Button onClick={() => navigate("/invoices/new")}>Add Invoice</Button>
+    </div>
+  );
+}
 export function InvoiceUploadButtons() {
   const { toast } = useToast();
 

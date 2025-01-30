@@ -17,7 +17,20 @@ interface ExcelPaymentRow {
   Amount: number;
   Remarks?: string;
 }
+// ExcelUpload.tsx
+const processPayment = async (invoice: any, paymentAmount: number, row: ExcelPaymentRow) => {
+  // ... Existing logic ...
 
+  const { data: invoiceData, error: invoiceError } = await supabase
+    .from("invoiceTable")
+    .select("invId, invTotal, invBalanceAmount, invCustid")
+    .eq("invNumber", row.InvoiceNumber)
+    .single();
+
+  if (invoiceError) throw invoiceError;
+
+  // ... Rest of the logic ...
+};
 export function ExcelUpload() {
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();

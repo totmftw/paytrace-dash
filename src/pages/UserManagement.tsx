@@ -9,7 +9,38 @@ import UsersList from "@/components/users/UsersList";
 import { RolePermissionsDialog } from "@/components/users/RolePermissionsDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+// UserManagement.tsx
+import { RolePermissionsDialog } from "@/components/users/RolePermissionsDialog";
+import { useAuth } from "@/contexts/AuthContext";
 
+export default function UserManagement() {
+  const { user } = useAuth();
+  const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
+
+  return (
+    <div className="space-y-6 p-6 bg-moss-green/10">
+      <div className="flex justify-between items-center">
+        <h2 className="text-3xl font-bold text-forest-green">User Management</h2>
+        {user?.role === "it_admin" && (
+          <Button 
+            onClick={() => setIsPermissionsDialogOpen(true)}
+          >
+            Manage Permissions
+          </Button>
+        )}
+      </div>
+
+      {/* Existing code */}
+      
+      {user?.role === "it_admin" && (
+        <RolePermissionsDialog
+          isOpen={isPermissionsDialogOpen}
+          onClose={() => setIsPermissionsDialogOpen(false)}
+        />
+      )}
+    </div>
+  );
+}
 export default function UserManagement() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);

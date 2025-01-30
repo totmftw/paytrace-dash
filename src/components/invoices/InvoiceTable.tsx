@@ -28,7 +28,12 @@ import { InvoiceTableToolbar } from "./InvoiceTableToolbar";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Json } from "@/integrations/supabase/types";
-
+// InvoiceTable.tsx
+{
+  accessorKey: "customerMaster.custBusinessname",
+  header: "Customer Name",
+  cell: ({ row }) => row.original.customerMaster?.custBusinessname || "N/A"
+},
 interface UserPreferences {
   invoiceTable?: {
     columnVisibility?: VisibilityState;

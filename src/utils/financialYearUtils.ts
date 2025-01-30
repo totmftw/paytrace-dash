@@ -1,5 +1,39 @@
 import { startOfDay, endOfDay, parseISO, format } from 'date-fns';
+// src/utils/financialYearUtils.ts
+export enum TimeFrame {
+  WEEK = 'week',
+  MONTH = 'month',
+  QUARTER = 'quarter'
+}
 
+export const getFinancialYearDates = (year: number): { start: Date; end: Date } => {
+  return {
+    start: new Date(year, 3, 1),   // April 1st
+    end: new Date(year + 1, 2, 31) // March 31st next year
+  };
+};
+
+export const groupByTimeFrame = (data: any[], timeframe: TimeFrame) => {
+  return data.reduce((acc, item) => {
+    const date = new Date(item.transaction_date);
+    let key: string;
+
+    switch (timeframe) {
+      case TimeFrame.WEEK:
+        key = date.toISOString().substr(0, 10);
+        break;
+      case TimeFrame.MONTH:
+        key = `${date.getFullYear()}-${date.getMonth() + 1}`;
+        break;
+      case TimeFrame.QUARTER:
+        const quarter = Math.floor((date.getMonth() + 1) / 3);
+        key = `${date.getFullYear()}-Q${quarter + 1}`;
+        break;
+    }
+    acc[key] = (acc[key] || 0) + item.amount;
+    return acc;
+  }, {} as Record<string, number>);
+};
 export const getFinancialYearDates = (year: string) => {
   const [startYear] = year.split('-').map(Number);
   const start = startOfDay(new Date(startYear, 3, 1)); // April 1st

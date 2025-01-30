@@ -29,6 +29,9 @@ import {
 } from "@/components/ui/popover";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import type { Database } from "@/integrations/supabase/types";
+
+type Invoice = Database['public']['Tables']['invoiceTable']['Insert'];
 
 const invoiceSchema = z.object({
   invNumber: z.string().min(1, "Invoice number is required"),
@@ -45,12 +48,12 @@ const invoiceSchema = z.object({
   invCustid: z.number().min(1, "Customer is required"),
 });
 
-type InvoiceFormProps = {
+interface InvoiceFormProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  invoice?: any;
-};
+  invoice?: Invoice;
+}
 
 export function InvoiceForm({ isOpen, onClose, onSuccess, invoice }: InvoiceFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -90,7 +93,7 @@ export function InvoiceForm({ isOpen, onClose, onSuccess, invoice }: InvoiceForm
     try {
       setIsSubmitting(true);
       
-      const invoiceData = {
+      const invoiceData: Invoice = {
         invNumber: values.invNumber,
         invValue: parseFloat(values.invValue),
         invGst: parseFloat(values.invGst),
@@ -105,6 +108,8 @@ export function InvoiceForm({ isOpen, onClose, onSuccess, invoice }: InvoiceForm
                  (values.invAddamount ? parseFloat(values.invAddamount) : 0) - 
                  (values.invSubamount ? parseFloat(values.invSubamount) : 0),
         invMessage1: '',
+        invBalanceAmount: 0,
+        invPaymentStatus: 'pending'
       };
 
       if (invoice) {

@@ -23,6 +23,9 @@ const SalesOverview = () => {
           paymentTransactions (
             amount,
             paymentDate
+          ),
+          customerMaster!invoiceTable_invCustid_fkey (
+            custBusinessname
           )
         `)
         .gte('invDate', startDate.toISOString())

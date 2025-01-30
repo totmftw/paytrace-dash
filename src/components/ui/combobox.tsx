@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/popover"
 
 interface ComboboxProps {
-  items: { label: string; value: string }[]
+  items?: { label: string; value: string }[]
   placeholder?: string
   onSelect: (value: string) => void
   defaultValue?: string
@@ -36,12 +36,9 @@ export function Combobox({
 
   // Find the label for the current value
   const selectedLabel = React.useMemo(() => {
-    if (!items) return placeholder
-    const selectedItem = items.find((item) => item.value === value)
+    const selectedItem = items?.find((item) => item.value === value)
     return selectedItem?.label || placeholder
   }, [items, value, placeholder])
-
-  if (!items) return null
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -61,7 +58,7 @@ export function Combobox({
           <CommandInput placeholder={placeholder} />
           <CommandEmpty>No item found.</CommandEmpty>
           <CommandGroup>
-            {items.map((item) => (
+            {items?.map((item) => (
               <CommandItem
                 key={item.value}
                 value={item.value}

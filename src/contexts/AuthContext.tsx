@@ -20,6 +20,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  useEffect(() => {
+    // Check active session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      } else {
+        setLoading(false);
+      }
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      } else {
+        setUser(null);
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   async function fetchUserProfile(userId: string) {
     try {
       const { data, error } = await supabase
@@ -28,66 +51,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         .eq("id", userId)
         .single();
 
-      if (error) {
-        if (error.code === 'PGRST116') {
-          // Profile not found, might be a new user
-          console.log("Profile not found for user:", userId);
-          return null;
-        }
-        throw error;
-      }
-      return data;
+      if (error) throw error;
+      setUser(data);
     } catch (error) {
       console.error("Error fetching user profile:", error);
       toast({
         title: "Error",
-        description: "Failed to fetch user profile. Please try again later.",
+        description: "Failed to fetch user profile",
         variant: "destructive",
       });
-      return null;
+    } finally {
+      setLoading(false);
     }
   }
-
-  useEffect(() => {
-    let mounted = true;
-
-    // Check active session and set up auth state listener
-    const initializeAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
-        if (session?.user && mounted) {
-          const profile = await fetchUserProfile(session.user.id);
-          if (mounted) setUser(profile);
-        }
-      } catch (error) {
-        console.error("Error initializing auth:", error);
-      } finally {
-        if (mounted) setLoading(false);
-      }
-    };
-
-    initializeAuth();
-
-    // Set up auth state change listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (mounted) {
-        if (session?.user) {
-          const profile = await fetchUserProfile(session.user.id);
-          setUser(profile);
-        } else {
-          setUser(null);
-        }
-        setLoading(false);
-      }
-    });
-
-    // Cleanup
-    return () => {
-      mounted = false;
-      subscription.unsubscribe();
-    };
-  }, [toast]);
 
   const signOut = async () => {
     try {
@@ -100,7 +76,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error("Error signing out:", error);
       toast({
         title: "Error",
-        description: "Failed to sign out. Please try again.",
+        description: "Failed to sign out",
         variant: "destructive",
       });
     }

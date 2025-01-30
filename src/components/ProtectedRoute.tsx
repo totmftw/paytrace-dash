@@ -13,7 +13,7 @@ export function ProtectedRoute({ children, adminOnly = false }: { children: Reac
   const { data: userProfile, isLoading: profileLoading, error } = useQuery({
     queryKey: ['userProfile', user?.id],
     queryFn: async () => {
-      if (!user?.id) return null;
+      if (!user) return null;
       
       const { data, error } = await supabase
         .from('user_profiles')
@@ -22,17 +22,17 @@ export function ProtectedRoute({ children, adminOnly = false }: { children: Reac
         .maybeSingle();
 
       if (error) {
-        if (error.code === 'PGRST116') return null;
+        console.error('Error fetching user profile:', error);
         throw error;
       }
 
       return data;
     },
-    enabled: !!user?.id,
-    retry: 1,
-    retryDelay: 1000,
+    enabled: !!user,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * (2 ** attemptIndex), 30000),
     staleTime: 300000, // 5 minutes
-    gcTime: 3600000, // 1 hour
+    gcTime: 3600000, // 1 hour (formerly cacheTime)
   });
 
   useEffect(() => {
@@ -45,7 +45,7 @@ export function ProtectedRoute({ children, adminOnly = false }: { children: Reac
       console.error('Profile fetch error:', error);
       toast({
         title: "Connection Error",
-        description: "Unable to verify your permissions. Please try again later.",
+        description: "Unable to verify your permissions. Please check your internet connection and try again.",
         variant: "destructive",
       });
       return;

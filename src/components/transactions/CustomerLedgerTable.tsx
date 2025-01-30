@@ -24,7 +24,7 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
   const { start, end } = getFYDates();
   const { toast } = useToast();
 
-  const { data: customers, isLoading: isLoadingCustomers } = useQuery({
+  const { data: customers = [], isLoading: isLoadingCustomers } = useQuery({
     queryKey: ['customers'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -33,14 +33,14 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
         .order('custBusinessname');
       
       if (error) throw error;
-      return data;
+      return data || [];
     },
   });
 
-  const { data: ledgerEntries, isLoading: isLoadingLedger } = useQuery({
+  const { data: ledgerEntries = [], isLoading: isLoadingLedger } = useQuery({
     queryKey: ['customer-ledger', selectedCustomerId, selectedYear],
     queryFn: async () => {
-      if (!selectedCustomerId) return null;
+      if (!selectedCustomerId) return [];
 
       const { data, error } = await supabase
         .rpc('get_customer_ledger', {
@@ -50,7 +50,7 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
         });
 
       if (error) throw error;
-      return data;
+      return data || [];
     },
     enabled: !!selectedCustomerId,
   });
@@ -131,6 +131,8 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
     }
   };
 
+  const selectedCustomer = customers?.find((customer) => customer.id === selectedCustomerId);
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -143,8 +145,8 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
                 aria-expanded={open}
                 className="w-[300px] justify-between"
               >
-                {selectedCustomerId
-                  ? customers?.find((customer) => customer.id === selectedCustomerId)?.custBusinessname
+                {selectedCustomer
+                  ? selectedCustomer.custBusinessname
                   : "Select customer..."}
                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
               </Button>
@@ -154,7 +156,7 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
                 <CommandInput placeholder="Search customer..." />
                 <CommandEmpty>No customer found.</CommandEmpty>
                 <CommandGroup>
-                  {customers?.map((customer) => (
+                  {customers.map((customer) => (
                     <CommandItem
                       key={customer.id}
                       value={customer.custBusinessname}
@@ -225,15 +227,15 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
                   Select a customer to view their ledger
                 </td>
               </tr>
-            ) : ledgerEntries?.length === 0 ? (
+            ) : ledgerEntries.length === 0 ? (
               <tr>
                 <td colSpan={6} className="text-center py-4">
                   No transactions found for this period
                 </td>
               </tr>
             ) : (
-              ledgerEntries?.map((entry) => (
-                <tr key={entry.transaction_date}>
+              ledgerEntries.map((entry, index) => (
+                <tr key={`${entry.transaction_date}-${index}`}>
                   <td>{new Date(entry.transaction_date).toLocaleDateString()}</td>
                   <td>{entry.description}</td>
                   <td>{entry.invoice_number || '-'}</td>

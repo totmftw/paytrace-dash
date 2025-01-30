@@ -1,27 +1,29 @@
-import React, { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { useFinancialYear } from "@/contexts/FinancialYearContext";
-import { CustomerSelector } from "./CustomerSelector";
-import { DataTable } from "@/components/ui/data-table";
-import PDFExport from "@/components/buttons/PDFExport";
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useFinancialYear } from '@/contexts/FinancialYearContext';
+import { CustomerSelector } from './CustomerSelector';
+import { DataTable } from '@/components/ui/data-table';
 
 const columns = [
   {
-    accessorKey: 'date',
-    header: 'Date'
+    key: 'date',
+    header: 'Date',
+    cell: (item: { date: string }) => new Date(item.date).toLocaleDateString()
   },
   {
-    accessorKey: 'description',
+    key: 'description',
     header: 'Description'
   },
   {
-    accessorKey: 'amount',
-    header: 'Amount'
+    key: 'amount',
+    header: 'Amount',
+    cell: (item: { amount: number }) => item.amount.toFixed(2)
   },
   {
-    accessorKey: 'balance',
-    header: 'Balance'
+    key: 'balance',
+    header: 'Balance',
+    cell: (item: { balance: number }) => item.balance.toFixed(2)
   }
 ];
 
@@ -31,37 +33,16 @@ export default function LedgerTab() {
   const { start, end } = getFYDates();
 
   const { data: ledgerData } = useQuery({
-    queryKey: ["ledger", selectedCustomerId, selectedYear],
+    queryKey: ['ledger', selectedCustomerId, selectedYear],
     queryFn: async () => {
       if (!selectedCustomerId) return [];
-
-      const { data: invoices } = await supabase
-        .from('invoiceTable')
-        .select('*')
-        .gte('invDate', start.toISOString())
-        .lte('invDate', end.toISOString())
-        .eq('invCustid', selectedCustomerId);
-
-      const { data: payments } = await supabase
-        .from('paymentTransactions')
-        .select('*')
-        .gte('paymentDate', start.toISOString())
-        .lte('paymentDate', end.toISOString())
-        .eq('invId', selectedCustomerId);
-
-      return (invoices || []).map(inv => ({
-        date: inv.invDate,
-        description: `Invoice #${inv.invNumber}`,
-        amount: inv.invTotal,
-        balance: inv.invBalanceAmount
-      })).concat(
-        (payments || []).map(payment => ({
-          date: payment.paymentDate,
-          description: `Payment #${payment.transactionId}`,
-          amount: -payment.amount,
-          balance: 0 // This will be calculated cumulatively
-        }))
-      ).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      const { data, error } = await supabase.rpc('get_customer_ledger', {
+        p_customer_id: selectedCustomerId,
+        p_start_date: start.toISOString(),
+        p_end_date: end.toISOString()
+      });
+      if (error) throw error;
+      return data;
     },
     enabled: !!selectedCustomerId
   });
@@ -69,15 +50,13 @@ export default function LedgerTab() {
   return (
     <div className="space-y-4">
       <CustomerSelector
-        selectedCustomer={selectedCustomerId}
+        selectedCustomerId={selectedCustomerId}
         onSelect={setSelectedCustomerId}
       />
-      
       <DataTable
         columns={columns}
         data={ledgerData || []}
       />
-      <PDFExport data={ledgerData || []} />
     </div>
   );
 }

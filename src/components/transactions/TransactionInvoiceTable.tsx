@@ -40,6 +40,13 @@ export function TransactionInvoiceTable({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
 
+  const formatInvoiceNumber = (invNumber: any): string => {
+    if (Array.isArray(invNumber)) {
+      return invNumber.join("-");
+    }
+    return String(invNumber || '');
+  };
+
   const columns: ColumnDef<any>[] = [
     {
       accessorKey: "customerMaster.custBusinessname",
@@ -63,19 +70,13 @@ export function TransactionInvoiceTable({
       accessorKey: "invNumber",
       header: "Invoice Number",
       cell: ({ row }) => {
-        const invNumber = row.getValue("invNumber");
-        const displayNumber = Array.isArray(invNumber) 
-          ? invNumber.join("-")
-          : typeof invNumber === 'string' 
-            ? invNumber 
-            : String(invNumber);
-            
+        const invNumber = formatInvoiceNumber(row.getValue("invNumber"));
         return (
           <Button
             variant="link"
             onClick={() => onInvoiceClick(row.original)}
           >
-            {displayNumber}
+            {invNumber}
           </Button>
         );
       },
@@ -83,12 +84,18 @@ export function TransactionInvoiceTable({
     {
       accessorKey: "invDate",
       header: "Invoice Date",
-      cell: ({ row }) => new Date(row.getValue("invDate")).toLocaleDateString(),
+      cell: ({ row }) => {
+        const date = row.getValue("invDate");
+        return date ? new Date(date).toLocaleDateString() : "-";
+      },
     },
     {
       accessorKey: "invDuedate",
       header: "Due Date",
-      cell: ({ row }) => new Date(row.getValue("invDuedate")).toLocaleDateString(),
+      cell: ({ row }) => {
+        const date = row.getValue("invDuedate");
+        return date ? new Date(date).toLocaleDateString() : "-";
+      },
     },
     {
       accessorKey: "invTotal",

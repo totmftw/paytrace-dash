@@ -212,10 +212,11 @@ export type Database = {
       }
       invoiceTable: {
         Row: {
+          fy: string
           invAddamount: number | null
           invAlert: string | null
           invBalanceAmount: number | null
-          invCustid: number
+          invCustid: number | null
           invDate: string | null
           invDuedate: string | null
           invGst: number
@@ -235,10 +236,11 @@ export type Database = {
           invValue: number
         }
         Insert: {
+          fy: string
           invAddamount?: number | null
           invAlert?: string | null
           invBalanceAmount?: number | null
-          invCustid: number
+          invCustid?: number | null
           invDate?: string | null
           invDuedate?: string | null
           invGst: number
@@ -258,10 +260,11 @@ export type Database = {
           invValue: number
         }
         Update: {
+          fy?: string
           invAddamount?: number | null
           invAlert?: string | null
           invBalanceAmount?: number | null
-          invCustid?: number
+          invCustid?: number | null
           invDate?: string | null
           invDuedate?: string | null
           invGst?: number
@@ -281,6 +284,13 @@ export type Database = {
           invValue?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_invcustid_customer"
+            columns: ["invCustid"]
+            isOneToOne: false
+            referencedRelation: "customerMaster"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "invoiceTable_invCustid_fkey"
             columns: ["invCustid"]
@@ -808,6 +818,15 @@ export type Database = {
           debit: number
           credit: number
           balance: number
+        }[]
+      }
+      get_financial_year: {
+        Args: {
+          the_date: string
+        }
+        Returns: {
+          fy_start: string
+          fy_end: string
         }[]
       }
       get_user_permissions: {

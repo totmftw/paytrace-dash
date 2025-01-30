@@ -11,36 +11,28 @@ export default function PaymentTab() {
   const { toast } = useToast();
   const { start, end } = getFYDates();
 
-  const { data: invoices, isLoading, error } = useQuery({
-    queryKey: ['invoices', selectedYear],
-    queryFn: async () => {
-      try {
-        const { data, error } = await supabase
-          .from('invoiceTable')
-          .select('*')
-          .gte('invDate', start.toISOString())
-          .lte('invDate', end.toISOString());
+  // src/components/transactions/PaymentTab.tsx
+const { data: payments, isLoading, error } = useQuery({
+  queryKey: ['payments', selectedYear],
+  queryFn: async () => {
+    // Corrected table name to paymentTransactions
+    const { data, error } = await supabase
+      .from('paymentTransactions')
+      .select('*')
+      .gte('paymentDate', start.toISOString())
+      .lte('paymentDate', end.toISOString());
 
-        if (error) {
-          toast({
-            variant: "destructive",
-            title: "Error fetching invoices",
-            description: error.message
-          });
-          throw error;
-        }
-        return data || [];
-      } catch (err) {
-        console.error('Error fetching invoices:', err);
-        toast({
-          variant: "destructive",
-          title: "Error fetching invoices",
-          description: "Please try again later"
-        });
-        return [];
-      }
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error fetching payments",
+        description: error.message
+      });
+      throw error;
     }
-  });
+    return data || [];
+  }
+});
 
   if (error) {
     return (

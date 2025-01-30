@@ -17,7 +17,14 @@ import {
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-
+// src/components/AppSidebar.tsx
+{isAdmin && (
+  <nav className="flex flex-col gap-2 mt-4">
+    <Button variant="ghost" onClick={() => setColumnConfigOpen(true)}>
+      Configure Columns
+    </Button>
+  </nav>
+)}
 const getBaseNavigation = () => [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Customers", href: "/customers", icon: Users },

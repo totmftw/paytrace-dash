@@ -20,7 +20,63 @@ interface DatabaseLedgerEntry {
   credit: number;
   balance: number;
 }
+// src/components/transactions/LedgerTab.tsx
+const customerColumns = [
+  'custBusinessname', 'custAddress', 'custGst', 'custPhonenumber'
+];
 
+const { data: selectedCustomer } = useQuery({
+  queryKey: ['customer', selectedCustomerId],
+  queryFn: async () => {
+    const { data, error } = await supabase
+      .from('customerMaster')
+      .select(customerColumns.join(', '))
+      .eq('id', selectedCustomerId);
+    if (error) throw error;
+    return data?.[0];
+  },
+  enabled: !!selectedCustomerId
+});
+
+// Transform data for display
+const ledgerData = React.useMemo(() => {
+  return (data as DatabaseLedgerEntry[]).map(entry => ({
+    ...entry,
+    customer: selectedCustomer,
+    ...(selectedCustomer ? {
+      seller: 'MKD Enterprises, Bengaluru'
+    } : {})
+  }));
+}, [data, selectedCustomer]);
+
+// Add PDF download button
+const handlePDFDownload = () => {
+  if (!ledgerData || !selectedCustomer) return;
+  const doc = new jsPDF();
+  doc.autoTable({
+    head: [['Date', 'Description', 'Amount', 'Balance', 'Customer', 'Seller']],
+    body: ledgerData.map(row => [
+      new Date(row.date).toLocaleDateString(),
+      row.description,
+      formatCurrency(row.amount),
+      formatCurrency(row.balance),
+      row.customer?.custBusinessname,
+      'MKD Enterprises, Bengaluru'
+    ])
+  });
+  doc.save(`${selectedCustomer?.custBusinessname}-ledger.pdf`);
+};
+
+return (
+  <div>
+    <PDFExport data={ledgerData} />
+    <Button onClick={handlePDFDownload}>Download PDF</Button>
+    <DataTable
+      columns={columns}
+      data={ledgerData}
+    />
+  </div>
+);
 const columns = [
   {
     key: 'date',

@@ -9,7 +9,16 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import InvoiceTab from "@/components/transactions/InvoiceTab";
 import PaymentTab from "@/components/transactions/PaymentTab";
 import LedgerTab from "@/components/transactions/LedgerTab";
+// src/pages/Transactions.tsx
+const isMobile = useIsMobile();
 
+return (
+  <div className={`space-y-6 bg-[#E8F3E8] min-h-screen p-6 ${isMobile ? 'p-2' : 'p-6'}`}>
+    <div className="flex justify-between items-center flex-col md:flex-row">
+      {/* Content */}
+    </div>
+  </div>
+);
 export default function Transactions() {
   const navigate = useNavigate();
   const { selectedYear } = useFinancialYear();

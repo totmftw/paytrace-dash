@@ -83,5 +83,51 @@ const UploadInvoiceButton = ({ tableName }: UploadInvoiceButtonProps) => {
     </Button>
   );
 };
+// src/components/buttons/UploadInvoiceButton.tsx
+interface InvoiceData {
+  invNumber: string;
+  // ... other fields
+}
 
+// Inside handleFileUpload
+reader.onload = async (e) => {
+  const jsonData = XLSX.utils.sheet_to_json(sheet) as InvoiceData[];
+  if (Array.isArray(jsonData) && jsonData.length > 0) {
+    // Check for duplicates
+    const { data: existingInvoices, error: fetchError } = await supabase
+      .from('invoiceTable')
+      .select('invNumber')
+      .in('invNumber', jsonData.map(item => item.invNumber));
+    
+    if (fetchError) throw fetchError;
+
+    const duplicates = jsonData.filter(item => 
+      existingInvoices?.find(inv => inv.invNumber === item.invNumber)
+    );
+
+    if (duplicates.length > 0) {
+      toast({
+        title: 'Duplicates Found',
+        description: `Duplicate invoices detected: ${duplicates.map(d => d.invNumber).join(', ')}`,
+        variant: 'destructive'
+      });
+      setIsUploading(false);
+      return;
+    }
+
+    // Proceed with insert if no duplicates
+    const { error } = await supabase.from(tableName).insert(
+      jsonData.map(item => ({
+        ...item,
+        fy: selectedYear 
+      }))
+    );
+    if (error) throw error;
+
+    toast({
+      title: 'Success',
+      description: 'File uploaded successfully',
+    });
+  }
+};
 export default UploadInvoiceButton;

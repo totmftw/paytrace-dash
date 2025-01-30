@@ -91,7 +91,7 @@ export default function Dashboard() {
         .from('dashboard_config')
         .upsert({
           user_id: user.id,
-          layout: layout as Json,
+          layout: JSON.parse(JSON.stringify(layout)) as Json,
           widgets: {} as Json
         });
 

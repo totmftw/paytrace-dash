@@ -8,6 +8,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
+interface CustomerData {
+  id: number;
+  name: string;
+  whatsappNumber: number;
+}
+
 export default function Transactions() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
@@ -21,7 +27,8 @@ export default function Transactions() {
           *,
           customerMaster (
             id,
-            custBusinessname
+            custBusinessname,
+            custWhatsapp
           )
         `)
         .order('invDate', { ascending: false });
@@ -37,14 +44,14 @@ export default function Transactions() {
     }
   }, [user, loading, navigate]);
 
-  const handleCustomerClick = (customerId: number) => {
+  const handleCustomerClick = (customer: CustomerData) => {
     // Handle customer click - you can navigate to customer details or show a modal
-    console.log('Customer clicked:', customerId);
+    console.log('Customer clicked:', customer);
   };
 
-  const handleInvoiceClick = (invoiceId: number) => {
+  const handleInvoiceClick = (invoice: any) => {
     // Handle invoice click - you can navigate to invoice details or show a modal
-    console.log('Invoice clicked:', invoiceId);
+    console.log('Invoice clicked:', invoice);
   };
 
   if (loading) {

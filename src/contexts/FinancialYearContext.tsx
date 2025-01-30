@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { getCurrentFinancialYear, getFinancialYearDates, TimeFrame } from "@/utils/financialYearUtils";
 
 interface FinancialYearContextType {
   selectedYear: string;
@@ -8,6 +9,8 @@ interface FinancialYearContextType {
   isLoading: boolean;
   fyOptions: string[];
   isTransitioning: boolean;
+  timeFrame: TimeFrame;
+  setTimeFrame: (timeFrame: TimeFrame) => void;
 }
 
 const FinancialYearContext = createContext<FinancialYearContextType>({
@@ -16,14 +19,17 @@ const FinancialYearContext = createContext<FinancialYearContextType>({
   getFYDates: () => ({ start: new Date(), end: new Date() }),
   isLoading: true,
   fyOptions: [],
-  isTransitioning: false
+  isTransitioning: false,
+  timeFrame: 'month',
+  setTimeFrame: () => {}
 });
 
 export const FinancialYearProvider = ({ children }: { children: React.ReactNode }) => {
-  const [selectedYear, setSelectedYear] = useState<string>('');
+  const [selectedYear, setSelectedYear] = useState<string>(getCurrentFinancialYear());
   const [isLoading, setIsLoading] = useState(true);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [fyOptions, setFyOptions] = useState<string[]>([]);
+  const [timeFrame, setTimeFrame] = useState<TimeFrame>('month');
 
   useEffect(() => {
     const fetchFYOptions = async () => {
@@ -37,7 +43,15 @@ export const FinancialYearProvider = ({ children }: { children: React.ReactNode 
 
         if (data && data.length > 0) {
           setFyOptions(data.map(fy => fy.financial_year));
-          setSelectedYear(data[0].financial_year);
+        } else {
+          // If no data exists, create default options
+          const currentYear = new Date().getFullYear();
+          const defaultOptions = [
+            `${currentYear-2}-${currentYear-1}`,
+            `${currentYear-1}-${currentYear}`,
+            `${currentYear}-${currentYear+1}`
+          ];
+          setFyOptions(defaultOptions);
         }
       } catch (error) {
         console.error('Error fetching financial years:', error);
@@ -56,13 +70,7 @@ export const FinancialYearProvider = ({ children }: { children: React.ReactNode 
     setTimeout(() => setIsTransitioning(false), 500);
   };
 
-  const getFYDates = () => {
-    const [startYear] = selectedYear.split('-').map(Number);
-    return {
-      start: new Date(startYear, 3, 1), // April 1st
-      end: new Date(startYear + 1, 2, 31) // March 31st
-    };
-  };
+  const getFYDates = () => getFinancialYearDates(selectedYear);
 
   return (
     <FinancialYearContext.Provider 
@@ -72,7 +80,9 @@ export const FinancialYearProvider = ({ children }: { children: React.ReactNode 
         getFYDates, 
         isLoading,
         fyOptions,
-        isTransitioning
+        isTransitioning,
+        timeFrame,
+        setTimeFrame
       }}
     >
       {children}

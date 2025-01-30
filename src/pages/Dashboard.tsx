@@ -19,40 +19,46 @@ export default function Dashboard() {
   const { data: dashboardData, isLoading } = useQuery({
     queryKey: ['dashboard-stats', selectedYear],
     queryFn: async () => {
-      // Get total revenue
+      // Get total revenue (based on payments)
+      const { data: payments } = await supabase
+        .from('paymentTransactions')
+        .select('amount')
+        .gte('paymentDate', start.toISOString())
+        .lte('paymentDate', end.toISOString());
+
+      // Get outstanding amount (payments not made after due date)
+      const { data: outstanding } = await supabase
+        .from('invoiceTable')
+        .select('invBalanceAmount')
+        .gt('invBalanceAmount', 0)
+        .lt('invDuedate', new Date().toISOString())
+        .gte('invDate', start.toISOString())
+        .lte('invDate', end.toISOString());
+
+      // Get pending amount (payments not exceeding due date)
+      const { data: pending } = await supabase
+        .from('invoiceTable')
+        .select('invBalanceAmount')
+        .gt('invBalanceAmount', 0)
+        .gte('invDuedate', new Date().toISOString())
+        .gte('invDate', start.toISOString())
+        .lte('invDate', end.toISOString());
+
+      // Get total receivables (total invoice amount - total payments)
       const { data: invoices } = await supabase
         .from('invoiceTable')
         .select('invTotal')
         .gte('invDate', start.toISOString())
         .lte('invDate', end.toISOString());
 
-      // Get outstanding amount
-      const { data: outstanding } = await supabase
-        .from('invoiceTable')
-        .select('invBalanceAmount')
-        .gt('invBalanceAmount', 0)
-        .gte('invDate', start.toISOString())
-        .lte('invDate', end.toISOString());
-
-      // Get active customers
-      const { count: activeCustomers } = await supabase
-        .from('customerMaster')
-        .select('*', { count: 'exact', head: true })
-        .eq('custStatus', 'active');
-
-      // Get pending invoices
-      const { count: pendingInvoices } = await supabase
-        .from('invoiceTable')
-        .select('*', { count: 'exact', head: true })
-        .gt('invBalanceAmount', 0)
-        .gte('invDate', start.toISOString())
-        .lte('invDate', end.toISOString());
-
       return {
-        totalRevenue: invoices?.reduce((sum, inv) => sum + Number(inv.invTotal), 0) || 0,
+        totalRevenue: payments?.reduce((sum, payment) => sum + Number(payment.amount), 0) || 0,
         outstandingAmount: outstanding?.reduce((sum, inv) => sum + Number(inv.invBalanceAmount), 0) || 0,
-        activeCustomers: activeCustomers || 0,
-        pendingInvoices: pendingInvoices || 0
+        pendingAmount: pending?.reduce((sum, inv) => sum + Number(inv.invBalanceAmount), 0) || 0,
+        totalReceivables: (
+          (invoices?.reduce((sum, inv) => sum + Number(inv.invTotal), 0) || 0) -
+          (payments?.reduce((sum, payment) => sum + Number(payment.amount), 0) || 0)
+        )
       };
     },
     enabled: !!selectedYear
@@ -117,23 +123,23 @@ export default function Dashboard() {
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Active Customers</CardTitle>
+                <CardTitle className="text-sm font-medium">Pending Amount</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {isLoading ? "Loading..." : dashboardData?.activeCustomers}
+                  {isLoading ? "Loading..." : `₹${dashboardData?.pendingAmount.toLocaleString()}`}
                 </div>
               </CardContent>
             </Card>
             <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
-                  Pending Invoices
+                  Total Receivables
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {isLoading ? "Loading..." : dashboardData?.pendingInvoices}
+                  {isLoading ? "Loading..." : `₹${dashboardData?.totalReceivables.toLocaleString()}`}
                 </div>
               </CardContent>
             </Card>

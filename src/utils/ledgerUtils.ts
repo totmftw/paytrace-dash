@@ -1,5 +1,18 @@
 import { Customer } from '@/types/customer';
 
+
+
+export const calculateRunningBalance = (entries: any[]): any[] => {
+  let balance = 0;
+  return entries.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map(entry => {
+    if (entry.type === 'invoice') {
+      balance += entry.amount;
+    } else if (entry.type === 'payment') {
+      balance -= entry.amount;
+    }
+    return { ...entry, balance: formatCurrency(balance) };
+  });
+};
 interface LedgerEntry {
   date: string;
   description: string;
@@ -7,19 +20,6 @@ interface LedgerEntry {
   amount: number;
   balance: number;
 }
-
-export const calculateRunningBalance = (entries: LedgerEntry[]): LedgerEntry[] => {
-  let balance = 0;
-  return entries.map(entry => {
-    if (entry.transactionType === "invoice") {
-      balance += entry.amount;
-    } else if (entry.transactionType === "payment") {
-      balance -= entry.amount;
-    }
-    return { ...entry, balance };
-  });
-};
-
 export const formatLedgerEntries = (
   customer: Customer,
   invoices: any[],

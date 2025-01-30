@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -19,17 +19,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import React from "react";
+import { useReactTable } from "@tanstack/react-table";
+import { ColumnDef } from "@tanstack/react-table";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { formatCurrency } from "@/lib/utils";
-import PDFExport from "./PDFExport";
+import { PDFExport } from "../buttons/PDFExport";
+import { useColumnConfig } from "@/contexts/columnConfigContext";
 
 interface TransactionInvoiceTableProps {
   data: any[];
   onCustomerClick: (customer: any) => void;
   onInvoiceClick: (invoice: any) => void;
 }
+
 
 interface InvoiceData {
   invDate: string | null;
@@ -44,41 +46,36 @@ interface InvoiceData {
 }
 
 export function TransactionInvoiceTable({
-  data = [],
+  data,
   onCustomerClick,
   onInvoiceClick,
 }: TransactionInvoiceTableProps) {
-  const [sorting, setSorting] = useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
-  const [columnVisibility, setColumnVisibility] = useState({});
-  const [isColumnConfigOpen, setIsColumnConfigOpen] = useState(false);
+  const { visibleColumns, setVisibleColumns } = useColumnConfig();
 
-  const formatInvoiceNumber = (invNumber: InvoiceData['invNumber']): string => {
-    if (Array.isArray(invNumber)) {
-      return invNumber.join("-");
-    }
-    return String(invNumber || '');
-  };
+  const table = useReactTable({
+    data,
+    columns: columns.filter(col => visibleColumns.includes(col.accessorKey)),
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+  });
 
-  const columns: ColumnDef<InvoiceData>[] = [
-    {
-      accessorKey: "customerMaster.custBusinessname",
-      header: "Business Name",
-      cell: ({ row }) => {
-        const businessName = row.original.customerMaster?.custBusinessname;
-        return businessName ? (
-          <Button
-            variant="link"
-            className="text-table-link hover:text-table-link/80"
-            onClick={() => onCustomerClick(row.original.customerMaster)}
-          >
-            {businessName}
-          </Button>
-        ) : (
-          "N/A"
-        );
-      },
-    },
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-end space-x-2">
+        <PDFExport data={data} />
+        <Button 
+          variant="ghost"
+          onClick={() => /* open column config modal */}
+        >
+          Configure Columns
+        </Button>
+      </div>
+      {/* Table implementation */}
+    </div>
+  );
+} 
     {
       accessorKey: "invNumber",
       header: "Invoice Number",

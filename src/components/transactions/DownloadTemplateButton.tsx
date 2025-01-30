@@ -1,10 +1,10 @@
+// src/pages/Transactions/buttons/DownloadTemplateButton.tsx
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { generateTemplateFromTable } from "@/utils/templateUtils";
-import { TableNames } from "@/types/types";
 
 interface DownloadTemplateButtonProps {
-  tableName: TableNames;
+  tableName: string;
 }
 
 export default function DownloadTemplateButton({ tableName }: DownloadTemplateButtonProps) {

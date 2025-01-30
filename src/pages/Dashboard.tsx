@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Responsive, WidthProvider } from "react-grid-layout";
+import { Responsive, WidthProvider, Layouts as ReactGridLayouts } from "react-grid-layout";
 import { Button } from "@/components/ui/button";
 import { Settings, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -24,9 +24,9 @@ interface Layout {
   h: number;
 }
 
-interface Layouts {
-  lg: Layout[];
-}
+type Layouts = {
+  [key: string]: Layout[];
+};
 
 const defaultLayouts: Layouts = {
   lg: [
@@ -41,7 +41,7 @@ const defaultLayouts: Layouts = {
 
 export default function Dashboard() {
   const [isEditing, setIsEditing] = useState(false);
-  const [layouts, setLayouts] = useState<Layouts>(defaultLayouts);
+  const [layouts, setLayouts] = useState<ReactGridLayouts>(defaultLayouts);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -58,8 +58,11 @@ export default function Dashboard() {
 
         if (error) throw error;
 
-        if (data?.layout && typeof data.layout === 'object' && 'lg' in data.layout) {
-          setLayouts(data.layout as Layouts);
+        if (data?.layout) {
+          const layoutData = data.layout as { [key: string]: Layout[] };
+          if ('lg' in layoutData) {
+            setLayouts(layoutData as ReactGridLayouts);
+          }
         }
       } catch (error) {
         console.error('Error loading layout:', error);
@@ -74,7 +77,7 @@ export default function Dashboard() {
     loadLayout();
   }, [user?.id, toast]);
 
-  const saveLayout = async (layout: Layouts) => {
+  const saveLayout = async (layout: ReactGridLayouts) => {
     if (!user?.id) return;
 
     try {
@@ -104,7 +107,7 @@ export default function Dashboard() {
 
   const handleLayoutChange = (currentLayout: Layout[]) => {
     if (isEditing) {
-      const newLayouts: Layouts = {
+      const newLayouts: ReactGridLayouts = {
         ...layouts,
         lg: currentLayout
       };

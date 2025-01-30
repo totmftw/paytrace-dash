@@ -56,9 +56,9 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
   });
 
   const handleCustomerSelect = (customerId: number) => {
-    setSelectedCustomerId(customerId);
     const customer = customers.find(c => c.id === customerId);
     if (customer) {
+      setSelectedCustomerId(customerId);
       onCustomerClick({
         id: customer.id,
         name: customer.custBusinessname,

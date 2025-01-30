@@ -668,6 +668,21 @@ export type Database = {
       }
     }
     Functions: {
+      check_duplicate_payments: {
+        Args: {
+          p_inv_id: number
+          p_transaction_id: string
+          p_payment_date: string
+          p_amount: number
+        }
+        Returns: {
+          is_duplicate: boolean
+          existing_payment_id: number
+          existing_transaction_id: string
+          existing_payment_date: string
+          existing_amount: number
+        }[]
+      }
       create_new_user_with_profile: {
         Args: {
           user_email: string

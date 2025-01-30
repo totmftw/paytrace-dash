@@ -22,22 +22,12 @@ export const PaymentMetrics = () => {
   const [showOrders, setShowOrders] = useState(false);
   const { toast } = useToast();
 
-  const getFinancialYearStart = (year: string) => {
-    const yearNum = parseInt(year.split('-')[0]);
-    return new Date(yearNum, 3, 1).toISOString();
-  };
-
-  const getFinancialYearEnd = (year: string) => {
-    const yearNum = parseInt(year.split('-')[0]);
-    return new Date(yearNum + 1, 2, 31).toISOString();
-  };
-
   const { data: metrics, error: metricsError } = useQuery({
     queryKey: ["payment-metrics", selectedYear],
     queryFn: async () => {
       try {
-        const startDate = getFinancialYearStart(selectedYear);
-        const endDate = getFinancialYearEnd(selectedYear);
+        const startDate = new Date(parseInt(selectedYear), 3, 1).toISOString();
+        const endDate = new Date(parseInt(selectedYear) + 1, 2, 31).toISOString();
 
         const { data: invoices, error } = await supabase
           .from("invoiceTable")
@@ -54,40 +44,40 @@ export const PaymentMetrics = () => {
 
         if (error) throw error;
 
-      const pendingPayments = {
-        amount: 0,
-        count: 0,
-        invoices: []
-      };
+        const pendingPayments = {
+          amount: 0,
+          count: 0,
+          invoices: []
+        };
 
-      const overduePayments = {
-        amount: 0,
-        count: 0,
-        invoices: []
-      };
+        const overduePayments = {
+          amount: 0,
+          count: 0,
+          invoices: []
+        };
 
-      const orders = {
-        count: 0,
-        invoices: []
-      };
+        const orders = {
+          count: 0,
+          invoices: []
+        };
 
-      invoices?.forEach(invoice => {
-        const dueDate = new Date(invoice.invDuedate);
-        const amount = invoice.invTotal;
+        invoices?.forEach(invoice => {
+          const dueDate = new Date(invoice.invDuedate);
+          const amount = invoice.invTotal;
 
-        if (dueDate < new Date()) {
-          overduePayments.amount += Number(amount);
-          overduePayments.count++;
-          overduePayments.invoices.push(invoice);
-        } else if (!invoice.invMarkcleared) {
-          pendingPayments.amount += Number(amount);
-          pendingPayments.count++;
-          pendingPayments.invoices.push(invoice);
-        }
+          if (dueDate < new Date()) {
+            overduePayments.amount += Number(amount);
+            overduePayments.count++;
+            overduePayments.invoices.push(invoice);
+          } else if (!invoice.invMarkcleared) {
+            pendingPayments.amount += Number(amount);
+            pendingPayments.count++;
+            pendingPayments.invoices.push(invoice);
+          }
 
-        orders.count++;
-        orders.invoices.push(invoice);
-      });
+          orders.count++;
+          orders.invoices.push(invoice);
+        });
 
         return [
           {

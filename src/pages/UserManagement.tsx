@@ -5,11 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import UserManagementForm from "@/components/users/UserManagementForm";
 import UsersList from "@/components/users/UsersList";
+import { RolePermissionsManager } from "@/components/users/RolePermissionsManager";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
 export default function UserManagement() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isPermissionsDialogOpen, setIsPermissionsDialogOpen] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -47,32 +49,44 @@ export default function UserManagement() {
     );
   }
 
-  const handleSubmit = (formData: any) => {
-    console.log('Form submitted:', formData);
-    setIsCreateDialogOpen(false);
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold">User Management</h2>
-        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>Add New User</Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-4xl">
-            <UserManagementForm 
-              onClose={() => setIsCreateDialogOpen(false)} 
-              onSubmit={handleSubmit} 
-            />
-          </DialogContent>
-        </Dialog>
+        <div className="flex gap-4">
+          {user.role === "it_admin" && (
+            <Button onClick={() => setIsPermissionsDialogOpen(true)}>
+              Manage Role Permissions
+            </Button>
+          )}
+          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button>Add New User</Button>
+            </DialogTrigger>
+            <DialogContent className="max-w-4xl">
+              <UserManagementForm
+                onClose={() => setIsCreateDialogOpen(false)}
+                onSubmit={(formData) => {
+                  console.log("Form submitted:", formData);
+                  setIsCreateDialogOpen(false);
+                }}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       {isLoading ? (
         <div className="text-center">Loading users...</div>
       ) : (
         <UsersList users={users || []} />
+      )}
+
+      {user.role === "it_admin" && (
+        <RolePermissionsManager
+          isOpen={isPermissionsDialogOpen}
+          onClose={() => setIsPermissionsDialogOpen(false)}
+        />
       )}
     </div>
   );

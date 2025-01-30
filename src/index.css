@@ -40,7 +40,7 @@
   }
 
   .card-gradient {
-    @apply bg-gradient-to-br from-card to-secondary/80 backdrop-blur-sm;
+    @apply bg-gradient-to-br from-background to-secondary/80 backdrop-blur-sm;
   }
 
   .section-padding {
@@ -60,7 +60,7 @@
 
 @layer components {
   .dashboard-card {
-    @apply card-gradient p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow;
+    @apply bg-card p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow;
   }
   
   .dashboard-table {

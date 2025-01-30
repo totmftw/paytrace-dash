@@ -9,15 +9,17 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { CustomerLedgerDialog } from "@/components/invoices-payments/CustomerLedgerDialog";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatCurrency } from "@/lib/utils";
 
-export function CustomerLedgerTable() {
+interface CustomerLedgerTableProps {
+  onCustomerClick: (customer: { id: number; name: string; whatsappNumber: number }) => void;
+}
+
+export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
 
   const { data: customers, isLoading } = useQuery({
     queryKey: ["customer-ledger"],
@@ -60,7 +62,11 @@ export function CustomerLedgerTable() {
                 <TableCell>
                   <Button
                     variant="link"
-                    onClick={() => setSelectedCustomer(customer)}
+                    onClick={() => onCustomerClick({
+                      id: customer.custId,
+                      name: customer.custBusinessname,
+                      whatsappNumber: customer.custWhatsapp
+                    })}
                   >
                     {customer.custBusinessname}
                   </Button>
@@ -76,15 +82,6 @@ export function CustomerLedgerTable() {
           </TableBody>
         </Table>
       </ScrollArea>
-
-      {selectedCustomer && (
-        <CustomerLedgerDialog
-          customerId={selectedCustomer.custId}
-          customerName={selectedCustomer.custBusinessname}
-          whatsappNumber={selectedCustomer.custWhatsapp}
-          onClose={() => setSelectedCustomer(null)}
-        />
-      )}
     </div>
   );
 }

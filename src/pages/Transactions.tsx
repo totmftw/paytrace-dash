@@ -84,6 +84,7 @@ export default function Transactions() {
         <CustomerLedgerDialog
           customerId={selectedCustomer.id}
           customerName={selectedCustomer.name}
+          whatsappNumber={selectedCustomer.whatsappNumber}
           isOpen={!!selectedCustomer}
           onClose={() => setSelectedCustomer(null)}
         />

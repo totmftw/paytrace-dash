@@ -169,6 +169,36 @@ export type Database = {
           },
         ]
       }
+      dashboard_metrics: {
+        Row: {
+          created_at: string | null
+          id: number
+          metric_name: string
+          metric_status: string
+          metric_type: string
+          metric_value: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          metric_name: string
+          metric_status?: string
+          metric_type: string
+          metric_value: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          metric_name?: string
+          metric_status?: string
+          metric_type?: string
+          metric_value?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       feature_permissions: {
         Row: {
           created_at: string | null

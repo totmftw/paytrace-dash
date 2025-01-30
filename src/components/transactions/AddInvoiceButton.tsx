@@ -1,95 +1,64 @@
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { useToast } from "@/hooks/use-toast";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { Button } from '@/components/ui/button';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
+
+type AddInvoiceButtonProps = {
+  tableName: 'invoiceTable' | 'paymentTransactions';
+};
 
 const formSchema = z.object({
-  invNumber: z.string().min(1, "Invoice number is required"),
-  invValue: z.number().min(0, "Value must be positive"),
-  invGst: z.number().min(0, "GST must be positive"),
-  invAddamount: z.number().optional(),
-  invSubamount: z.number().optional(),
-  invCustid: z.number().min(1, "Customer is required"),
-  invDate: z.string().min(1, "Date is required"),
-  invDuedate: z.string().min(1, "Due date is required"),
+  invNumber: z.string().min(1, { message: 'Invoice number is required' }),
+  // Add all required fields here
 });
 
-export function AddInvoiceButton() {
-  const [isOpen, setIsOpen] = useState(false);
+export default function AddInvoiceButton({ tableName }: AddInvoiceButtonProps) {
+  const [open, setOpen] = useState(false);
   const { toast } = useToast();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      invValue: 0,
-      invGst: 0,
-      invAddamount: 0,
-      invSubamount: 0,
+      invNumber: '',
+      // Initialize other fields here
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const { error } = await supabase
-        .from("invoiceTable")
-        .insert([{
-          ...data,
-          invTotal: data.invValue + data.invGst + 
-            (data.invAddamount || 0) - (data.invSubamount || 0),
-          invBalanceAmount: 0,
-          invPaymentStatus: 'pending'
-        }]);
-
-      if (error) throw error;
-
+      await supabase.from(tableName).insert(values);
       toast({
-        title: "Success",
-        description: "Invoice added successfully",
+        title: 'Success',
+        description: 'Invoice added successfully',
       });
-      setIsOpen(false);
+      setOpen(false);
     } catch (error) {
+      console.error(error);
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to add invoice",
+        title: 'Error',
+        description: 'Failed to add invoice',
+        variant: 'destructive',
       });
     }
   };
 
   return (
     <>
-      <Button 
-        variant="outline" 
-        onClick={() => setIsOpen(true)}
-        className="bg-[#98D8AA] text-[#1B4332] hover:bg-[#75C2A0]"
-      >
-        Add Invoice
+      <Button variant="ghost" onClick={() => setOpen(true)}>
+        Add Single Invoice
       </Button>
-      
-      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add New Invoice</DialogTitle>
+            <DialogTitle>Add {tableName === 'invoiceTable' ? 'Invoice' : 'Payment'}</DialogTitle>
           </DialogHeader>
-          
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)}>
               <FormField
                 control={form.control}
                 name="invNumber"
@@ -99,18 +68,12 @@ export function AddInvoiceButton() {
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
+                    <FormMessage />
                   </FormItem>
                 )}
               />
-              
-              {/* Add other form fields here */}
-              
-              <Button 
-                type="submit"
-                className="bg-[#98D8AA] text-[#1B4332] hover:bg-[#75C2A0]"
-              >
-                Submit
-              </Button>
+              {/* Add other fields similarly */}
+              <Button type="submit">Submit</Button>
             </form>
           </Form>
         </DialogContent>

@@ -1,67 +1,66 @@
-// src/pages/Transactions/CustomerSelector.tsx
-import { useState } from "react";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
-import { Check } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
+import { useState, useEffect } from 'react';
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
-interface CustomerSelectorProps {
-  selectedCustomerId: number | null;
+type CustomerSelectorProps = {
+  selectedCustomer: number | null;
   onSelect: (customerId: number) => void;
-}
+  loading: boolean;
+};
 
-export function CustomerSelector({ selectedCustomerId, onSelect }: CustomerSelectorProps) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+export function CustomerSelector({ selectedCustomer, onSelect, loading }: CustomerSelectorProps) {
+  const [query, setQuery] = useState('');
+  const [isOpen, setIsOpen] = useState(false);
 
-  const { data: customers = [], isLoading } = useQuery({
-    queryKey: ["customers", searchQuery],
+  const { data: customers, isLoading } = useQuery({
+    queryKey: ['customers', query],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("customerMaster")
-        .select("*")
-        .ilike("custBusinessname", `%${searchQuery}%`)
-        .order("custBusinessname");
+        .from('customerMaster')
+        .select('*')
+        .ilike('custBusinessname', `%${query}%`)
+        .order('custBusinessname');
       if (error) throw error;
-      return data || [];
+      return data;
     },
     keepPreviousData: true,
   });
 
+  useEffect(() => {
+    const down = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowDown') setIsOpen(true);
+    };
+    document.addEventListener('keydown', down);
+    return () => document.removeEventListener('keydown', down);
+  }, []);
+
   return (
-    <div>
-      <div className="mb-4">
-        <Input
-          placeholder="Search for a business name..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
-      <Select
-        onOpenChange={(open) => open && setSearchQuery("")}
-        onValueChange={(value) => {
-          onSelect(Number(value));
-          setIsDropdownOpen(false);
-        }}
-        value={String(selectedCustomerId)}
-      >
-        <SelectTrigger>
-          <SelectValue placeholder="Select a customer" />
-        </SelectTrigger>
-        <SelectContent>
+    <Select
+      value={selectedCustomer?.toString() || ''}
+      onValueChange={onSelect}
+      open={isOpen}
+      onOpenChange={setIsOpen}
+    >
+      <SelectTrigger>
+        <SelectValue placeholder="Select customer..." />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectGroup>
           {isLoading ? (
-            <SelectItem disabled>Loading...</SelectItem>
+            <SelectItem value="" disabled>
+              Loading...
+            </SelectItem>
           ) : (
-            customers.map((customer) => (
-              <SelectItem key={customer.id} value={String(customer.id)}>
-                <Check className="mr-2 h-4 w-4 opacity-0" />
-                {`${customer.custBusinessname} (${customer.custOwnername})`}
+            customers?.map((customer) => (
+              <SelectItem key={customer.id} value={customer.id.toString()} onSelect={() => setIsOpen(false)}>
+                {customer.custBusinessname}
               </SelectItem>
             ))
           )}
-        </SelectContent>
-      </Select>
-    </div>
+        </SelectGroup>
+      </SelectContent>
+    </Select>
   );
 }

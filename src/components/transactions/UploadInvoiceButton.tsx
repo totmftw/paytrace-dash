@@ -1,25 +1,20 @@
-// src/pages/Transactions/buttons/UploadInvoiceButton.tsx
-import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import React from 'react';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
 import * as XLSX from 'xlsx';
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from '@/integrations/supabase/client';
 
-interface UploadInvoiceButtonProps {
-  tableName: string;
-}
+type UploadInvoiceButtonProps = {
+  tableName: 'invoiceTable' | 'paymentTransactions';
+};
 
 export default function UploadInvoiceButton({ tableName }: UploadInvoiceButtonProps) {
-  const [file, setFile] = useState<File | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [file, setFile] = React.useState<File | null>(null);
   const { toast } = useToast();
-  const { user } = useAuth();
 
   const handleUpload = async () => {
-    if (!file || !user) return;
+    if (!file) return;
 
-    setIsLoading(true);
     try {
       const reader = new FileReader();
       reader.onload = async (event) => {
@@ -29,60 +24,55 @@ export default function UploadInvoiceButton({ tableName }: UploadInvoiceButtonPr
         const worksheet = workbook.Sheets[sheetName];
         const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
-        if (jsonData.length < 1) {
-          toast({
-            title: "Error",
-            description: "Invalid file format",
-            variant: "destructive",
-          });
-          setIsLoading(false);
-          return;
-        }
-
+        // Extract headers and data rows
         const headers = jsonData[0];
-        const newData = jsonData.slice(1).map((row: any[]) => {
-          const rowData: { [key: string]: any } = {
-            user_id: user.id, // Add user_id to each row
-          };
+        const rows = jsonData.slice(1);
+
+        // Format data rows into objects with headers as keys
+        const formattedData = rows.map((row: any[]) => {
+          const obj: any = {};
           headers.forEach((header: string, index: number) => {
-            rowData[header] = row[index];
+            obj[header] = row[index];
           });
-          return rowData;
+          return obj;
         });
 
-        // Fetch existing data to check for duplicates
-        const { data: existingData } = await supabase.from(tableName).select('*');
-        const existingNumbers = existingData.map((item: any) => item.invNumber);
+        // Get existing data to check for duplicates
+        const { data: existingData } = await supabase.from(tableName).select();
 
-        const duplicates = newData.filter((item) => existingNumbers.includes(item.invNumber));
+        // Define unique key (modify if needed)
+        const primaryKey = tableName === 'invoiceTable' ? 'invNumber' : 'transactionId';
+
+        // Check for duplicates
+        const existingKeys = new Set(existingData?.map((item: any) => item[primaryKey]) || []);
+        const duplicates = formattedData.filter((item: any) => existingKeys.has(item[primaryKey]));
+        const uniqueData = formattedData.filter((item: any) => !existingKeys.has(item[primaryKey]));
 
         if (duplicates.length > 0) {
           toast({
-            title: "Duplicate Invoices",
-            description: `Found ${duplicates.length} duplicates`,
-            variant: "destructive",
+            title: 'Duplicate Entries',
+            description: `Found ${duplicates.length} duplicate entries`,
+            variant: 'destructive',
           });
         }
 
-        const uniqueData = newData.filter((item) => !existingNumbers.includes(item.invNumber));
         if (uniqueData.length > 0) {
           await supabase.from(tableName).insert(uniqueData);
           toast({
-            title: "Upload Successful",
-            description: `${uniqueData.length} invoices added`,
+            title: 'Upload Successful',
+            description: `Added ${uniqueData.length} new entries`,
           });
         }
       };
+
       reader.readAsArrayBuffer(file);
     } catch (error) {
       console.error(error);
       toast({
-        title: "Error",
-        description: "Failed to upload file",
-        variant: "destructive",
+        title: 'Upload Failed',
+        description: 'An error occurred while processing the file',
+        variant: 'destructive',
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -93,8 +83,8 @@ export default function UploadInvoiceButton({ tableName }: UploadInvoiceButtonPr
         accept=".xls,.xlsx"
         onChange={(e) => setFile(e.target.files?.[0] ?? null)}
       />
-      <Button variant="ghost" onClick={handleUpload} disabled={isLoading}>
-        {isLoading ? "Uploading..." : "Upload"}
+      <Button variant="ghost" onClick={handleUpload}>
+        Upload
       </Button>
     </div>
   );

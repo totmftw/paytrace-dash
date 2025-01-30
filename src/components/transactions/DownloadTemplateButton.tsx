@@ -1,38 +1,44 @@
-import React from "react";
-import { Button } from "@/components/ui/button";
-import { generateTemplateFromTable } from "@/utils/templateUtils";
-import { TableNames } from "@/types/types";
-import { useToast } from "@/hooks/use-toast";
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
+import * as XLSX from 'xlsx';
+import { supabase } from '@/integrations/supabase/client';
 
-interface DownloadTemplateButtonProps {
-  tableName: TableNames;
-}
+type DownloadTemplateButtonProps = {
+  tableName: 'invoiceTable' | 'paymentTransactions';
+};
 
 export default function DownloadTemplateButton({ tableName }: DownloadTemplateButtonProps) {
   const { toast } = useToast();
 
-  const handleDownload = async () => {
+  const generateTemplate = async () => {
     try {
-      await generateTemplateFromTable(tableName);
-      toast({
-        title: "Success",
-        description: "Template downloaded successfully",
-      });
+      const { data, error } = await supabase
+        .from(tableName)
+        .select('*')
+        .limit(1);
+
+      if (error) throw error;
+
+      const headers = Object.keys(data[0]).map((key) => ({
+        name: key,
+        key,
+      }));
+
+      const ws = XLSX.utils.json_to_sheet([headers.reduce((acc, header) => ({ ...acc, [header.key]: header.name }), {})]);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, `${tableName} Template`);
+      XLSX.writeFile(wb, `${tableName} Template.xlsx`);
     } catch (error) {
       toast({
-        variant: "destructive",
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to download template",
+        title: 'Error',
+        description: 'Failed to generate template',
+        variant: 'destructive',
       });
     }
   };
 
   return (
-    <Button 
-      variant="outline" 
-      onClick={handleDownload}
-      className="bg-[#98D8AA] text-[#1B4332] hover:bg-[#75C2A0]"
-    >
+    <Button variant="ghost" onClick={generateTemplate}>
       Download Template
     </Button>
   );

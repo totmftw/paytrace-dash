@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useToast } from "@/hooks/use-toast";
+import { ROLES } from "./types";
 
 interface Permission {
   resource: string;
@@ -27,7 +28,7 @@ interface RolePermissionsManagerProps {
 
 export function RolePermissionsManager({ isOpen, onClose }: RolePermissionsManagerProps) {
   const { toast } = useToast();
-  const [selectedRole, setSelectedRole] = useState<string>("business_manager");
+  const [selectedRole, setSelectedRole] = useState<typeof ROLES[number]>("business_manager");
 
   const { data: permissions, isLoading } = useQuery({
     queryKey: ["role-permissions", selectedRole],
@@ -117,11 +118,13 @@ export function RolePermissionsManager({ isOpen, onClose }: RolePermissionsManag
             <select
               className="w-full p-2 border rounded"
               value={selectedRole}
-              onChange={(e) => setSelectedRole(e.target.value)}
+              onChange={(e) => setSelectedRole(e.target.value as typeof ROLES[number])}
             >
-              <option value="business_manager">Business Manager</option>
-              <option value="business_owner">Business Owner</option>
-              <option value="team_member">Team Member</option>
+              {ROLES.map((role) => (
+                <option key={role} value={role}>
+                  {role.replace(/_/g, " ").replace(/\b\w/g, l => l.toUpperCase())}
+                </option>
+              ))}
             </select>
           </div>
 

@@ -49,7 +49,7 @@ export function TransactionInvoiceTable({
           variant="link"
           onClick={() => onCustomerClick(row.original.customerMaster)}
         >
-          {row.getValue("customerMaster.custBusinessname")}
+          {row.getValue("customerMaster.custBusinessname") as string}
         </Button>
       ),
     },
@@ -89,7 +89,7 @@ export function TransactionInvoiceTable({
       accessorKey: "invPaymentStatus",
       header: "Payment Status",
       cell: ({ row }) => {
-        const status = row.getValue("invPaymentStatus");
+        const status = row.getValue("invPaymentStatus") as string;
         return (
           <span
             className={`px-2 py-1 rounded-full text-xs font-medium ${

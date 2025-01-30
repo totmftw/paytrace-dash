@@ -7,6 +7,7 @@ import DownloadTemplateButton from "../buttons/DownloadTemplateButton";
 import UploadInvoiceButton from "../buttons/UploadInvoiceButton";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 import { useToast } from "@/components/ui/use-toast";
+import { ColumnConfigProvider } from "@/contexts/columnConfigContext";
 
 export default function InvoiceTab() {
   const { selectedYear, getFYDates } = useFinancialYear();
@@ -60,16 +61,18 @@ export default function InvoiceTab() {
         <UploadInvoiceButton tableName="invoiceTable" />
       </div>
       
-      <TransactionInvoiceTable 
-        data={invoices || []}
-        onCustomerClick={(customer) => {
-          // Handle customer click
-        }}
-        onInvoiceClick={(invoice) => {
-          // Handle invoice click
-        }}
-        isLoading={isLoading}
-      />
+      <ColumnConfigProvider>
+        <TransactionInvoiceTable 
+          data={invoices || []}
+          onCustomerClick={(customer) => {
+            // Handle customer click
+          }}
+          onInvoiceClick={(invoice) => {
+            // Handle invoice click
+          }}
+          isLoading={isLoading}
+        />
+      </ColumnConfigProvider>
     </div>
   );
 }

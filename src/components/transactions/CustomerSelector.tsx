@@ -33,6 +33,7 @@ export function CustomerSelector({
   isLoading = false,
 }: CustomerSelectorProps) {
   const [open, setOpen] = useState(false);
+  const [value, setValue] = useState("");
   
   const selectedCustomer = customers?.find(
     (customer) => customer.id === selectedCustomerId
@@ -67,14 +68,14 @@ export function CustomerSelector({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[300px] p-0 bg-[#E8F3E8]">
-        <Command>
+        <Command value={value} onValueChange={setValue}>
           <CommandInput 
             placeholder="Search customers..." 
-            className="text-[#1B4D3E]" 
+            className="text-[#1B4D3E]"
           />
           <CommandEmpty>No customer found.</CommandEmpty>
           <CommandGroup>
-            {(customers || []).map((customer) => (
+            {customers.map((customer) => (
               <CommandItem
                 key={customer.id}
                 value={customer.custBusinessname}

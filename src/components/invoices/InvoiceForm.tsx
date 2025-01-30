@@ -84,16 +84,19 @@ export function InvoiceForm({ isOpen, onClose, onSuccess, invoice }: InvoiceForm
     try {
       setIsSubmitting(true);
       
-      const total = parseFloat(values.invValue) + 
-                    parseFloat(values.invGst) + 
-                    (values.invAddamount ? parseFloat(values.invAddamount) : 0) - 
-                    (values.invSubamount ? parseFloat(values.invSubamount) : 0);
-
       const invoiceData = {
         ...values,
-        fy: getCurrentFY(), // Add the financial year
-        invTotal: total,
-        invBalanceAmount: total,
+        invValue: parseFloat(values.invValue),
+        invGst: parseFloat(values.invGst),
+        invAddamount: values.invAddamount ? parseFloat(values.invAddamount) : null,
+        invSubamount: values.invSubamount ? parseFloat(values.invSubamount) : null,
+        invDate: values.invDate.toISOString(),
+        invDuedate: values.invDuedate.toISOString(),
+        fy: getCurrentFY(),
+        invTotal: parseFloat(values.invValue) + 
+                 parseFloat(values.invGst) + 
+                 (values.invAddamount ? parseFloat(values.invAddamount) : 0) - 
+                 (values.invSubamount ? parseFloat(values.invSubamount) : 0),
       };
 
       if (invoice) {

@@ -1,50 +1,31 @@
-import { createContext, useContext, useState } from "react";
-import { getFinancialYearDates } from "@/utils/financialYearUtils";
-
-export type TimeFrame = 'week' | 'month' | 'quarter';
+import React, { createContext, useState, useMemo } from 'react';
 
 interface FinancialYearContextType {
-  selectedYear: string;
-  setSelectedYear: (year: string) => void;
-  fyOptions: string[];
-  getFYDates: () => { start: Date; end: Date };
-  timeFrame: TimeFrame;
-  setTimeFrame: (timeFrame: TimeFrame) => void;
+  currentFY: string;
+  setCurrentFY: (fy: string) => void;
 }
 
-export const FinancialYearContext = createContext<FinancialYearContextType | null>(null);
+export const FinancialYearContext = createContext<FinancialYearContextType>({
+  currentFY: '',
+  setCurrentFY: () => {},
+});
 
-export const FinancialYearProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const currentYear = new Date().getFullYear().toString();
-  const [selectedYear, setSelectedYear] = useState<string>(currentYear);
-  const [timeFrame, setTimeFrame] = useState<TimeFrame>('month');
+export function FinancialYearProvider({ children }: { children: React.ReactNode }) {
+  const [currentFY, setCurrentFY] = useState(() => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth() + 1; // JavaScript months are 0-based
+    return month >= 4 ? `${year}-${year + 1}` : `${year - 1}-${year}`;
+  });
 
-  const fyOptions = useMemo(() => {
-    return Array.from({ length: 10 }, (_, i) => (currentYear - i).toString());
-  }, [currentYear]);
-
-  const getFYDates = () => getFinancialYearDates(selectedYear);
+  const value = useMemo(() => ({
+    currentFY,
+    setCurrentFY,
+  }), [currentFY]);
 
   return (
-    <FinancialYearContext.Provider
-      value={{
-        selectedYear,
-        setSelectedYear,
-        fyOptions,
-        getFYDates,
-        timeFrame,
-        setTimeFrame
-      }}
-    >
+    <FinancialYearContext.Provider value={value}>
       {children}
     </FinancialYearContext.Provider>
   );
-};
-
-export const useFinancialYear = () => {
-  const context = useContext(FinancialYearContext);
-  if (!context) {
-    throw new Error("useFinancialYear must be used within a FinancialYearProvider");
-  }
-  return context;
-};
+}

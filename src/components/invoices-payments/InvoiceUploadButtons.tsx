@@ -8,7 +8,7 @@ export function InvoiceUploadButtons() {
   return (
     <div className="flex gap-4">
       <Button>Download Template</Button>
-      <ExcelUpload type="invoice" />
+      <ExcelUpload uploadType="invoice" />
       <Button onClick={() => navigate("/invoices/new")}>Add Invoice</Button>
     </div>
   );

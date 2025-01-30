@@ -27,10 +27,10 @@ interface AddUserDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-interface UserProfile {
+type UserProfile = {
   id: string;
-  email: string;
-}
+  email: string | null;
+};
 
 const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -46,11 +46,21 @@ const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
     setIsLoading(true);
     try {
       // First check if user exists
-      const { data: existingUser } = await supabase
+      const { data: existingUser, error: fetchError } = await supabase
         .from('user_profiles')
         .select('id, email')
         .eq('email', values.email)
-        .single();
+        .maybeSingle();
+
+      if (fetchError) {
+        console.error("Error checking existing user:", fetchError);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to check if user exists. Please try again.",
+        });
+        return;
+      }
 
       if (existingUser) {
         toast({
@@ -75,15 +85,11 @@ const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
 
       if (error) {
         console.error("Error details:", error);
-        if (error.message.includes("duplicate key value")) {
-          toast({
-            variant: "destructive",
-            title: "Error creating user",
-            description: "A user with this email already exists",
-          });
-        } else {
-          throw error;
-        }
+        toast({
+          variant: "destructive",
+          title: "Error creating user",
+          description: error.message || "An unexpected error occurred",
+        });
         return;
       }
 

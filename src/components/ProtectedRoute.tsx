@@ -14,27 +14,37 @@ export function ProtectedRoute({ children, adminOnly = false }: { children: Reac
     queryKey: ['userProfile', user?.id],
     queryFn: async () => {
       if (!user) return null;
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('role')
-        .eq('id', user.id)
-        .maybeSingle();
+      try {
+        const { data, error } = await supabase
+          .from('user_profiles')
+          .select('role')
+          .eq('id', user.id)
+          .maybeSingle();
 
-      if (error) {
-        console.error('Error fetching user profile:', error);
+        if (error) {
+          console.error('Error fetching user profile:', error);
+          toast({
+            title: "Error",
+            description: "Failed to fetch user profile. Please try logging in again.",
+            variant: "destructive",
+          });
+          throw error;
+        }
+
+        return data;
+      } catch (error) {
+        console.error('Network error:', error);
         toast({
-          title: "Error",
-          description: "Failed to fetch user profile. Please try logging in again.",
+          title: "Network Error",
+          description: "Failed to connect to the server. Please check your internet connection.",
           variant: "destructive",
         });
         throw error;
       }
-
-      return data;
     },
     enabled: !!user,
-    retry: 1, // Only retry once to avoid infinite loops
-    retryDelay: 1000, // Wait 1 second before retrying
+    retry: 1,
+    retryDelay: 1000,
   });
 
   useEffect(() => {
@@ -47,7 +57,6 @@ export function ProtectedRoute({ children, adminOnly = false }: { children: Reac
     }
 
     if (error) {
-      // If there's an error fetching the profile, redirect to login
       navigate("/login");
     }
   }, [user, loading, navigate, adminOnly, userProfile, profileLoading, error]);

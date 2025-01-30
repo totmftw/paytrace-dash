@@ -28,22 +28,22 @@
 
   * {
     @apply border-border;
-    scroll-behavior: smooth;
   }
 
-  html, body {
-    @apply h-full w-full overflow-hidden;
+  html {
+    @apply h-full;
   }
 
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background text-foreground antialiased h-full;
   }
 
   #root {
-    @apply h-full w-full;
+    @apply h-full;
   }
+}
 
-  /* Table Styles */
+@layer components {
   .table-container {
     @apply w-full overflow-auto;
     height: calc(100vh - 16rem);
@@ -57,7 +57,7 @@
       }
       
       td {
-        @apply border-t border-border p-4 text-sm text-foreground/90 whitespace-nowrap;
+        @apply border-t border-border p-4 text-sm text-foreground whitespace-nowrap;
       }
       
       tr:hover td {
@@ -66,35 +66,14 @@
     }
   }
 
-  /* Scrollable Content Area */
   .content-area {
     @apply h-[calc(100vh-4rem)] overflow-y-auto overflow-x-hidden p-6;
   }
 
-  /* Resizable Columns */
-  .resizer {
-    @apply absolute right-0 top-0 h-full w-1 bg-border cursor-col-resize hover:bg-primary touch-none;
-    
-    &.isResizing {
-      @apply bg-primary;
-    }
-  }
-
-  /* Dashboard Grid */
-  .dashboard-grid {
-    @apply w-full h-full overflow-hidden;
-    
-    .react-grid-item {
-      @apply bg-white rounded-lg shadow-sm border border-border;
-    }
-  }
-}
-
-@layer components {
   .dashboard-card {
     @apply bg-white p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow;
   }
-  
+
   .dashboard-table {
     @apply w-full border-collapse;
     
@@ -103,7 +82,7 @@
     }
     
     td {
-      @apply border-t border-border p-4 text-sm text-foreground/90;
+      @apply border-t border-border p-4 text-sm text-foreground;
     }
     
     tr:hover {

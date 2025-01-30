@@ -7,25 +7,64 @@ import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Overview } from "@/components/dashboard/Overview";
 import { RecentSales } from "@/components/dashboard/RecentSales";
-import { Button } from "@/components/ui/button";
 import { CalendarDateRangePicker } from "@/components/dashboard/DateRangePicker";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useFinancialYear } from "@/contexts/FinancialYearContext";
+
+interface DashboardStats {
+  totalRevenue: number;
+  outstandingAmount: number;
+  activeCustomers: number;
+  pendingInvoices: number;
+}
 
 export default function Dashboard() {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { selectedYear } = useFinancialYear();
 
   const { data: dashboardData, isLoading } = useQuery({
-    queryKey: ["dashboard-data"],
+    queryKey: ['dashboard-stats', selectedYear],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("dashboard_stats")
-        .select("*")
-        .single();
+      const startDate = new Date(Number(selectedYear), 3, 1); // Financial year starts from April
+      const endDate = new Date(Number(selectedYear) + 1, 2, 31); // Ends in March next year
 
-      if (error) throw error;
-      return data;
-    },
+      // Get total revenue
+      const { data: invoices } = await supabase
+        .from('invoiceTable')
+        .select('invTotal')
+        .gte('invDate', startDate.toISOString())
+        .lte('invDate', endDate.toISOString());
+
+      // Get outstanding amount
+      const { data: outstanding } = await supabase
+        .from('invoiceTable')
+        .select('invBalanceAmount')
+        .gt('invBalanceAmount', 0)
+        .gte('invDate', startDate.toISOString())
+        .lte('invDate', endDate.toISOString());
+
+      // Get active customers
+      const { count: activeCustomers } = await supabase
+        .from('customerMaster')
+        .select('*', { count: 'exact', head: true })
+        .eq('custStatus', 'active');
+
+      // Get pending invoices
+      const { count: pendingInvoices } = await supabase
+        .from('invoiceTable')
+        .select('*', { count: 'exact', head: true })
+        .gt('invBalanceAmount', 0)
+        .gte('invDate', startDate.toISOString())
+        .lte('invDate', endDate.toISOString());
+
+      return {
+        totalRevenue: invoices?.reduce((sum, inv) => sum + Number(inv.invTotal), 0) || 0,
+        outstandingAmount: outstanding?.reduce((sum, inv) => sum + Number(inv.invBalanceAmount), 0) || 0,
+        activeCustomers: activeCustomers || 0,
+        pendingInvoices: pendingInvoices || 0
+      } as DashboardStats;
+    }
   });
 
   useEffect(() => {

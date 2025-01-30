@@ -2,6 +2,10 @@ import { Button } from "@/components/ui/button";
 import { ExcelUpload } from "@/components/dashboard/ExcelUpload";
 import { useNavigate } from "react-router-dom";
 
+interface ExcelUploadProps {
+  uploadType: "invoice" | "payment" | "customer";
+}
+
 export function InvoiceUploadButtons() {
   const navigate = useNavigate();
   

@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Tables } from "@/integrations/supabase/types";
+import type { Database } from "@/integrations/supabase/types";
 
-type Invoice = Tables<"invoiceTable">["Row"];
+type Invoice = Database["public"]["Tables"]["invoiceTable"]["Row"];
 
 export const getCurrentFinancialYear = () => {
   const today = new Date();

@@ -49,7 +49,7 @@ type InvoiceFormProps = {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
-  invoice?: any; // Add this line to accept invoice prop for editing
+  invoice?: any;
 };
 
 export function InvoiceForm({ isOpen, onClose, onSuccess, invoice }: InvoiceFormProps) {
@@ -60,7 +60,7 @@ export function InvoiceForm({ isOpen, onClose, onSuccess, invoice }: InvoiceForm
     const today = new Date();
     const year = today.getFullYear();
     const month = today.getMonth();
-    if (month < 3) { // Before April
+    if (month < 3) {
       return `${year-1}-${year}`;
     }
     return `${year}-${year+1}`;
@@ -69,15 +69,21 @@ export function InvoiceForm({ isOpen, onClose, onSuccess, invoice }: InvoiceForm
   const form = useForm<z.infer<typeof invoiceSchema>>({
     resolver: zodResolver(invoiceSchema),
     defaultValues: invoice ? {
-      invNumber: invoice.invNumber,
+      invNumber: invoice.invNumber || '',
       invDate: invoice.invDate ? new Date(invoice.invDate) : undefined,
       invDuedate: invoice.invDuedate ? new Date(invoice.invDuedate) : undefined,
-      invValue: invoice.invValue?.toString(),
-      invGst: invoice.invGst?.toString(),
-      invAddamount: invoice.invAddamount?.toString(),
-      invSubamount: invoice.invSubamount?.toString(),
-      invCustid: invoice.invCustid,
-    } : undefined,
+      invValue: invoice.invValue?.toString() || '',
+      invGst: invoice.invGst?.toString() || '',
+      invAddamount: invoice.invAddamount?.toString() || '',
+      invSubamount: invoice.invSubamount?.toString() || '',
+      invCustid: invoice.invCustid || undefined,
+    } : {
+      invNumber: '',
+      invValue: '',
+      invGst: '',
+      invAddamount: '',
+      invSubamount: '',
+    },
   });
 
   const onSubmit = async (values: z.infer<typeof invoiceSchema>) => {
@@ -85,18 +91,20 @@ export function InvoiceForm({ isOpen, onClose, onSuccess, invoice }: InvoiceForm
       setIsSubmitting(true);
       
       const invoiceData = {
-        ...values,
+        invNumber: values.invNumber,
         invValue: parseFloat(values.invValue),
         invGst: parseFloat(values.invGst),
-        invAddamount: values.invAddamount ? parseFloat(values.invAddamount) : null,
-        invSubamount: values.invSubamount ? parseFloat(values.invSubamount) : null,
+        invAddamount: values.invAddamount ? parseFloat(values.invAddamount) : 0,
+        invSubamount: values.invSubamount ? parseFloat(values.invSubamount) : 0,
         invDate: values.invDate.toISOString(),
         invDuedate: values.invDuedate.toISOString(),
+        invCustid: values.invCustid,
         fy: getCurrentFY(),
         invTotal: parseFloat(values.invValue) + 
                  parseFloat(values.invGst) + 
                  (values.invAddamount ? parseFloat(values.invAddamount) : 0) - 
                  (values.invSubamount ? parseFloat(values.invSubamount) : 0),
+        invMessage1: '',
       };
 
       if (invoice) {

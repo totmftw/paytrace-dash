@@ -40,17 +40,27 @@ const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
-      const { error: checkError } = await supabase
+      const { data, error: checkError } = await supabase
         .from('user_profiles')
-        .select('id', { count: 'exact', head: true })
-        .eq('email', values.email);
+        .select('id')
+        .eq('email', values.email)
+        .single();
 
-      if (checkError) {
+      if (checkError && checkError.code !== 'PGRST116') {
         console.error("Error checking existing user:", checkError);
         toast({
           variant: "destructive",
           title: "Error",
           description: "Failed to check if user exists. Please try again.",
+        });
+        return;
+      }
+
+      if (data) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "A user with this email already exists",
         });
         return;
       }

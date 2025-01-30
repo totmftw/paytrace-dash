@@ -1,8 +1,5 @@
 import {
   ColumnDef,
-  ColumnFiltersState,
-  SortingState,
-  VisibilityState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
@@ -18,9 +15,10 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import React, { useState } from "react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import React from "react";
 import { Button } from "@/components/ui/button";
-import { PDFExport } from "../buttons/PDFExport";
+import PDFExport from "../buttons/PDFExport";
 import { useColumnConfig } from "@/contexts/columnConfigContext";
 import { Invoice } from "@/types/types";
 import { formatCurrency } from "@/lib/utils";
@@ -103,7 +101,7 @@ export function TransactionInvoiceTable({
 
   const table = useReactTable({
     data: data || [],
-    columns: columns.filter(col => visibleColumns.includes(col.accessorKey)),
+    columns: columns.filter(col => visibleColumns.includes(col.accessorKey as string)),
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),

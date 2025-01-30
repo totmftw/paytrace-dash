@@ -1,12 +1,11 @@
-// src/pages/Transactions/LedgerTab.tsx
-import React from "react";
+import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 import { CustomerSelector } from "./CustomerSelector";
 import { DataTable } from "@/components/ui/data-table";
 import { calculateRunningBalance } from "@/utils/ledgerUtils";
-import { PDFExport } from "../buttons/PDFExport";
+import PDFExport from "../buttons/PDFExport";
 
 export default function LedgerTab() {
   const { selectedYear, getFYDates } = useFinancialYear();
@@ -47,7 +46,7 @@ export default function LedgerTab() {
         columns={columns}
         data={ledgerData || []}
       />
-      <PDFExport data={ledgerData} />
+      <PDFExport data={ledgerData || []} />
     </div>
   );
 }

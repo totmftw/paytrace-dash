@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { ROLES, Role } from "./constants";
+import { ROLES } from "./constants";
 
 export const formSchema = z.object({
   email: z.string().email(),

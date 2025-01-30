@@ -24,6 +24,14 @@ const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
     resolver: zodResolver(formSchema),
     defaultValues: {
       role: "team_member",
+      email: "",
+      password: "",
+      full_name: "",
+      phone_number: "",
+      designation: "",
+      department: "",
+      emergency_contact: "",
+      address: "",
     },
   });
 

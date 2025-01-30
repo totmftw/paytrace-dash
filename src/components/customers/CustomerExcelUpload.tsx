@@ -58,27 +58,52 @@ export function CustomerExcelUpload() {
 
           console.log("Processed customer data:", customers);
 
-          // Insert data into Supabase
-          const { data: insertedData, error } = await supabase
-            .from('customerMaster')
-            .insert(customers)
-            .select();
+          // Insert data into Supabase one by one to better handle errors
+          const results = [];
+          const errors = [];
 
-          if (error) {
-            console.error("Supabase insert error:", error);
-            throw error;
+          for (const customer of customers) {
+            try {
+              const { data: insertedData, error } = await supabase
+                .from('customerMaster')
+                .insert([customer])
+                .select()
+                .single();
+
+              if (error) {
+                if (error.code === '23505') {
+                  errors.push(`Business "${customer.custBusinessname}" already exists`);
+                } else {
+                  errors.push(`Error adding "${customer.custBusinessname}": ${error.message}`);
+                }
+              } else if (insertedData) {
+                results.push(insertedData);
+              }
+            } catch (error: any) {
+              errors.push(`Failed to process "${customer.custBusinessname}": ${error.message}`);
+            }
           }
 
-          console.log("Successfully inserted data:", insertedData);
-          
+          // Show success/error messages
+          if (results.length > 0) {
+            toast({
+              title: "Success",
+              description: `Successfully uploaded ${results.length} customer records`,
+            });
+          }
+
+          if (errors.length > 0) {
+            toast({
+              variant: "destructive",
+              title: "Some records failed",
+              description: errors.join('\n'),
+            });
+          }
+
           // Invalidate and refetch customers query
           await queryClient.invalidateQueries({ queryKey: ["customers"] });
 
-          toast({
-            title: "Success",
-            description: `Successfully uploaded ${customers.length} customer records`,
-          });
-        } catch (error) {
+        } catch (error: any) {
           console.error("Processing error:", error);
           toast({
             variant: "destructive",
@@ -98,7 +123,7 @@ export function CustomerExcelUpload() {
       };
 
       reader.readAsArrayBuffer(file);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload error:', error);
       toast({
         variant: "destructive",

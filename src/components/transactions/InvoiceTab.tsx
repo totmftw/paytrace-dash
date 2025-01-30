@@ -1,6 +1,5 @@
-// src/pages/Transactions/InvoiceTab.tsx
 import React from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { TransactionInvoiceTable } from "../TransactionInvoiceTable";
 import { AddInvoiceButton } from "../buttons/AddInvoiceButton";
@@ -25,27 +24,6 @@ export default function InvoiceTab() {
       return data;
     }
   });
-
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-4">
-        <AddInvoiceButton />
-        <DownloadTemplateButton tableName="invoiceTable" />
-        <UploadInvoiceButton tableName="invoiceTable" />
-      </div>
-      
-      <TransactionInvoiceTable 
-        data={invoices || []}
-        onCustomerClick={(customer) => {
-          // Handle customer click
-        }}
-        onInvoiceClick={(invoice) => {
-          // Handle invoice click
-        }}
-      />
-    </div>
-  );
-}
 
   return (
     <div className="space-y-4">

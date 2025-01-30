@@ -50,15 +50,15 @@ export function TransactionInvoiceTable({
 
   const downloadTemplate = () => {
     const template = [{
-      invCustid: 'Customer ID (number)',
-      invNumber: 'Invoice Number',
+      invCustid: '1234 (Enter Customer ID as number)',
+      invNumber: 'INV001',
       invDate: 'YYYY-MM-DD',
       invDuedate: 'YYYY-MM-DD',
-      invValue: 0,
-      invGst: 0,
+      invValue: 1000,
+      invGst: 180,
       invAddamount: 0,
       invSubamount: 0,
-      invTotal: 0,
+      invTotal: 1180,
       invReminder1: false,
       invRemainder2: false,
       invRemainder3: false,
@@ -67,7 +67,7 @@ export function TransactionInvoiceTable({
       invMessage1: '',
       invMessage2: '',
       invMessage3: '',
-      invBalanceAmount: 0,
+      invBalanceAmount: 1180,
       invPaymentDifference: 0,
       invPaymentStatus: 'pending'
     }];
@@ -79,67 +79,94 @@ export function TransactionInvoiceTable({
     XLSX.writeFile(wb, "invoice-template.xlsx");
   };
 
+  const validateCustomerId = (id: any): number => {
+    const numId = Number(String(id).replace(/[^0-9]/g, ''));
+    if (isNaN(numId)) {
+      throw new Error(`Invalid customer ID format: ${id}. Must be a number.`);
+    }
+    return numId;
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     try {
+      console.log("Starting file upload process...");
       const reader = new FileReader();
-      reader.onload = async (event) => {
-        const data = event.target?.result;
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+      
+      reader.onload = async (e) => {
+        try {
+          const data = e.target?.result;
+          const workbook = XLSX.read(data, { type: 'array' });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-        if (!Array.isArray(jsonData) || jsonData.length === 0) {
-          throw new Error("No valid data found in the Excel file");
-        }
+          console.log("Parsed Excel data:", jsonData);
 
-        // Validate customer IDs before processing
-        const customerIds = customers?.map(c => c.id) || [];
-        
-        // Process and validate each row
-        const invoices = jsonData.map((row: any) => {
-          const custId = Number(row.invCustid);
-          if (!customerIds.includes(custId)) {
-            throw new Error(`Invalid customer ID: ${custId}`);
+          if (!Array.isArray(jsonData) || jsonData.length === 0) {
+            throw new Error("No valid data found in the Excel file");
           }
 
-          return {
-            invCustid: custId,
-            invNumber: row.invNumber?.toString(),
-            invDate: row.invDate,
-            invDuedate: row.invDuedate,
-            invValue: Number(row.invValue) || 0,
-            invGst: Number(row.invGst) || 0,
-            invAddamount: Number(row.invAddamount) || 0,
-            invSubamount: Number(row.invSubamount) || 0,
-            invTotal: Number(row.invTotal) || 0,
-            invReminder1: Boolean(row.invReminder1),
-            invRemainder2: Boolean(row.invRemainder2),
-            invRemainder3: Boolean(row.invRemainder3),
-            invMarkcleared: Boolean(row.invMarkcleared),
-            invAlert: row.invAlert || '',
-            invMessage1: row.invMessage1 || '',
-            invMessage2: row.invMessage2 || '',
-            invMessage3: row.invMessage3 || '',
-            invBalanceAmount: Number(row.invBalanceAmount) || 0,
-            invPaymentDifference: Number(row.invPaymentDifference) || 0,
-            invPaymentStatus: row.invPaymentStatus || 'pending'
-          };
-        });
+          // Validate customer IDs before processing
+          const customerIds = customers?.map(c => c.id) || [];
+          
+          // Process and validate each row
+          const invoices = jsonData.map((row: any, index: number) => {
+            try {
+              const custId = validateCustomerId(row.invCustid);
+              if (!customerIds.includes(custId)) {
+                throw new Error(`Customer ID ${custId} does not exist in the database`);
+              }
 
-        const { error } = await supabase
-          .from('invoiceTable')
-          .insert(invoices);
+              return {
+                invCustid: custId,
+                invNumber: String(row.invNumber || ''),
+                invDate: row.invDate,
+                invDuedate: row.invDuedate,
+                invValue: Number(row.invValue) || 0,
+                invGst: Number(row.invGst) || 0,
+                invAddamount: Number(row.invAddamount) || 0,
+                invSubamount: Number(row.invSubamount) || 0,
+                invTotal: Number(row.invTotal) || 0,
+                invReminder1: Boolean(row.invReminder1),
+                invRemainder2: Boolean(row.invRemainder2),
+                invRemainder3: Boolean(row.invRemainder3),
+                invMarkcleared: Boolean(row.invMarkcleared),
+                invAlert: String(row.invAlert || ''),
+                invMessage1: String(row.invMessage1 || ''),
+                invMessage2: String(row.invMessage2 || ''),
+                invMessage3: String(row.invMessage3 || ''),
+                invBalanceAmount: Number(row.invBalanceAmount) || 0,
+                invPaymentDifference: Number(row.invPaymentDifference) || 0,
+                invPaymentStatus: String(row.invPaymentStatus || 'pending')
+              };
+            } catch (error: any) {
+              throw new Error(`Error in row ${index + 1}: ${error.message}`);
+            }
+          });
 
-        if (error) throw error;
+          console.log("Processed invoices:", invoices);
 
-        toast({
-          title: "Success",
-          description: `Successfully uploaded ${invoices.length} invoices`,
-        });
+          const { error } = await supabase
+            .from('invoiceTable')
+            .insert(invoices);
+
+          if (error) throw error;
+
+          toast({
+            title: "Success",
+            description: `Successfully uploaded ${invoices.length} invoices`,
+          });
+        } catch (error: any) {
+          console.error("Processing error:", error);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: error.message || "Failed to process invoice data",
+          });
+        }
       };
 
       reader.onerror = (error) => {

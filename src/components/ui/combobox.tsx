@@ -36,9 +36,12 @@ export function Combobox({
 
   // Find the label for the current value
   const selectedLabel = React.useMemo(() => {
+    if (!items) return placeholder
     const selectedItem = items.find((item) => item.value === value)
     return selectedItem?.label || placeholder
   }, [items, value, placeholder])
+
+  if (!items) return null
 
   return (
     <Popover open={open} onOpenChange={setOpen}>

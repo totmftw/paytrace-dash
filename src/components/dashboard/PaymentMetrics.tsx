@@ -2,16 +2,12 @@ import { useFinancialYear } from "@/contexts/FinancialYearContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/lib/utils";
-import { DetailedDataTable } from "./DetailedDataTable";
-import {
-  Button,
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { DetailedDataTable } from "@/components/DetailedDataTable";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useState } from "react";
 
-export const PaymentMetrics = () => {
+export function PaymentMetrics() {
   const { selectedYear } = useFinancialYear();
   const [open, setOpen] = useState(false);
   const [modalData, setModalData] = useState<any[]>([]);
@@ -21,12 +17,12 @@ export const PaymentMetrics = () => {
     queryFn: async () => {
       const { data: invoices } = await supabase
         .from("invoiceTable")
-        .select `
+        .select(`
           *,
           customerMaster (
             custBusinessname
           )
-        `
+        `)
         .gte("invDate", `${selectedYear}-04-01`)
         .lte("invDate", `${+selectedYear + 1}-03-31`);
 
@@ -35,20 +31,20 @@ export const PaymentMetrics = () => {
   });
 
   const [pending, overdue, totalSales] = data?.reduce(
-    ([p, o, t], { invTotal, invDuedate }) => {
-      const isOverdue = new Date(invDuedate) < new Date();
+    ([p, o, t], invoice) => {
+      const isOverdue = new Date(invoice.invDuedate) < new Date();
       return [
-        p + (isOverdue ? 0 : invTotal),
-        o + (isOverdue ? invTotal : 0),
-        t + invTotal,
+        p + (isOverdue ? 0 : invoice.invTotal),
+        o + (isOverdue ? invoice.invTotal : 0),
+        t + invoice.invTotal,
       ];
     },
     [0, 0, 0]
-  );
+  ) ?? [0, 0, 0];
 
   return (
     <>
-      <Card className="cursor-pointer" onClick={() => setModalData(data)}>
+      <Card className="cursor-pointer" onClick={() => setModalData(data ?? [])}>
         <CardHeader>
           <CardTitle>Payments Overview</CardTitle>
         </CardHeader>
@@ -78,4 +74,4 @@ export const PaymentMetrics = () => {
       />
     </>
   );
-};
+}

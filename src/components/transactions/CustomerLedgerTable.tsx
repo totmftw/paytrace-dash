@@ -1,49 +1,47 @@
 import { useState } from "react";
-import { Table } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { formatCurrency } from "@/lib/utils";
-import { FinancialYearSelector } from "@/components/FinancialYearSelector";
-import { useFinancialYear } from "@/contexts/FinancialYearContext";
-import { Download, Send } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CustomerSelector } from "./CustomerSelector";
+import { DataTable } from "@/components/ui/data-table";
+import { columns } from "./table-columns";
+import { useFinancialYear } from "@/contexts/FinancialYearContext";
 
 interface CustomerLedgerTableProps {
-  onCustomerClick: (customer: { id: number; name: string; whatsappNumber: number }) => void;
+  onCustomerClick?: (customer: any) => void;
 }
 
 export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProps) {
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
-  const { selectedYear, getFYDates } = useFinancialYear();
-  const { start, end } = getFYDates();
-  const { toast } = useToast();
+  const { selectedYear } = useFinancialYear();
 
-  const { data: customers = [], isLoading: isLoadingCustomers } = useQuery({
-    queryKey: ['customers'],
+  const { data: customers, isLoading: isLoadingCustomers } = useQuery({
+    queryKey: ["customers"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('customerMaster')
-        .select('id, custBusinessname, custWhatsapp')
-        .order('custBusinessname');
-      
+        .from("customerMaster")
+        .select("id, custBusinessname, custWhatsapp")
+        .order("custBusinessname");
+
       if (error) throw error;
       return data || [];
     },
   });
 
-  const { data: ledgerEntries = [], isLoading: isLoadingLedger } = useQuery({
-    queryKey: ['customer-ledger', selectedCustomerId, selectedYear],
+  const { data: ledgerData, isLoading: isLoadingLedger } = useQuery({
+    queryKey: ["customer-ledger", selectedCustomerId, selectedYear],
     queryFn: async () => {
       if (!selectedCustomerId) return [];
+
+      const year = parseInt(selectedYear.split('-')[0]);
+      const startDate = new Date(year, 3, 1).toISOString(); // April 1st
+      const endDate = new Date(year + 1, 2, 31).toISOString(); // March 31st
 
       const { data, error } = await supabase
         .rpc('get_customer_ledger', {
           p_customer_id: selectedCustomerId,
-          p_start_date: start.toISOString(),
-          p_end_date: end.toISOString()
+          p_start_date: startDate,
+          p_end_date: endDate
         });
 
       if (error) throw error;
@@ -52,168 +50,26 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
     enabled: !!selectedCustomerId,
   });
 
-  const handleCustomerSelect = (customerId: number) => {
-    const customer = customers.find(c => c.id === customerId);
-    if (customer) {
-      setSelectedCustomerId(customerId);
-      onCustomerClick({
-        id: customer.id,
-        name: customer.custBusinessname,
-        whatsappNumber: customer.custWhatsapp
-      });
-    }
-  };
-
-  const handleDownloadPDF = async () => {
-    if (!selectedCustomerId || !ledgerEntries.length) return;
-    
-    try {
-      const response = await supabase.functions.invoke('generate-ledger-pdf', {
-        body: { 
-          customerId: selectedCustomerId,
-          entries: ledgerEntries,
-          year: selectedYear
-        }
-      });
-
-      if (response.error) throw response.error;
-
-      const url = response.data.url;
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `ledger-${selectedCustomerId}-${selectedYear}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-
-      toast({
-        title: "Success",
-        description: "Ledger PDF downloaded successfully",
-      });
-    } catch (error) {
-      console.error('Error downloading PDF:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to download ledger PDF",
-      });
-    }
-  };
-
-  const handleSendWhatsApp = async () => {
-    if (!selectedCustomerId || !ledgerEntries.length) return;
-    
-    try {
-      const response = await supabase.functions.invoke('send-ledger-whatsapp', {
-        body: { 
-          customerId: selectedCustomerId,
-          entries: ledgerEntries,
-          year: selectedYear
-        }
-      });
-
-      if (response.error) throw response.error;
-
-      toast({
-        title: "Success",
-        description: "Ledger sent successfully via WhatsApp",
-      });
-    } catch (error) {
-      console.error('Error sending ledger:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to send ledger via WhatsApp",
-      });
-    }
-  };
-
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+    <Card>
+      <CardHeader>
+        <CardTitle>Customer Ledger</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
           <CustomerSelector
-            customers={customers}
+            customers={customers || []}
             selectedCustomerId={selectedCustomerId}
-            onSelect={handleCustomerSelect}
+            onSelect={setSelectedCustomerId}
             isLoading={isLoadingCustomers}
           />
-          <FinancialYearSelector />
+          <DataTable
+            columns={columns}
+            data={ledgerData || []}
+            isLoading={isLoadingLedger}
+          />
         </div>
-        {selectedCustomerId && (
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={handleDownloadPDF}
-              className="flex items-center gap-2"
-              disabled={!ledgerEntries.length}
-            >
-              <Download className="h-4 w-4" />
-              Download PDF
-            </Button>
-            <Button
-              variant="outline"
-              onClick={handleSendWhatsApp}
-              className="flex items-center gap-2"
-              disabled={!ledgerEntries.length}
-            >
-              <Send className="h-4 w-4" />
-              Send to WhatsApp
-            </Button>
-          </div>
-        )}
-      </div>
-
-      <ScrollArea className="h-[calc(100vh-300px)]">
-        <Table>
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Description</th>
-              <th>Invoice Number</th>
-              <th className="text-right">Debit</th>
-              <th className="text-right">Credit</th>
-              <th className="text-right">Balance</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoadingLedger ? (
-              <tr>
-                <td colSpan={6} className="text-center py-4">
-                  Loading ledger entries...
-                </td>
-              </tr>
-            ) : !selectedCustomerId ? (
-              <tr>
-                <td colSpan={6} className="text-center py-4">
-                  Select a customer to view their ledger
-                </td>
-              </tr>
-            ) : ledgerEntries.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="text-center py-4">
-                  No transactions found for this period
-                </td>
-              </tr>
-            ) : (
-              ledgerEntries.map((entry, index) => (
-                <tr key={`${entry.transaction_date}-${index}`}>
-                  <td>{new Date(entry.transaction_date).toLocaleDateString()}</td>
-                  <td>{entry.description}</td>
-                  <td className="text-forest-green">{entry.invoice_number || '-'}</td>
-                  <td className="text-right">
-                    {entry.debit > 0 ? formatCurrency(entry.debit) : '-'}
-                  </td>
-                  <td className="text-right">
-                    {entry.credit > 0 ? formatCurrency(entry.credit) : '-'}
-                  </td>
-                  <td className="text-right">{formatCurrency(entry.balance)}</td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </Table>
-      </ScrollArea>
-    </div>
+      </CardContent>
+    </Card>
   );
 }

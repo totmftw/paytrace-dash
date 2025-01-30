@@ -27,16 +27,25 @@ interface CustomerSelectorProps {
 }
 
 export function CustomerSelector({
-  customers,
+  customers = [], // Provide default empty array
   selectedCustomerId,
   onSelect,
-  isLoading,
+  isLoading = false,
 }: CustomerSelectorProps) {
   const [open, setOpen] = useState(false);
   
-  const selectedCustomer = customers.find(
+  const selectedCustomer = customers?.find(
     (customer) => customer.id === selectedCustomerId
   );
+
+  if (isLoading) {
+    return (
+      <Button variant="outline" className="w-[300px] justify-between" disabled>
+        Loading customers...
+        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+      </Button>
+    );
+  }
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -46,7 +55,6 @@ export function CustomerSelector({
           role="combobox"
           aria-expanded={open}
           className="w-[300px] justify-between"
-          disabled={isLoading}
         >
           {selectedCustomer
             ? selectedCustomer.custBusinessname
@@ -59,10 +67,10 @@ export function CustomerSelector({
           <CommandInput placeholder="Search customers..." />
           <CommandEmpty>No customer found.</CommandEmpty>
           <CommandGroup>
-            {customers.map((customer) => (
+            {(customers || []).map((customer) => (
               <CommandItem
                 key={customer.id}
-                value={customer.id.toString()}
+                value={customer.custBusinessname}
                 onSelect={() => {
                   onSelect(customer.id);
                   setOpen(false);

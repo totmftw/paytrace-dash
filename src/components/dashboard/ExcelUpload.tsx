@@ -48,7 +48,7 @@ export function ExcelUpload() {
           const { data: invoices, error: invoiceError } = await supabase
             .from('invoiceTable')
             .select('invId, invTotal, invBalanceAmount')
-            .eq('invNumber', row.InvoiceNumber.split('-').map(Number))
+            .eq('invNumber', row.InvoiceNumber)
             .single();
 
           if (invoiceError || !invoices) {

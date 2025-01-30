@@ -89,7 +89,7 @@ export const PaymentTracking = () => {
                   <div>
                     <p className="font-medium">{invoice.customerMaster?.custBusinessname}</p>
                     <p className="text-sm text-muted-foreground">
-                      Invoice: {invoice.invNumber.join("-")}
+                      Invoice: {invoice.invNumber}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       Due: {new Date(invoice.invDuedate).toLocaleDateString()}

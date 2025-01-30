@@ -1,4 +1,3 @@
-// PaymentMetrics.tsx
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,6 +19,7 @@ export const PaymentMetrics = () => {
   const [showPendingPayments, setShowPendingPayments] = useState(false);
   const [showOverduePayments, setShowOverduePayments] = useState(false);
   const [showOrders, setShowOrders] = useState(false);
+  const { toast } = useToast();
 
   const getFinancialYearStart = (year: string) => {
     const yearNum = parseInt(year.split('-')[0]);
@@ -31,26 +31,27 @@ export const PaymentMetrics = () => {
     return new Date(yearNum + 1, 2, 31).toISOString();
   };
 
-  const { data: metrics } = useQuery({
+  const { data: metrics, error: metricsError } = useQuery({
     queryKey: ["payment-metrics", selectedYear],
     queryFn: async () => {
-      const startDate = getFinancialYearStart(selectedYear);
-      const endDate = getFinancialYearEnd(selectedYear);
+      try {
+        const startDate = getFinancialYearStart(selectedYear);
+        const endDate = getFinancialYearEnd(selectedYear);
 
-      const { data: invoices, error } = await supabase
-        .from("invoiceTable")
-        .select(`
-          *,
-          customerMaster (
-            custBusinessname,
-            custCreditperiod
-          )
-        `)
-        .gte('invDate', startDate.split('T')[0])
-        .lte('invDate', endDate.split('T')[0])
-        .order('invDuedate', { ascending: true });
+        const { data: invoices, error } = await supabase
+          .from("invoiceTable")
+          .select(`
+            *,
+            customerMaster (
+              custBusinessname,
+              custCreditperiod
+            )
+          `)
+          .gte('invDate', startDate.split('T')[0])
+          .lte('invDate', endDate.split('T')[0])
+          .order('invDuedate', { ascending: true });
 
-      if (error) throw error;
+        if (error) throw error;
 
       const pendingPayments = {
         amount: 0,
@@ -87,30 +88,57 @@ export const PaymentMetrics = () => {
         orders.invoices.push(invoice);
       });
 
-      return [
-        {
-          title: "Pending Payments",
-          amount: pendingPayments.amount,
-          status: "warning",
-          count: pendingPayments.count,
-          invoices: pendingPayments.invoices
-        },
-        {
-          title: "Overdue Payments",
-          amount: overduePayments.amount,
-          status: "danger",
-          count: overduePayments.count,
-          invoices: overduePayments.invoices
-        },
-        {
-          title: "Orders",
-          count: orders.count,
-          invoices: orders.invoices
-        }
-      ];
+        return [
+          {
+            title: "Pending Payments",
+            amount: pendingPayments.amount,
+            status: "warning",
+            count: pendingPayments.count,
+            invoices: pendingPayments.invoices
+          },
+          {
+            title: "Overdue Payments",
+            amount: overduePayments.amount,
+            status: "danger",
+            count: overduePayments.count,
+            invoices: overduePayments.invoices
+          },
+          {
+            title: "Orders",
+            count: orders.count,
+            invoices: orders.invoices
+          }
+        ];
+      } catch (error: any) {
+        console.error('Error fetching metrics:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to fetch payment metrics. Please check your connection and try again.",
+        });
+        throw error;
+      }
     },
-    refetchInterval: 300000,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
+
+  if (metricsError) {
+    return (
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-sm font-medium">Error Loading Metrics</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground">
+              Failed to load payment metrics. Please try again later.
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <>

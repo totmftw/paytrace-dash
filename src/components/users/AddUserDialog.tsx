@@ -7,7 +7,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 const formSchema = z.object({
@@ -27,7 +27,7 @@ interface AddUserDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-type UserProfile = {
+type ExistingUserCheck = {
   id: string;
   email: string | null;
 };
@@ -45,15 +45,15 @@ const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
-      // First check if user exists
-      const { data: existingUser, error: fetchError } = await supabase
+      // Check if user exists
+      const { data: existingUser, error: checkError } = await supabase
         .from('user_profiles')
-        .select('id, email')
+        .select<'id, email', ExistingUserCheck>('id, email')
         .eq('email', values.email)
         .maybeSingle();
 
-      if (fetchError) {
-        console.error("Error checking existing user:", fetchError);
+      if (checkError) {
+        console.error("Error checking existing user:", checkError);
         toast({
           variant: "destructive",
           title: "Error",
@@ -71,7 +71,7 @@ const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
         return;
       }
 
-      const { data, error } = await supabase.rpc("create_new_user_with_profile", {
+      const { error } = await supabase.rpc("create_new_user_with_profile", {
         user_email: values.email,
         user_password: values.password,
         user_full_name: values.full_name,

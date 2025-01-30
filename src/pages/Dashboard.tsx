@@ -49,19 +49,30 @@ export default function Dashboard() {
     const loadLayout = async () => {
       if (!user?.id) return;
       
-      const { data, error } = await supabase
-        .from('dashboard_config')
-        .select('layout')
-        .eq('user_id', user.id)
-        .single();
+      try {
+        const { data, error } = await supabase
+          .from('dashboard_config')
+          .select('layout')
+          .eq('user_id', user.id)
+          .maybeSingle();
 
-      if (data?.layout && typeof data.layout === 'object' && 'lg' in data.layout) {
-        setLayouts(data.layout as Layouts);
+        if (error) throw error;
+
+        if (data?.layout && typeof data.layout === 'object' && 'lg' in data.layout) {
+          setLayouts(data.layout as Layouts);
+        }
+      } catch (error) {
+        console.error('Error loading layout:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to load dashboard layout",
+        });
       }
     };
 
     loadLayout();
-  }, [user?.id]);
+  }, [user?.id, toast]);
 
   const saveLayout = async (layout: Layouts) => {
     if (!user?.id) return;
@@ -71,8 +82,8 @@ export default function Dashboard() {
         .from('dashboard_config')
         .upsert({
           user_id: user.id,
-          layout: layout,
-          widgets: {} // Required field with empty object as default
+          layout: layout as any,
+          widgets: {}
         });
 
       if (error) throw error;

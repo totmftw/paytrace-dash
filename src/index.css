@@ -31,30 +31,48 @@
     scroll-behavior: smooth;
   }
 
+  html, body {
+    @apply h-full w-full overflow-hidden;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
   }
 
-  .glass {
-    @apply bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl;
+  /* Table Styles */
+  .table-container {
+    @apply w-full overflow-auto;
+    
+    table {
+      @apply w-full border-collapse min-w-full;
+      
+      th {
+        @apply bg-muted/50 text-left p-4 text-sm font-semibold text-foreground whitespace-nowrap sticky top-0 z-10;
+        min-width: 150px;
+      }
+      
+      td {
+        @apply border-t border-border p-4 text-sm text-foreground/90 whitespace-nowrap;
+      }
+      
+      tr:hover td {
+        @apply bg-muted/30;
+      }
+    }
   }
 
-  .card-gradient {
-    @apply bg-gradient-to-br from-background to-secondary/80 backdrop-blur-sm;
+  /* Scrollable Content Area */
+  .content-area {
+    @apply h-[calc(100vh-4rem)] overflow-y-auto overflow-x-hidden p-6;
   }
 
-  .section-padding {
-    @apply py-20 px-6 md:px-12 lg:px-24;
-  }
-
-  .fade-in {
-    opacity: 0;
-    animation: fadeIn 0.5s ease-out forwards;
-  }
-
-  .slide-in {
-    transform: translateX(-100%);
-    animation: slideIn 0.5s ease-out forwards;
+  /* Resizable Columns */
+  .resizer {
+    @apply absolute right-0 top-0 h-full w-1 bg-border cursor-col-resize hover:bg-primary touch-none;
+    
+    &.isResizing {
+      @apply bg-primary;
+    }
   }
 }
 

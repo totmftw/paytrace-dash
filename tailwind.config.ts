@@ -26,8 +26,9 @@ export default {
         foreground: 'hsl(var(--foreground))',
         sidebar: '#FEC6A1', // Light orange sidebar
         primary: {
-          DEFAULT: '#D3E4FD', // Light blue for buttons
-          foreground: 'hsl(var(--primary-foreground))'
+          DEFAULT: '#E3D5CA', // Pastel beige for buttons
+          hover: '#D5BFB2', // Darker pastel beige for hover
+          foreground: '#2D2D2D' // Dark text on primary buttons
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',

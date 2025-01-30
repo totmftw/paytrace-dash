@@ -1,13 +1,4 @@
-import {
-  ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  useReactTable,
-  getPaginationRowModel,
-  SortingState,
-  getSortedRowModel,
-} from "@tanstack/react-table";
-import { useState } from "react";
+import React, { useState } from 'react';
 import {
   Table,
   TableBody,
@@ -16,104 +7,150 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { ArrowUpDown } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[];
-  data: TData[];
-  isLoading?: boolean;
+interface DataTableProps<T> {
+  data: T[];
+  columns: {
+    key: string;
+    header: string;
+    cell?: (item: T) => React.ReactNode;
+  }[];
+  searchable?: boolean;
+  maxHeight?: string;
 }
 
-export function DataTable<TData, TValue>({
-  columns,
+export function DataTable<T extends Record<string, any>>({
   data,
-  isLoading = false,
-}: DataTableProps<TData, TValue>) {
-  const [sorting, setSorting] = useState<SortingState>([]);
+  columns,
+  searchable = true,
+  maxHeight = "calc(100vh - 12rem)"
+}: DataTableProps<T>) {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortConfig, setSortConfig] = useState<{
+    key: string;
+    direction: 'asc' | 'desc';
+  } | null>(null);
+  const [columnWidths, setColumnWidths] = useState<Record<string, number>>({});
+  const [resizingColumn, setResizingColumn] = useState<string | null>(null);
 
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    onSortingChange: setSorting,
-    getSortedRowModel: getSortedRowModel(),
-    state: {
-      sorting,
-    },
-  });
+  const handleSort = (key: string) => {
+    setSortConfig(current => ({
+      key,
+      direction: current?.key === key && current.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
 
-  if (isLoading) {
-    return <div className="text-center py-4">Loading...</div>;
-  }
+  const handleResize = (columnKey: string, width: number) => {
+    setColumnWidths(prev => ({
+      ...prev,
+      [columnKey]: Math.max(width, 100) // Minimum width of 100px
+    }));
+  };
+
+  const filteredData = React.useMemo(() => {
+    let filtered = [...data];
+
+    if (searchTerm) {
+      filtered = filtered.filter(item =>
+        Object.values(item).some(value =>
+          String(value).toLowerCase().includes(searchTerm.toLowerCase())
+        )
+      );
+    }
+
+    if (sortConfig) {
+      filtered.sort((a, b) => {
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+        
+        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return filtered;
+  }, [data, searchTerm, sortConfig]);
 
   return (
-    <div>
+    <div className="space-y-4">
+      {searchable && (
+        <Input
+          placeholder="Search..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="max-w-sm"
+        />
+      )}
+      
       <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
+        <ScrollArea className="relative rounded-md" style={{ maxHeight }}>
+          <div className="overflow-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  {columns.map((column) => (
+                    <TableHead
+                      key={column.key}
+                      style={{ width: columnWidths[column.key] }}
+                      className="relative"
+                    >
+                      <Button
+                        variant="ghost"
+                        onClick={() => handleSort(column.key)}
+                        className="h-8 p-0 font-semibold"
+                      >
+                        {column.header}
+                        <ArrowUpDown className="ml-2 h-4 w-4" />
+                      </Button>
+                      <div
+                        className="resizer"
+                        onMouseDown={(e) => {
+                          const startX = e.pageX;
+                          const startWidth = columnWidths[column.key] || 150;
+                          
+                          const handleMouseMove = (e: MouseEvent) => {
+                            const width = startWidth + (e.pageX - startX);
+                            handleResize(column.key, width);
+                          };
+                          
+                          const handleMouseUp = () => {
+                            document.removeEventListener('mousemove', handleMouseMove);
+                            document.removeEventListener('mouseup', handleMouseUp);
+                            setResizingColumn(null);
+                          };
+                          
+                          document.addEventListener('mousemove', handleMouseMove);
+                          document.addEventListener('mouseup', handleMouseUp);
+                          setResizingColumn(column.key);
+                        }}
+                        className={`resizer ${resizingColumn === column.key ? 'isResizing' : ''}`}
+                      />
+                    </TableHead>
                   ))}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.previousPage()}
-          disabled={!table.getCanPreviousPage()}
-        >
-          Previous
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.nextPage()}
-          disabled={!table.getCanNextPage()}
-        >
-          Next
-        </Button>
+              </TableHeader>
+              <TableBody>
+                {filteredData.map((item, index) => (
+                  <TableRow key={index}>
+                    {columns.map((column) => (
+                      <TableCell
+                        key={column.key}
+                        style={{ width: columnWidths[column.key] }}
+                      >
+                        {column.cell ? column.cell(item) : item[column.key]}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </ScrollArea>
       </div>
     </div>
   );

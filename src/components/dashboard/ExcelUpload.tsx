@@ -7,12 +7,23 @@ import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
 
+interface ExcelPaymentRow {
+  InvoiceNumber: string;
+  TransactionId: string;
+  PaymentMode: string;
+  ChequeNumber?: string;
+  BankName?: string;
+  PaymentDate: string;
+  Amount: number;
+  Remarks?: string;
+}
+
 export function ExcelUpload() {
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const processPayment = async (invoice: any, paymentAmount: number, row: any) => {
+  const processPayment = async (invoice: any, paymentAmount: number, row: ExcelPaymentRow) => {
     const { data: duplicateCheck } = await supabase.rpc('check_duplicate_payments', {
       p_inv_id: invoice.invId,
       p_transaction_id: row.TransactionId,
@@ -85,7 +96,7 @@ export function ExcelUpload() {
           const data = new Uint8Array(e.target?.result as ArrayBuffer);
           const workbook = read(data, { type: 'array' });
           const worksheet = workbook.Sheets[workbook.SheetNames[0]];
-          const jsonData = utils.sheet_to_json(worksheet);
+          const jsonData = utils.sheet_to_json(worksheet) as ExcelPaymentRow[];
 
           for (const row of jsonData) {
             try {

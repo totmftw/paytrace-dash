@@ -16,7 +16,19 @@ import { PaymentTrends } from "@/components/dashboard/PaymentTrends";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
-const defaultLayouts = {
+interface Layout {
+  i: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+interface Layouts {
+  lg: Layout[];
+}
+
+const defaultLayouts: Layouts = {
   lg: [
     { i: "revenue", x: 0, y: 0, w: 8, h: 8 },
     { i: "customerStats", x: 8, y: 0, w: 4, h: 4 },
@@ -29,7 +41,7 @@ const defaultLayouts = {
 
 export default function Dashboard() {
   const [isEditing, setIsEditing] = useState(false);
-  const [layouts, setLayouts] = useState(defaultLayouts);
+  const [layouts, setLayouts] = useState<Layouts>(defaultLayouts);
   const { toast } = useToast();
   const { user } = useAuth();
 
@@ -39,19 +51,19 @@ export default function Dashboard() {
       
       const { data, error } = await supabase
         .from('dashboard_config')
-        .select('layout, widgets')
+        .select('layout')
         .eq('user_id', user.id)
         .single();
 
-      if (data?.layout) {
-        setLayouts(data.layout);
+      if (data?.layout && typeof data.layout === 'object' && 'lg' in data.layout) {
+        setLayouts(data.layout as Layouts);
       }
     };
 
     loadLayout();
   }, [user?.id]);
 
-  const saveLayout = async (layout: typeof defaultLayouts) => {
+  const saveLayout = async (layout: Layouts) => {
     if (!user?.id) return;
 
     try {
@@ -79,9 +91,12 @@ export default function Dashboard() {
     }
   };
 
-  const handleLayoutChange = (layout: any) => {
+  const handleLayoutChange = (currentLayout: Layout[]) => {
     if (isEditing) {
-      const newLayouts = { ...layouts, lg: layout };
+      const newLayouts: Layouts = {
+        ...layouts,
+        lg: currentLayout
+      };
       setLayouts(newLayouts);
     }
   };

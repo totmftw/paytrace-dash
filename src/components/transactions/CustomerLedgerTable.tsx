@@ -55,7 +55,8 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
     enabled: !!selectedCustomerId,
   });
 
-  const handleCustomerSelect = (customerId: number) => {
+  const handleCustomerSelect = (value: string) => {
+    const customerId = parseInt(value, 10);
     const customer = customers.find(c => c.id === customerId);
     if (customer) {
       setSelectedCustomerId(customerId);
@@ -164,8 +165,8 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
                   {customers.map((customer) => (
                     <CommandItem
                       key={customer.id}
-                      value={customer.custBusinessname}
-                      onSelect={() => handleCustomerSelect(customer.id)}
+                      value={customer.id.toString()}
+                      onSelect={handleCustomerSelect}
                     >
                       <Check
                         className={cn(

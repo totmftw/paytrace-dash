@@ -5,10 +5,12 @@ export function PaymentUploadSection() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-black">Upload Payments</CardTitle>
+        <CardTitle>Upload Payments</CardTitle>
       </CardHeader>
       <CardContent>
-        <ExcelUpload />
+        <div className="space-y-4">
+          <ExcelUpload uploadType="payment" />
+        </div>
       </CardContent>
     </Card>
   );

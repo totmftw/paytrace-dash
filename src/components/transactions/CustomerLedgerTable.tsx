@@ -69,7 +69,7 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
   };
 
   const handleDownloadPDF = async () => {
-    if (!selectedCustomerId || !ledgerEntries) return;
+    if (!selectedCustomerId || !ledgerEntries.length) return;
     
     try {
       const response = await supabase.functions.invoke('generate-ledger-pdf', {
@@ -105,7 +105,7 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
   };
 
   const handleSendWhatsApp = async () => {
-    if (!selectedCustomerId || !ledgerEntries) return;
+    if (!selectedCustomerId || !ledgerEntries.length) return;
     
     try {
       const response = await supabase.functions.invoke('send-ledger-whatsapp', {
@@ -133,6 +133,10 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
   };
 
   const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId);
+
+  if (isLoadingCustomers) {
+    return <div className="text-center py-4">Loading customers...</div>;
+  }
 
   return (
     <div className="space-y-4">
@@ -184,6 +188,7 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
               variant="outline"
               onClick={handleDownloadPDF}
               className="flex items-center gap-2"
+              disabled={!ledgerEntries.length}
             >
               <Download className="h-4 w-4" />
               Download PDF
@@ -192,6 +197,7 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
               variant="outline"
               onClick={handleSendWhatsApp}
               className="flex items-center gap-2"
+              disabled={!ledgerEntries.length}
             >
               <Send className="h-4 w-4" />
               Send to WhatsApp
@@ -213,10 +219,10 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
             </tr>
           </thead>
           <tbody>
-            {isLoadingCustomers || isLoadingLedger ? (
+            {isLoadingLedger ? (
               <tr>
                 <td colSpan={6} className="text-center py-4">
-                  Loading...
+                  Loading ledger entries...
                 </td>
               </tr>
             ) : !selectedCustomerId ? (

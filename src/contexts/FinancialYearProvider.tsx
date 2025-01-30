@@ -1,11 +1,12 @@
-// src/contexts/FinancialYearProvider.tsx
-import { createContext, useContext, useState, useMemo } from "react";
+import { createContext, useContext, useState } from "react";
 import { getFinancialYearDates } from "@/utils/financialYearUtils";
 
+export type TimeFrame = 'week' | 'month' | 'quarter';
+
 interface FinancialYearContextType {
-  selectedYear: number;
-  setSelectedYear: (year: number) => void;
-  fyOptions: number[];
+  selectedYear: string;
+  setSelectedYear: (year: string) => void;
+  fyOptions: string[];
   getFYDates: () => { start: Date; end: Date };
   timeFrame: TimeFrame;
   setTimeFrame: (timeFrame: TimeFrame) => void;
@@ -14,12 +15,12 @@ interface FinancialYearContextType {
 export const FinancialYearContext = createContext<FinancialYearContextType | null>(null);
 
 export const FinancialYearProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const currentYear = new Date().getFullYear();
-  const [selectedYear, setSelectedYear] = useState<number>(currentYear);
-  const [timeFrame, setTimeFrame] = useState<TimeFrame>(TimeFrame.MONTH);
+  const currentYear = new Date().getFullYear().toString();
+  const [selectedYear, setSelectedYear] = useState<string>(currentYear);
+  const [timeFrame, setTimeFrame] = useState<TimeFrame>('month');
 
   const fyOptions = useMemo(() => {
-    return Array.from({ length: 10 }, (_, i) => currentYear - i);
+    return Array.from({ length: 10 }, (_, i) => (currentYear - i).toString());
   }, [currentYear]);
 
   const getFYDates = () => getFinancialYearDates(selectedYear);

@@ -55,6 +55,17 @@ type InvoiceFormProps = {
 export function InvoiceForm({ isOpen, onClose, onSuccess, invoice }: InvoiceFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  
+  const getCurrentFY = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = today.getMonth();
+    if (month < 3) { // Before April
+      return `${year-1}-${year}`;
+    }
+    return `${year}-${year+1}`;
+  };
+
   const form = useForm<z.infer<typeof invoiceSchema>>({
     resolver: zodResolver(invoiceSchema),
     defaultValues: invoice ? {
@@ -78,19 +89,17 @@ export function InvoiceForm({ isOpen, onClose, onSuccess, invoice }: InvoiceForm
                     (values.invAddamount ? parseFloat(values.invAddamount) : 0) - 
                     (values.invSubamount ? parseFloat(values.invSubamount) : 0);
 
+      const invoiceData = {
+        ...values,
+        fy: getCurrentFY(), // Add the financial year
+        invTotal: total,
+        invBalanceAmount: total,
+      };
+
       if (invoice) {
         const { error } = await supabase
           .from("invoiceTable")
-          .update({
-            invNumber: values.invNumber,
-            invDate: format(values.invDate, "yyyy-MM-dd"),
-            invDuedate: format(values.invDuedate, "yyyy-MM-dd"),
-            invValue: parseFloat(values.invValue),
-            invGst: parseFloat(values.invGst),
-            invAddamount: values.invAddamount ? parseFloat(values.invAddamount) : null,
-            invSubamount: values.invSubamount ? parseFloat(values.invSubamount) : null,
-            invTotal: total,
-          })
+          .update(invoiceData)
           .eq("invId", invoice.invId);
 
         if (error) throw error;
@@ -102,18 +111,7 @@ export function InvoiceForm({ isOpen, onClose, onSuccess, invoice }: InvoiceForm
       } else {
         const { error } = await supabase
           .from("invoiceTable")
-          .insert({
-            invNumber: values.invNumber,
-            invDate: format(values.invDate, "yyyy-MM-dd"),
-            invDuedate: format(values.invDuedate, "yyyy-MM-dd"),
-            invValue: parseFloat(values.invValue),
-            invGst: parseFloat(values.invGst),
-            invAddamount: values.invAddamount ? parseFloat(values.invAddamount) : null,
-            invSubamount: values.invSubamount ? parseFloat(values.invSubamount) : null,
-            invTotal: total,
-            invBalanceAmount: total,
-            invCustid: values.invCustid,
-          });
+          .insert(invoiceData);
 
         if (error) throw error;
 

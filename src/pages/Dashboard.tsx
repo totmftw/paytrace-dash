@@ -1,97 +1,95 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { formatCurrency } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
+import { PaymentReminders } from "@/components/dashboard/PaymentReminders";
 import { FinancialYearSelector } from "@/components/FinancialYearSelector";
-import { Overview } from "@/components/dashboard/Overview";
-import { RecentSales } from "@/components/dashboard/RecentSales";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useFinancialYear } from "@/contexts/FinancialYearContext";
-import { MetricsCard } from "@/components/dashboard/metrics/MetricsCard";
-import { PaymentTrends } from "@/components/dashboard/PaymentTrends";
-import { useToast } from "@/components/ui/use-toast";
 
 export default function Dashboard() {
   const { toast } = useToast();
-  const navigate = useNavigate();
-  const { selectedYear, getFYDates, timeFrame } = useFinancialYear();
-  const { start, end } = getFYDates();
+  const { user } = useAuth();
 
-  const { data: dashboardData, isLoading } = useQuery({
-    queryKey: ['dashboard-stats', selectedYear],
+  const { data: dashboardData, error: dashboardError } = useQuery({
+    queryKey: ["dashboard-data"],
     queryFn: async () => {
-      const { data: payments } = await supabase
-        .from('paymentTransactions')
-        .select('amount')
-        .gte('paymentDate', start.toISOString())
-        .lte('paymentDate', end.toISOString());
-  
-      const { data: invoices } = await supabase
-        .from('invoiceTable')
-        .select('invTotal, invBalanceAmount, invDuedate')
-        .gte('invDate', start.toISOString())
-        .lte('invDate', end.toISOString());
-  
-      return {
-        totalRevenue: payments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0,
-        outstandingAmount: invoices?.filter(i => new Date(i.invDuedate) < new Date() && i.invBalanceAmount > 0)
-          .reduce((sum, i) => sum + Number(i.invBalanceAmount), 0) || 0,
-        pendingAmount: invoices?.filter(i => new Date(i.invDuedate) >= new Date() && i.invBalanceAmount > 0)
-          .reduce((sum, i) => sum + Number(i.invBalanceAmount), 0) || 0,
-        totalReceivables: (invoices?.reduce((sum, i) => sum + Number(i.invTotal), 0) || 0) -
-          (payments?.reduce((sum, p) => sum + Number(p.amount), 0) || 0)
-      };
+      if (!user) {
+        throw new Error("No authenticated session");
+      }
+
+      const { data, error } = await supabase
+        .from("dashboard_metrics")
+        .select("*")
+        .single();
+
+      if (error) throw error;
+      return data;
     },
-    enabled: !!selectedYear
+    enabled: !!user,
   });
 
-  const { totalRevenue, outstandingAmount, totalReceivables } = dashboardData || {};
-  
+  useEffect(() => {
+    if (dashboardError) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load dashboard data. Please try again.",
+      });
+    }
+  }, [dashboardError, toast]);
+
+  const getVariant = (status: string) => {
+    switch (status) {
+      case 'success':
+        return 'default';
+      case 'warning':
+        return 'warning';
+      case 'danger':
+        return 'destructive';
+      default:
+        return 'default';
+    }
+  };
+
   return (
-    <div className="space-y-6 bg-[#E6EFE9]">
-      <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold tracking-tight text-[#1B4332]">Dashboard</h2>
+    <div className="space-y-8 p-8">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Dashboard</h1>
         <FinancialYearSelector />
       </div>
 
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <MetricsCard
-          title="Total Revenue"
-          amount={totalRevenue}
-          count={0}
-          status="success"
-          onViewDetails={() => {}}
-        />
-        <MetricsCard
-          title="Outstanding Amount"
-          amount={outstandingAmount}
-          count={0}
-          status="danger"
-          onViewDetails={() => {}}
-        />
-        <MetricsCard
-          title="Total Receivables"
-          amount={totalReceivables}
-          count={0}
-          status="warning"
-          onViewDetails={() => {}}
-        />
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {dashboardData?.metrics.map((metric: any) => (
+          <Card key={metric.id}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                {metric.title}
+              </CardTitle>
+              <Badge variant={getVariant(metric.status)}>
+                {metric.status}
+              </Badge>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">
+                {metric.type === 'currency' 
+                  ? formatCurrency(metric.value)
+                  : metric.value}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {metric.description}
+              </p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      <PaymentTrends />
-
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="recent">Recent Sales</TabsTrigger>
-        </TabsList>
-        <TabsContent value="overview">
-          <Overview />
-        </TabsContent>
-        <TabsContent value="recent">
-          <RecentSales />
-        </TabsContent>
-      </Tabs>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <PaymentReminders />
+      </div>
     </div>
   );
 }

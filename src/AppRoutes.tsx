@@ -22,28 +22,26 @@ const AppRoutes = () => {
         path="/"
         element={
           <ProtectedRoute>
-            <AppLayout>
-              <DashboardLayout>
-                <Routes>
-                  <Route path="dashboard" element={<Dashboard />} />
-                  <Route path="customers" element={<Customers />} />
-                  <Route path="products" element={<Products />} />
-                  <Route path="transactions" element={<Transactions />} />
-                  <Route path="whatsapp-reminders" element={<WhatsappReminders />} />
-                  <Route
-                    path="user-management"
-                    element={
-                      <ProtectedRoute adminOnly>
-                        <UserManagement />
-                      </ProtectedRoute>
-                    }
-                  />
-                </Routes>
-              </DashboardLayout>
-            </AppLayout>
+            <AppLayout />
           </ProtectedRoute>
         }
-      />
+      >
+        <Route element={<DashboardLayout />}>
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="customers" element={<Customers />} />
+          <Route path="products" element={<Products />} />
+          <Route path="transactions" element={<Transactions />} />
+          <Route path="whatsapp-reminders" element={<WhatsappReminders />} />
+          <Route
+            path="user-management"
+            element={
+              <ProtectedRoute adminOnly>
+                <UserManagement />
+              </ProtectedRoute>
+            }
+          />
+        </Route>
+      </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );

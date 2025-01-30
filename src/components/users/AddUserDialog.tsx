@@ -27,7 +27,7 @@ interface AddUserDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-type ExistingUserCheck = {
+type UserProfile = {
   id: string;
   email: string | null;
 };
@@ -49,9 +49,9 @@ const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
         .from('user_profiles')
         .select('id, email')
         .eq('email', values.email)
-        .maybeSingle();
+        .single();
 
-      if (checkError) {
+      if (checkError && checkError.code !== 'PGRST116') {
         console.error("Error checking existing user:", checkError);
         toast({
           variant: "destructive",

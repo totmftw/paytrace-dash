@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { PaymentDetailsTable } from "./PaymentDetailsTable";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
-import { useToast } from "@/hooks/use-toast"; // Fixed import
+import { useToast } from "@/hooks/use-toast";
 
 export const PaymentMetrics = () => {
   const { selectedYear } = useFinancialYear();

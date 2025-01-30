@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { ROLES } from "./constants";
+
+export const ROLES = ["business_owner", "business_manager", "order_manager", "it_admin", "team_member"] as const;
 
 export const formSchema = z.object({
   email: z.string().email(),

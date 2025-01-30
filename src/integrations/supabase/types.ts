@@ -148,7 +148,7 @@ export type Database = {
           invMessage1: string
           invMessage2: string | null
           invMessage3: string | null
-          invNumber: number[]
+          invNumber: string
           invPaymentDifference: number | null
           invPaymentStatus: string | null
           invRemainder2: boolean | null
@@ -171,7 +171,7 @@ export type Database = {
           invMessage1?: string
           invMessage2?: string | null
           invMessage3?: string | null
-          invNumber: number[]
+          invNumber: string
           invPaymentDifference?: number | null
           invPaymentStatus?: string | null
           invRemainder2?: boolean | null
@@ -194,7 +194,7 @@ export type Database = {
           invMessage1?: string
           invMessage2?: string | null
           invMessage3?: string | null
-          invNumber?: number[]
+          invNumber?: string
           invPaymentDifference?: number | null
           invPaymentStatus?: string | null
           invRemainder2?: boolean | null
@@ -641,17 +641,9 @@ export type Database = {
       invoice_reminder_status: {
         Row: {
           custBusinessname: string | null
-          custWhatsapp: number | null
           invDuedate: string | null
           invId: number | null
-          invMessage1: string | null
-          invMessage2: string | null
-          invMessage3: string | null
-          invNumber: number[] | null
-          invRemainder2: boolean | null
-          invRemainder3: boolean | null
-          invReminder1: boolean | null
-          reminder_status: string | null
+          invoice_number: string | null
         }
         Relationships: []
       }

@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
 import {
   Form,
   FormControl,
@@ -21,35 +20,11 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { formSchema, FormValues, ROLES } from "./types";
 
 interface CreateUserFormProps {
   onSuccess?: () => void;
 }
-
-// Define FormValues explicitly instead of using z.infer to avoid excessive type instantiation
-interface FormValues {
-  email: string;
-  password: string;
-  full_name: string;
-  role: "business_owner" | "business_manager" | "order_manager" | "it_admin" | "team_member";
-  phone_number: string;
-  designation: string;
-  department: string;
-  emergency_contact: string;
-  address: string;
-}
-
-const formSchema: z.ZodType<FormValues> = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-  full_name: z.string().min(2),
-  role: z.enum(["business_owner", "business_manager", "order_manager", "it_admin", "team_member"]),
-  phone_number: z.string().min(10),
-  designation: z.string().min(2),
-  department: z.string().min(2),
-  emergency_contact: z.string().min(10),
-  address: z.string().min(5),
-});
 
 export function CreateUserForm({ onSuccess }: CreateUserFormProps) {
   const [isLoading, setIsLoading] = useState(false);
@@ -124,11 +99,11 @@ export function CreateUserForm({ onSuccess }: CreateUserFormProps) {
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="business_owner">Business Owner</SelectItem>
-                        <SelectItem value="business_manager">Business Manager</SelectItem>
-                        <SelectItem value="order_manager">Order Manager</SelectItem>
-                        <SelectItem value="it_admin">IT Admin</SelectItem>
-                        <SelectItem value="team_member">Team Member</SelectItem>
+                        {ROLES.map((role) => (
+                          <SelectItem key={role} value={role}>
+                            {role.replace("_", " ").toUpperCase()}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   ) : (

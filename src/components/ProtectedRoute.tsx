@@ -32,7 +32,7 @@ export function ProtectedRoute({ children, adminOnly = false }: { children: Reac
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * (2 ** attemptIndex), 30000),
     staleTime: 300000, // 5 minutes
-    cacheTime: 3600000, // 1 hour
+    gcTime: 3600000, // 1 hour (formerly cacheTime)
   });
 
   useEffect(() => {

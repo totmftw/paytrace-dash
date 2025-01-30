@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { FinancialYearSelector } from "@/components/FinancialYearSelector";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Overview } from "@/components/dashboard/Overview";
 import { RecentSales } from "@/components/dashboard/RecentSales";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";

@@ -5,7 +5,6 @@ import { CustomerLedgerTable } from "@/components/transactions/CustomerLedgerTab
 import { PaymentTabs } from "@/components/payments/PaymentTabs";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { CustomerLedgerDialog } from "@/components/transactions/CustomerLedgerDialog";
 import { Combobox } from "@/components/ui/combobox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
@@ -14,6 +13,15 @@ interface CustomerData {
   id: number;
   name: string;
   whatsappNumber: number;
+}
+
+interface LedgerEntry {
+  ledgerId: number;
+  createdAt: string;
+  description: string;
+  transactionType: 'invoice' | 'payment' | 'credit_note' | 'debit_note';
+  amount: number;
+  runningBalance: number;
 }
 
 export default function Transactions() {
@@ -40,14 +48,13 @@ export default function Transactions() {
       if (!selectedCustomer) return null;
       
       const { data, error } = await supabase
-        .from('customer_ledger_view')
+        .from('paymentLedger')
         .select('*')
         .eq('custId', selectedCustomer.id)
-        .eq('financial_year', selectedYear)
         .order('createdAt');
       
       if (error) throw error;
-      return data;
+      return data as LedgerEntry[];
     },
     enabled: !!selectedCustomer && !!selectedYear
   });
@@ -63,7 +70,7 @@ export default function Transactions() {
   })) || [];
 
   return (
-    <div className="space-y-6 p-6 bg-background min-h-screen">
+    <div className="space-y-6 p-6 bg-[#F2FCE2] min-h-screen">
       <h1 className="text-3xl font-bold tracking-tight">Transactions</h1>
       
       <Tabs defaultValue="ledger" className="space-y-6">
@@ -88,7 +95,7 @@ export default function Transactions() {
               />
             </div>
             <Select value={selectedYear} onValueChange={setSelectedYear}>
-              <SelectTrigger className="w-48">
+              <SelectTrigger className="w-48 bg-[#D3E4FD]">
                 <SelectValue placeholder="Select Year" />
               </SelectTrigger>
               <SelectContent>

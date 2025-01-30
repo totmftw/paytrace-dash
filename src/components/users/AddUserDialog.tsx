@@ -40,6 +40,22 @@ const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
+      // First check if user exists
+      const { data: existingUser } = await supabase
+        .from('user_profiles')
+        .select('id')
+        .eq('email', values.email)
+        .single();
+
+      if (existingUser) {
+        toast({
+          variant: "destructive",
+          title: "Error creating user",
+          description: "A user with this email already exists",
+        });
+        return;
+      }
+
       const { data, error } = await supabase.rpc("create_new_user_with_profile", {
         user_email: values.email,
         user_password: values.password,
@@ -52,7 +68,19 @@ const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
         user_address: values.address,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error details:", error);
+        if (error.message.includes("duplicate key value")) {
+          toast({
+            variant: "destructive",
+            title: "Error creating user",
+            description: "A user with this email already exists",
+          });
+        } else {
+          throw error;
+        }
+        return;
+      }
 
       toast({
         title: "Success",
@@ -62,10 +90,11 @@ const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
       form.reset();
       onOpenChange(false);
     } catch (error: any) {
+      console.error("Full error:", error);
       toast({
         variant: "destructive",
         title: "Error creating user",
-        description: error.message,
+        description: error.message || "An unexpected error occurred",
       });
     } finally {
       setIsLoading(false);

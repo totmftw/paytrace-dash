@@ -13,7 +13,7 @@ import { Building2, Mail, Phone, MapPin, Users, BadgeCheck, Clock } from "lucide
 export default function UserProfiles() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
 
-  const { data: users, isLoading } = useQuery({
+  const { data: users, isLoading, refetch } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -31,6 +31,11 @@ export default function UserProfiles() {
       }));
     },
   });
+
+  const handleUserCreated = () => {
+    setIsCreateDialogOpen(false);
+    refetch();
+  };
 
   const getRoleColor = (role: string) => {
     switch (role) {
@@ -69,7 +74,7 @@ export default function UserProfiles() {
             <Button>Add New User</Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <CreateUserForm onSuccess={() => setIsCreateDialogOpen(false)} />
+            <CreateUserForm onSuccess={handleUserCreated} />
           </DialogContent>
         </Dialog>
       </div>

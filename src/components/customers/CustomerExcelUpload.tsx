@@ -58,50 +58,55 @@ export function CustomerExcelUpload() {
 
           console.log("Processed customer data:", customers);
 
-          // Insert data into Supabase one by one to better handle errors
-          const results = [];
-          const errors = [];
+          // First check for existing business names
+          const existingBusinessNames = new Set();
+          const { data: existingCustomers } = await supabase
+            .from('customerMaster')
+            .select('custBusinessname');
+          
+          existingCustomers?.forEach(customer => {
+            existingBusinessNames.add(customer.custBusinessname.toLowerCase());
+          });
 
-          for (const customer of customers) {
-            try {
-              const { data: insertedData, error } = await supabase
-                .from('customerMaster')
-                .insert([customer])
-                .select()
-                .single();
+          // Filter out duplicates and insert new customers
+          const newCustomers = customers.filter(customer => 
+            !existingBusinessNames.has(customer.custBusinessname.toLowerCase())
+          );
 
-              if (error) {
-                if (error.code === '23505') {
-                  errors.push(`Business "${customer.custBusinessname}" already exists`);
-                } else {
-                  errors.push(`Error adding "${customer.custBusinessname}": ${error.message}`);
-                }
-              } else if (insertedData) {
-                results.push(insertedData);
-              }
-            } catch (error: any) {
-              errors.push(`Failed to process "${customer.custBusinessname}": ${error.message}`);
+          const skippedCustomers = customers.length - newCustomers.length;
+
+          if (newCustomers.length > 0) {
+            const { error } = await supabase
+              .from('customerMaster')
+              .insert(newCustomers);
+
+            if (error) {
+              console.error("Supabase insert error:", error);
+              toast({
+                variant: "destructive",
+                title: "Error",
+                description: "Failed to add some customers. Please try again.",
+              });
+              return;
             }
-          }
 
-          // Show success/error messages
-          if (results.length > 0) {
+            // Invalidate and refetch customers query
+            await queryClient.invalidateQueries({ queryKey: ["customers"] });
+
+            // Show success message with details about skipped records
             toast({
               title: "Success",
-              description: `Successfully uploaded ${results.length} customer records`,
+              description: `Successfully added ${newCustomers.length} customers.${
+                skippedCustomers > 0 ? ` ${skippedCustomers} duplicate entries were skipped.` : ''
+              }`,
             });
-          }
-
-          if (errors.length > 0) {
+          } else {
             toast({
               variant: "destructive",
-              title: "Some records failed",
-              description: errors.join('\n'),
+              title: "No new customers added",
+              description: "All business names in the file already exist in the database.",
             });
           }
-
-          // Invalidate and refetch customers query
-          await queryClient.invalidateQueries({ queryKey: ["customers"] });
 
         } catch (error: any) {
           console.error("Processing error:", error);

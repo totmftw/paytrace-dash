@@ -27,10 +27,10 @@ interface AddUserDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-type UserProfile = {
+interface UserProfile {
   id: string;
   email: string;
-};
+}
 
 const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -48,7 +48,7 @@ const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
       // First check if user exists
       const { data: existingUser } = await supabase
         .from('user_profiles')
-        .select<'*', UserProfile>('id')
+        .select('id, email')
         .eq('email', values.email)
         .single();
 

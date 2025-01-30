@@ -1,32 +1,66 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Form } from "@/components/ui/form";
+import * as z from "zod";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { BasicInfoFields } from "./FormFields/BasicInfoFields";
-import { ContactFields } from "./FormFields/ContactFields";
-import { WorkInfoFields } from "./FormFields/WorkInfoFields";
-import { formSchema, type FormValues } from "./types";
 
-interface AddUserDialogProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
+interface CreateUserFormProps {
+  onSuccess?: () => void;
 }
 
-const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
+// Define FormValues explicitly instead of using z.infer to avoid excessive type instantiation
+interface FormValues {
+  email: string;
+  password: string;
+  full_name: string;
+  role: "business_owner" | "business_manager" | "order_manager" | "it_admin" | "team_member";
+  phone_number: string;
+  designation: string;
+  department: string;
+  emergency_contact: string;
+  address: string;
+}
+
+const formSchema: z.ZodType<FormValues> = z.object({
+  email: z.string().email(),
+  password: z.string().min(6),
+  full_name: z.string().min(2),
+  role: z.enum(["business_owner", "business_manager", "order_manager", "it_admin", "team_member"]),
+  phone_number: z.string().min(10),
+  designation: z.string().min(2),
+  department: z.string().min(2),
+  emergency_contact: z.string().min(10),
+  address: z.string().min(5),
+});
+
+export function CreateUserForm({ onSuccess }: CreateUserFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      role: "team_member",
       email: "",
       password: "",
       full_name: "",
+      role: "team_member",
       phone_number: "",
       designation: "",
       department: "",
@@ -38,20 +72,6 @@ const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
   const onSubmit = async (values: FormValues) => {
     setIsLoading(true);
     try {
-      const { count } = await supabase
-        .from('user_profiles')
-        .select('*', { count: 'exact', head: true })
-        .eq('email', values.email);
-
-      if (count && count > 0) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "A user with this email already exists",
-        });
-        return;
-      }
-
       const { error } = await supabase.rpc("create_new_user_with_profile", {
         user_email: values.email,
         user_password: values.password,
@@ -72,9 +92,8 @@ const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
       });
       
       form.reset();
-      onOpenChange(false);
+      onSuccess?.();
     } catch (error: any) {
-      console.error("Error:", error);
       toast({
         variant: "destructive",
         title: "Error creating user",
@@ -86,24 +105,45 @@ const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Add New User</DialogTitle>
-        </DialogHeader>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <BasicInfoFields form={form} />
-            <WorkInfoFields form={form} />
-            <ContactFields form={form} />
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Creating..." : "Create User"}
-            </Button>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        {Object.keys(formSchema.shape).map((fieldName) => (
+          <FormField
+            key={fieldName}
+            control={form.control}
+            name={fieldName as keyof FormValues}
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>{fieldName.replace("_", " ").toUpperCase()}</FormLabel>
+                <FormControl>
+                  {fieldName === "role" ? (
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a role" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="business_owner">Business Owner</SelectItem>
+                        <SelectItem value="business_manager">Business Manager</SelectItem>
+                        <SelectItem value="order_manager">Order Manager</SelectItem>
+                        <SelectItem value="it_admin">IT Admin</SelectItem>
+                        <SelectItem value="team_member">Team Member</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  ) : (
+                    <Input {...field} type={fieldName === "password" ? "password" : "text"} />
+                  )}
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        ))}
+        <Button type="submit" className="w-full" disabled={isLoading}>
+          {isLoading ? "Creating..." : "Create User"}
+        </Button>
+      </form>
+    </Form>
   );
-};
-
-export default AddUserDialog;
+}

@@ -15,7 +15,7 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
   const { selectedYear } = useFinancialYear();
 
-  const { data: customers, isLoading: isLoadingCustomers } = useQuery({
+  const { data: customers = [], isLoading: isLoadingCustomers } = useQuery({
     queryKey: ["customers"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -28,7 +28,7 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
     },
   });
 
-  const { data: ledgerData, isLoading: isLoadingLedger } = useQuery<LedgerEntry[]>({
+  const { data: ledgerData = [], isLoading: isLoadingLedger } = useQuery<LedgerEntry[]>({
     queryKey: ["customer-ledger", selectedCustomerId, selectedYear],
     queryFn: async () => {
       if (!selectedCustomerId) return [];
@@ -58,14 +58,14 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
       <CardContent>
         <div className="space-y-4">
           <CustomerSelector
-            customers={customers || []}
+            customers={customers}
             selectedCustomerId={selectedCustomerId}
             onSelect={setSelectedCustomerId}
             isLoading={isLoadingCustomers}
           />
           <DataTable
             columns={columns}
-            data={ledgerData || []}
+            data={ledgerData}
             isLoading={isLoadingLedger}
           />
         </div>

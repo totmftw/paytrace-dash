@@ -67,7 +67,7 @@ export function CustomerSelector({
           <CommandInput placeholder="Search customers..." />
           <CommandEmpty>No customer found.</CommandEmpty>
           <CommandGroup>
-            {(customers || []).map((customer) => (
+            {customers.map((customer) => (
               <CommandItem
                 key={customer.id}
                 value={customer.custBusinessname}

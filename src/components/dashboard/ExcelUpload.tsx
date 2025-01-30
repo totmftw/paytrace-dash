@@ -54,16 +54,17 @@ export function ExcelUpload() {
           for (const row of jsonData) {
             try {
               // First, verify the invoice exists and get its details
-              const { data: invoice, error: invoiceError } = await supabase
+              const { data: invoices, error: invoiceError } = await supabase
                 .from('invoiceTable')
                 .select('invId, invTotal, invBalanceAmount, invCustid')
-                .eq('invNumber', row.InvoiceNumber)
-                .single();
+                .eq('invNumber', row.InvoiceNumber);
 
-              if (invoiceError || !invoice) {
+              if (invoiceError || !invoices || invoices.length === 0) {
                 errors.push(`Invoice ${row.InvoiceNumber} not found`);
                 continue;
               }
+
+              const invoice = invoices[0]; // Take the first matching invoice
 
               const paymentAmount = Number(row.Amount);
               if (isNaN(paymentAmount) || paymentAmount <= 0) {

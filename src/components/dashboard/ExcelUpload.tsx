@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import * as XLSX from 'xlsx';
 import { PaymentForm } from "@/components/invoices/PaymentForm";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface ExcelRowData {
   InvoiceNumber: string;
@@ -28,6 +29,7 @@ export function ExcelUpload() {
     invCustid: number;
   } | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -40,106 +42,140 @@ export function ExcelUpload() {
     try {
       const reader = new FileReader();
       reader.onload = async (e) => {
-        const data = e.target?.result;
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(worksheet) as ExcelRowData[];
+        try {
+          const data = e.target?.result;
+          const workbook = XLSX.read(data, { type: 'array' });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet) as ExcelRowData[];
 
-        for (const row of jsonData) {
-          try {
-            // First, verify the invoice exists and get its ID
-            const { data: invoices, error: invoiceError } = await supabase
-              .from('invoiceTable')
-              .select('invId, invTotal, invBalanceAmount, invCustid')
-              .eq('invNumber', row.InvoiceNumber)
-              .maybeSingle(); // Changed from single() to maybeSingle()
+          console.log("Processing payment data:", jsonData);
 
-            if (invoiceError || !invoices) {
-              errors.push(`Invoice ${row.InvoiceNumber} not found`);
-              continue; // Skip to next row instead of throwing error
+          for (const row of jsonData) {
+            try {
+              // First, verify the invoice exists and get its details
+              const { data: invoice, error: invoiceError } = await supabase
+                .from('invoiceTable')
+                .select('invId, invTotal, invBalanceAmount, invCustid')
+                .eq('invNumber', row.InvoiceNumber)
+                .single();
+
+              if (invoiceError || !invoice) {
+                errors.push(`Invoice ${row.InvoiceNumber} not found`);
+                continue;
+              }
+
+              const paymentAmount = Number(row.Amount);
+              if (isNaN(paymentAmount) || paymentAmount <= 0) {
+                errors.push(`Invalid payment amount for invoice ${row.InvoiceNumber}`);
+                continue;
+              }
+
+              // Check for duplicate payments
+              const { data: duplicateCheck } = await supabase
+                .rpc('check_duplicate_payments', {
+                  p_inv_id: invoice.invId,
+                  p_transaction_id: row.TransactionId,
+                  p_payment_date: row.PaymentDate,
+                  p_amount: paymentAmount
+                });
+
+              if (duplicateCheck?.[0]?.is_duplicate) {
+                errors.push(`Duplicate payment detected for invoice ${row.InvoiceNumber}`);
+                continue;
+              }
+
+              const balanceAmount = invoice.invBalanceAmount || invoice.invTotal;
+              const paymentDifference = balanceAmount - paymentAmount;
+
+              // Insert payment record
+              const { error: paymentError } = await supabase
+                .from('paymentTransactions')
+                .insert({
+                  invId: invoice.invId,
+                  transactionId: row.TransactionId,
+                  paymentMode: row.PaymentMode,
+                  chequeNumber: row.ChequeNumber,
+                  bankName: row.BankName,
+                  paymentDate: row.PaymentDate,
+                  amount: paymentAmount,
+                  remarks: row.Remarks,
+                });
+
+              if (paymentError) {
+                errors.push(`Failed to record payment for invoice ${row.InvoiceNumber}: ${paymentError.message}`);
+                continue;
+              }
+
+              // Update invoice payment status
+              const { error: invoiceUpdateError } = await supabase
+                .from('invoiceTable')
+                .update({
+                  invBalanceAmount: paymentDifference,
+                  invPaymentDifference: paymentDifference,
+                  invPaymentStatus: paymentDifference <= 0 ? 'paid' : 
+                                  paymentDifference < balanceAmount ? 'partial' : 'pending',
+                  invMarkcleared: paymentDifference <= 0,
+                })
+                .eq('invId', invoice.invId);
+
+              if (invoiceUpdateError) {
+                errors.push(`Failed to update invoice ${row.InvoiceNumber}: ${invoiceUpdateError.message}`);
+                continue;
+              }
+
+              // Create ledger entry
+              const { error: ledgerError } = await supabase
+                .from('paymentLedger')
+                .insert({
+                  invId: invoice.invId,
+                  custId: invoice.invCustid,
+                  transactionType: 'payment',
+                  amount: paymentAmount,
+                  runningBalance: paymentDifference,
+                  description: `Payment received via ${row.PaymentMode}${row.Remarks ? ` - ${row.Remarks}` : ''}`,
+                });
+
+              if (ledgerError) {
+                errors.push(`Failed to create ledger entry for invoice ${row.InvoiceNumber}: ${ledgerError.message}`);
+                continue;
+              }
+
+              processed.push(row.InvoiceNumber);
+
+            } catch (error: any) {
+              errors.push(`Error processing invoice ${row.InvoiceNumber}: ${error.message}`);
             }
-
-            const paymentAmount = Number(row.Amount);
-            const balanceAmount = invoices.invBalanceAmount || invoices.invTotal;
-            const paymentDifference = balanceAmount - paymentAmount;
-
-            // Insert payment record
-            const { error: paymentError } = await supabase
-              .from("paymentTransactions")
-              .insert({
-                invId: invoices.invId,
-                transactionId: row.TransactionId,
-                paymentMode: row.PaymentMode,
-                chequeNumber: row.ChequeNumber,
-                bankName: row.BankName,
-                paymentDate: row.PaymentDate,
-                amount: paymentAmount,
-                remarks: row.Remarks,
-              });
-
-            if (paymentError) {
-              errors.push(`Failed to record payment for invoice ${row.InvoiceNumber}: ${paymentError.message}`);
-              continue;
-            }
-
-            // Update invoice payment status
-            const { error: invoiceUpdateError } = await supabase
-              .from("invoiceTable")
-              .update({
-                invBalanceAmount: paymentDifference,
-                invPaymentDifference: paymentDifference,
-                invPaymentStatus: paymentDifference <= 0 ? 'paid' : 
-                                paymentDifference < balanceAmount ? 'partial' : 'pending',
-                invMarkcleared: paymentDifference <= 0,
-              })
-              .eq("invId", invoices.invId);
-
-            if (invoiceUpdateError) {
-              errors.push(`Failed to update invoice ${row.InvoiceNumber}: ${invoiceUpdateError.message}`);
-              continue;
-            }
-
-            // Create ledger entry
-            const { error: ledgerError } = await supabase
-              .from("paymentLedger")
-              .insert({
-                invId: invoices.invId,
-                custId: invoices.invCustid,
-                transactionType: 'payment',
-                amount: paymentAmount,
-                runningBalance: paymentDifference,
-                description: `Payment received via ${row.PaymentMode}${row.Remarks ? ` - ${row.Remarks}` : ''}`,
-              });
-
-            if (ledgerError) {
-              errors.push(`Failed to create ledger entry for invoice ${row.InvoiceNumber}: ${ledgerError.message}`);
-              continue;
-            }
-
-            processed.push(row.InvoiceNumber);
-
-          } catch (error: any) {
-            errors.push(`Error processing invoice ${row.InvoiceNumber}: ${error.message}`);
           }
-        }
 
-        // Show summary toast
-        if (processed.length > 0) {
-          toast({
-            title: "Upload Complete",
-            description: `Successfully processed ${processed.length} payments${errors.length > 0 ? '. Some errors occurred.' : ''}`,
-          });
-        }
+          // Invalidate and refetch relevant queries
+          await queryClient.invalidateQueries({ queryKey: ['payments'] });
+          await queryClient.invalidateQueries({ queryKey: ['invoices'] });
+          await queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
 
-        // If there were any errors, show them in a separate toast
-        if (errors.length > 0) {
+          if (processed.length > 0) {
+            toast({
+              title: "Success",
+              description: `Successfully processed ${processed.length} payments${errors.length > 0 ? '. Some errors occurred.' : ''}`,
+            });
+          }
+
+          if (errors.length > 0) {
+            console.error('Payment upload errors:', errors);
+            toast({
+              variant: "destructive",
+              title: "Some payments failed to process",
+              description: `${errors.length} error(s) occurred. Check the console for details.`,
+            });
+          }
+
+        } catch (error: any) {
+          console.error('Processing error:', error);
           toast({
             variant: "destructive",
-            title: "Some payments failed to process",
-            description: `${errors.length} error(s) occurred. Check the console for details.`,
+            title: "Error",
+            description: error.message || "Failed to process payment data",
           });
-          console.error('Payment upload errors:', errors);
         }
       };
 
@@ -149,10 +185,11 @@ export function ExcelUpload() {
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to upload payment data",
+        description: "Failed to upload payment data",
       });
     } finally {
       setUploading(false);
+      event.target.value = '';
     }
   };
 
@@ -176,35 +213,14 @@ export function ExcelUpload() {
     XLSX.writeFile(wb, "payment-template.xlsx");
   };
 
-  const handleAddSinglePayment = async () => {
-    try {
-      // Get the latest unpaid invoice for demonstration
-      const { data: invoice, error } = await supabase
-        .from('invoiceTable')
-        .select('invId, invTotal, invBalanceAmount, invCustid')
-        .eq('invPaymentStatus', 'pending')
-        .order('invDate', { ascending: false })
-        .limit(1)
-        .single();
-
-      if (error) throw error;
-
-      setSelectedInvoice(invoice);
-      setShowPaymentForm(true);
-    } catch (error: any) {
-      console.error('Error fetching invoice:', error);
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to fetch invoice information. Please try again.",
-      });
-    }
-  };
-
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4">
-        <Button onClick={downloadTemplate} variant="outline">
+        <Button 
+          onClick={downloadTemplate} 
+          variant="outline"
+          className="bg-[#90BE6D] text-[#1B4332] hover:bg-[#70A349]"
+        >
           <Download className="mr-2 h-4 w-4" />
           Download Template
         </Button>
@@ -217,16 +233,17 @@ export function ExcelUpload() {
             id="excel-upload"
             disabled={uploading}
           />
-          <Button asChild disabled={uploading}>
+          <Button 
+            asChild 
+            disabled={uploading}
+            className="bg-[#90BE6D] text-[#1B4332] hover:bg-[#70A349]"
+          >
             <label htmlFor="excel-upload" className="cursor-pointer">
               <Upload className="mr-2 h-4 w-4" />
               {uploading ? "Uploading..." : "Upload Payment Data"}
             </label>
           </Button>
         </div>
-        <Button onClick={handleAddSinglePayment}>
-          Add Single Payment
-        </Button>
       </div>
 
       {showPaymentForm && selectedInvoice && (

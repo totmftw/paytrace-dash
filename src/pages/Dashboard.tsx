@@ -10,13 +10,6 @@ import { RecentSales } from "@/components/dashboard/RecentSales";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 
-interface DashboardStats {
-  totalRevenue: number;
-  outstandingAmount: number;
-  activeCustomers: number;
-  pendingInvoices: number;
-}
-
 export default function Dashboard() {
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -62,7 +55,7 @@ export default function Dashboard() {
         outstandingAmount: outstanding?.reduce((sum, inv) => sum + Number(inv.invBalanceAmount), 0) || 0,
         activeCustomers: activeCustomers || 0,
         pendingInvoices: pendingInvoices || 0
-      } as DashboardStats;
+      };
     }
   });
 
@@ -84,17 +77,17 @@ export default function Dashboard() {
   }, [navigate, toast]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-[#E6EFE9]"> {/* Pastel moss green background */}
       <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+        <h2 className="text-3xl font-bold tracking-tight text-[#1B4332]">Dashboard</h2> {/* Dark pastel forest green text */}
         <FinancialYearSelector />
       </div>
 
       <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="analytics">Analytics</TabsTrigger>
-          <TabsTrigger value="reports">Reports</TabsTrigger>
+        <TabsList className="bg-[#90BE6D]"> {/* Pastel leaf green buttons */}
+          <TabsTrigger value="overview" className="text-[#1B4332]">Overview</TabsTrigger>
+          <TabsTrigger value="analytics" className="text-[#1B4332]">Analytics</TabsTrigger>
+          <TabsTrigger value="reports" className="text-[#1B4332]">Reports</TabsTrigger>
         </TabsList>
         <TabsContent value="overview" className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

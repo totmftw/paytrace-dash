@@ -4,46 +4,67 @@
  
 @layer base {
   :root {
-    --background: 0 0% 100%;         /* White */
-    --foreground: 222.2 47.4% 11.2%; /* Dark navy */
-    --card: 0 0% 100%;               /* White */
-    --card-foreground: 222.2 47.4% 11.2%;
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 47.4% 11.2%;
-    --primary: 210 40% 48%;          /* Professional blue */
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 20% 96%;        /* Light gray */
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 20% 96%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 90%;           /* Very light blue */
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 20% 85%;         /* Light gray border */
-    --input: 214.3 20% 85%;
-    --ring: 210 40% 48%;             /* Matching primary */
-    --radius: 0.5rem;
+    --popover-foreground: 240 10% 3.9%;
+    --primary: 240 5.9% 10%;
+    --primary-foreground: 0 0% 98%;
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 240 5.9% 10%;
+    --radius: 1rem;
   }
-}
 
-@layer base {
   * {
     @apply border-border;
+    scroll-behavior: smooth;
   }
+
   body {
-    @apply bg-background text-foreground;
-    font-family: 'Inter', sans-serif;
+    @apply bg-background text-foreground antialiased;
+  }
+
+  .glass {
+    @apply bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl;
+  }
+
+  .card-gradient {
+    @apply bg-gradient-to-br from-card to-secondary/80 backdrop-blur-sm;
+  }
+
+  .section-padding {
+    @apply py-20 px-6 md:px-12 lg:px-24;
+  }
+
+  .fade-in {
+    opacity: 0;
+    animation: fadeIn 0.5s ease-out forwards;
+  }
+
+  .slide-in {
+    transform: translateX(-100%);
+    animation: slideIn 0.5s ease-out forwards;
   }
 }
 
 @layer components {
   .dashboard-card {
-    @apply bg-white rounded-xl border border-border p-6 shadow-sm hover:shadow-md transition-shadow;
+    @apply card-gradient p-6 rounded-xl shadow-sm hover:shadow-md transition-shadow;
   }
   
   .dashboard-table {
-    @apply w-full border-collapse rounded-lg overflow-hidden;
+    @apply w-full border-collapse;
     
     th {
       @apply bg-muted/50 text-left p-4 text-sm font-semibold text-foreground;
@@ -59,7 +80,7 @@
   }
 
   .stat-card {
-    @apply dashboard-card flex flex-col gap-3 p-6;
+    @apply dashboard-card flex flex-col gap-3;
     
     .stat-value {
       @apply text-3xl font-bold text-foreground;
@@ -68,31 +89,5 @@
     .stat-label {
       @apply text-sm text-muted-foreground;
     }
-  }
-
-  .react-grid-item {
-    @apply bg-white border border-border rounded-xl p-4;
-  }
-
-  /* Grid Layout Styles */
-  .react-grid-item {
-    @apply transition-all duration-200 ease-in-out;
-  }
-  
-  .react-grid-item.react-grid-placeholder {
-    @apply bg-blue-500/20 border-2 border-blue-500 rounded-lg;
-  }
-  
-  .react-resizable-handle {
-    @apply border-none bg-blue-500/50 rounded-br-lg;
-  }
-  
-  .react-grid-item > .react-resizable-handle::after {
-    @apply border-white/50;
-  }
-
-  /* Drag Handle Styles */
-  .drag-handle {
-    @apply absolute top-0 left-1/2 -translate-x-1/2 w-16 h-2 bg-gray-600 rounded-b-lg cursor-move opacity-50 hover:opacity-100 transition-opacity;
   }
 }

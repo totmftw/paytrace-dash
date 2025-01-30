@@ -1,12 +1,11 @@
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
+import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TransactionInvoiceTable } from "@/components/transactions/TransactionInvoiceTable";
 import { CustomerLedgerTable } from "@/components/transactions/CustomerLedgerTable";
 import { PaymentTabs } from "@/components/payments/PaymentTabs";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { CustomerLedgerDialog } from "@/components/transactions/CustomerLedgerDialog";
 
 interface CustomerData {
   id: number;
@@ -15,16 +14,19 @@ interface CustomerData {
 }
 
 export default function Transactions() {
-  const { user, loading } = useAuth();
-  const navigate = useNavigate();
+  const [selectedCustomer, setSelectedCustomer] = useState<CustomerData | null>(null);
 
-  const { data: invoicePayments } = useQuery({
+  const { data: invoicePayments, isLoading } = useQuery({
     queryKey: ['invoice-payments'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('invoiceTable')
         .select(`
-          *,
+          invId,
+          invNumber,
+          invDate,
+          invDuedate,
+          invTotal,
           customerMaster (
             id,
             custBusinessname,
@@ -38,30 +40,24 @@ export default function Transactions() {
     }
   });
 
-  useEffect(() => {
-    if (!loading && !user) {
-      navigate("/login");
-    }
-  }, [user, loading, navigate]);
-
   const handleCustomerClick = (customer: CustomerData) => {
-    console.log('Customer clicked:', customer);
+    setSelectedCustomer(customer);
   };
 
   const handleInvoiceClick = (invoice: any) => {
     console.log('Invoice clicked:', invoice);
   };
 
-  if (loading) {
+  if (isLoading) {
     return <div className="p-8 flex items-center justify-center">Loading...</div>;
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       <h1 className="text-3xl font-bold tracking-tight">Transactions</h1>
       
       <Tabs defaultValue="invoices" className="space-y-6">
-        <TabsList>
+        <TabsList className="grid w-full grid-cols-3 lg:w-[400px]">
           <TabsTrigger value="invoices">Invoices</TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>
           <TabsTrigger value="ledger">Customer Ledger</TabsTrigger>
@@ -80,9 +76,18 @@ export default function Transactions() {
         </TabsContent>
 
         <TabsContent value="ledger" className="space-y-6">
-          <CustomerLedgerTable />
+          <CustomerLedgerTable onCustomerClick={handleCustomerClick} />
         </TabsContent>
       </Tabs>
+
+      {selectedCustomer && (
+        <CustomerLedgerDialog
+          customerId={selectedCustomer.id}
+          customerName={selectedCustomer.name}
+          isOpen={!!selectedCustomer}
+          onClose={() => setSelectedCustomer(null)}
+        />
+      )}
     </div>
   );
 }

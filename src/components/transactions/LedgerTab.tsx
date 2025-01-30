@@ -5,11 +5,18 @@ import { useFinancialYear } from '@/contexts/FinancialYearContext';
 import { CustomerSelector } from './CustomerSelector';
 import { DataTable } from '@/components/ui/data-table';
 
+interface LedgerEntry {
+  date: string;
+  description: string;
+  amount: number;
+  balance: number;
+}
+
 const columns = [
   {
     key: 'date',
     header: 'Date',
-    cell: (item: { date: string }) => new Date(item.date).toLocaleDateString()
+    cell: (row: LedgerEntry) => new Date(row.date).toLocaleDateString()
   },
   {
     key: 'description',
@@ -18,12 +25,12 @@ const columns = [
   {
     key: 'amount',
     header: 'Amount',
-    cell: (item: { amount: number }) => item.amount.toFixed(2)
+    cell: (row: LedgerEntry) => row.amount.toFixed(2)
   },
   {
     key: 'balance',
     header: 'Balance',
-    cell: (item: { balance: number }) => item.balance.toFixed(2)
+    cell: (row: LedgerEntry) => row.balance.toFixed(2)
   }
 ];
 
@@ -42,7 +49,7 @@ export default function LedgerTab() {
         p_end_date: end.toISOString()
       });
       if (error) throw error;
-      return data;
+      return data as LedgerEntry[];
     },
     enabled: !!selectedCustomerId
   });

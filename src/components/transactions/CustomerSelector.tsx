@@ -3,13 +3,26 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 
+export interface Customer {
+  id: number;
+  custBusinessname: string;
+  custWhatsapp: number;
+}
+
 export interface CustomerSelectorProps {
   selectedCustomerId: number | null;
   onSelect: (customerId: number) => void;
+  customers?: Customer[];
+  isLoading?: boolean;
 }
 
-export function CustomerSelector({ selectedCustomerId, onSelect }: CustomerSelectorProps) {
-  const { data: customers, isLoading } = useQuery({
+export function CustomerSelector({ 
+  selectedCustomerId, 
+  onSelect,
+  customers: propCustomers,
+  isLoading: propIsLoading 
+}: CustomerSelectorProps) {
+  const { data: fetchedCustomers, isLoading: queryIsLoading } = useQuery({
     queryKey: ['customers'],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -17,8 +30,12 @@ export function CustomerSelector({ selectedCustomerId, onSelect }: CustomerSelec
         .select('id, custBusinessname');
       if (error) throw error;
       return data;
-    }
+    },
+    enabled: !propCustomers // Only fetch if customers aren't provided as props
   });
+
+  const customers = propCustomers || fetchedCustomers;
+  const isLoading = propIsLoading || queryIsLoading;
 
   if (isLoading) return <div>Loading...</div>;
 

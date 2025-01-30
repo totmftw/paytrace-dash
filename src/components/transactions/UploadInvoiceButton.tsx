@@ -8,6 +8,18 @@ interface UploadInvoiceButtonProps {
   tableName: 'invoiceTable' | 'paymentTransactions';
 }
 
+interface InvoiceData {
+  invNumber: string;
+  invValue: number;
+  invGst: number;
+  invTotal: number;
+  invDate?: string;
+  invDuedate?: string;
+  invCustid?: number;
+  invMessage1?: string;
+  fy: string;
+}
+
 export function UploadInvoiceButton({ tableName }: UploadInvoiceButtonProps) {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
@@ -24,10 +36,18 @@ export function UploadInvoiceButton({ tableName }: UploadInvoiceButtonProps) {
         const workbook = XLSX.read(data, { type: 'binary' });
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(sheet);
+        const jsonData = XLSX.utils.sheet_to_json(sheet) as InvoiceData[];
 
-        if (Array.isArray(jsonData)) {
-          const { error } = await supabase.from(tableName).insert(jsonData);
+        if (Array.isArray(jsonData) && jsonData.length > 0) {
+          const { error } = await supabase.from(tableName).insert(
+            jsonData.map(item => ({
+              ...item,
+              fy: new Date().getFullYear().toString(),
+              invGst: item.invGst || 0,
+              invValue: item.invValue || 0,
+              invTotal: item.invTotal || 0
+            }))
+          );
           if (error) throw error;
 
           toast({

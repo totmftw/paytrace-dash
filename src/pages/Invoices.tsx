@@ -101,7 +101,7 @@ export default function Invoices() {
       <div className="space-y-6">
         <div className="flex justify-between items-center">
           <h2 className="text-3xl font-bold tracking-tight">Invoices</h2>
-          <ExcelUpload />
+          <ExcelUpload uploadType="invoice" />
         </div>
         <div className="text-center p-4">
           <p className="text-red-500 mb-4">Unable to load invoices</p>

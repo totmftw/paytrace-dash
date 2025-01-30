@@ -24,15 +24,16 @@ import {
 
 type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"] & {
   reports_to: { full_name: string } | null;
-  email?: string; // Make email optional since it comes from auth.users
+  email?: string;
 };
 
 interface UsersListProps {
   users: UserProfile[];
   onRefresh: () => void;
+  onManagePermissions?: () => void;
 }
 
-const UsersList = ({ users, onRefresh }: UsersListProps) => {
+const UsersList = ({ users, onRefresh, onManagePermissions }: UsersListProps) => {
   const { toast } = useToast();
 
   const getRoleColor = (role: string) => {
@@ -116,6 +117,12 @@ const UsersList = ({ users, onRefresh }: UsersListProps) => {
                     <UserX className="mr-2 h-4 w-4" />
                     Set Inactive
                   </DropdownMenuItem>
+                  {onManagePermissions && (
+                    <DropdownMenuItem onClick={onManagePermissions}>
+                      <Shield className="mr-2 h-4 w-4" />
+                      Manage Permissions
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>

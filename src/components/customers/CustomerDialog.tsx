@@ -34,6 +34,16 @@ export function CustomerDialog({ onClose, onSave }: CustomerDialogProps) {
     custCreditperiod: "",
   });
 
+  const validateBusinessName = async (businessName: string) => {
+    const { data } = await supabase
+      .from("customerMaster")
+      .select("custBusinessname")
+      .eq("custBusinessname", businessName)
+      .single();
+    
+    return !data;
+  };
+
   const validateEmail = async (email: string) => {
     const { data } = await supabase
       .from("customerMaster")
@@ -49,7 +59,18 @@ export function CustomerDialog({ onClose, onSave }: CustomerDialogProps) {
     setIsLoading(true);
 
     try {
-      // First validate email
+      // Validate business name
+      const isBusinessNameValid = await validateBusinessName(formData.custBusinessname);
+      if (!isBusinessNameValid) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "A customer with this business name already exists.",
+        });
+        return;
+      }
+
+      // Validate email
       const isEmailValid = await validateEmail(formData.custEmail);
       if (!isEmailValid) {
         toast({
@@ -77,7 +98,9 @@ export function CustomerDialog({ onClose, onSave }: CustomerDialogProps) {
           toast({
             variant: "destructive",
             title: "Error",
-            description: "A customer with this email already exists.",
+            description: error.message.includes("custBusinessname") 
+              ? "A customer with this business name already exists."
+              : "A customer with this email already exists.",
           });
         } else {
           throw error;

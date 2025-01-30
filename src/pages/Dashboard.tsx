@@ -7,7 +7,6 @@ import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Overview } from "@/components/dashboard/Overview";
 import { RecentSales } from "@/components/dashboard/RecentSales";
-import { CalendarDateRangePicker } from "@/components/dashboard/DateRangePicker";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 

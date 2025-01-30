@@ -183,23 +183,3 @@ export function RolePermissionsDialog({ isOpen, onClose }: RolePermissionsDialog
     </Dialog>
   );
 }
-// RolePermissionsDialog.tsx
-export function RolePermissionsDialog() {
-  const [selectedPermissions, setSelectedPermissions] = useState<string[]>([]);
-
-  const handlePermissionToggle = (permissionId: string) => {
-    setSelectedPermissions((prev) =>
-      prev.includes(permissionId)
-        ? prev.filter((id) => id !== permissionId)
-        : [...prev, permissionId]
-    );
-  };
-
-  return (
-    <Dialog>
-      <DialogContent>
-        <Tree permissions={featurePermissions} onToggle={handlePermissionToggle} />
-      </DialogContent>
-    </Dialog>
-  );
-}

@@ -34,6 +34,9 @@ export function ExcelUpload() {
     if (!file) return;
 
     setUploading(true);
+    const errors: string[] = [];
+    const processed: string[] = [];
+
     try {
       const reader = new FileReader();
       reader.onload = async (e) => {
@@ -44,70 +47,100 @@ export function ExcelUpload() {
         const jsonData = XLSX.utils.sheet_to_json(worksheet) as ExcelRowData[];
 
         for (const row of jsonData) {
-          // First, verify the invoice exists and get its ID
-          const { data: invoices, error: invoiceError } = await supabase
-            .from('invoiceTable')
-            .select('invId, invTotal, invBalanceAmount, invCustid')
-            .eq('invNumber', row.InvoiceNumber)
-            .single();
+          try {
+            // First, verify the invoice exists and get its ID
+            const { data: invoices, error: invoiceError } = await supabase
+              .from('invoiceTable')
+              .select('invId, invTotal, invBalanceAmount, invCustid')
+              .eq('invNumber', row.InvoiceNumber)
+              .maybeSingle(); // Changed from single() to maybeSingle()
 
-          if (invoiceError || !invoices) {
-            throw new Error(`Invalid invoice number: ${row.InvoiceNumber}`);
+            if (invoiceError || !invoices) {
+              errors.push(`Invoice ${row.InvoiceNumber} not found`);
+              continue; // Skip to next row instead of throwing error
+            }
+
+            const paymentAmount = Number(row.Amount);
+            const balanceAmount = invoices.invBalanceAmount || invoices.invTotal;
+            const paymentDifference = balanceAmount - paymentAmount;
+
+            // Insert payment record
+            const { error: paymentError } = await supabase
+              .from("paymentTransactions")
+              .insert({
+                invId: invoices.invId,
+                transactionId: row.TransactionId,
+                paymentMode: row.PaymentMode,
+                chequeNumber: row.ChequeNumber,
+                bankName: row.BankName,
+                paymentDate: row.PaymentDate,
+                amount: paymentAmount,
+                remarks: row.Remarks,
+              });
+
+            if (paymentError) {
+              errors.push(`Failed to record payment for invoice ${row.InvoiceNumber}: ${paymentError.message}`);
+              continue;
+            }
+
+            // Update invoice payment status
+            const { error: invoiceUpdateError } = await supabase
+              .from("invoiceTable")
+              .update({
+                invBalanceAmount: paymentDifference,
+                invPaymentDifference: paymentDifference,
+                invPaymentStatus: paymentDifference <= 0 ? 'paid' : 
+                                paymentDifference < balanceAmount ? 'partial' : 'pending',
+                invMarkcleared: paymentDifference <= 0,
+              })
+              .eq("invId", invoices.invId);
+
+            if (invoiceUpdateError) {
+              errors.push(`Failed to update invoice ${row.InvoiceNumber}: ${invoiceUpdateError.message}`);
+              continue;
+            }
+
+            // Create ledger entry
+            const { error: ledgerError } = await supabase
+              .from("paymentLedger")
+              .insert({
+                invId: invoices.invId,
+                custId: invoices.invCustid,
+                transactionType: 'payment',
+                amount: paymentAmount,
+                runningBalance: paymentDifference,
+                description: `Payment received via ${row.PaymentMode}${row.Remarks ? ` - ${row.Remarks}` : ''}`,
+              });
+
+            if (ledgerError) {
+              errors.push(`Failed to create ledger entry for invoice ${row.InvoiceNumber}: ${ledgerError.message}`);
+              continue;
+            }
+
+            processed.push(row.InvoiceNumber);
+
+          } catch (error: any) {
+            errors.push(`Error processing invoice ${row.InvoiceNumber}: ${error.message}`);
           }
-
-          const paymentAmount = Number(row.Amount);
-          const balanceAmount = invoices.invBalanceAmount || invoices.invTotal;
-          const paymentDifference = balanceAmount - paymentAmount;
-
-          // Insert payment record
-          const { error: paymentError } = await supabase
-            .from("paymentTransactions")
-            .insert({
-              invId: invoices.invId,
-              transactionId: row.TransactionId,
-              paymentMode: row.PaymentMode,
-              chequeNumber: row.ChequeNumber,
-              bankName: row.BankName,
-              paymentDate: row.PaymentDate,
-              amount: paymentAmount,
-              remarks: row.Remarks,
-            });
-
-          if (paymentError) throw paymentError;
-
-          // Update invoice payment status
-          const { error: invoiceUpdateError } = await supabase
-            .from("invoiceTable")
-            .update({
-              invBalanceAmount: paymentDifference,
-              invPaymentDifference: paymentDifference,
-              invPaymentStatus: paymentDifference <= 0 ? 'paid' : 
-                              paymentDifference < balanceAmount ? 'partial' : 'pending',
-              invMarkcleared: paymentDifference <= 0,
-            })
-            .eq("invId", invoices.invId);
-
-          if (invoiceUpdateError) throw invoiceUpdateError;
-
-          // Create ledger entry - Fixed transaction type to 'payment'
-          const { error: ledgerError } = await supabase
-            .from("paymentLedger")
-            .insert({
-              invId: invoices.invId,
-              custId: invoices.invCustid,
-              transactionType: 'payment', // Explicitly set to 'payment'
-              amount: paymentAmount,
-              runningBalance: paymentDifference,
-              description: `Payment received via ${row.PaymentMode}${row.Remarks ? ` - ${row.Remarks}` : ''}`,
-            });
-
-          if (ledgerError) throw ledgerError;
         }
 
-        toast({
-          title: "Success",
-          description: "Payment data uploaded successfully",
-        });
+        // Show summary toast
+        if (processed.length > 0) {
+          toast({
+            title: "Upload Complete",
+            description: `Successfully processed ${processed.length} payments${errors.length > 0 ? '. Some errors occurred.' : ''}`,
+          });
+        }
+
+        // If there were any errors, show them in a separate toast
+        if (errors.length > 0) {
+          toast({
+            variant: "destructive",
+            title: "Some payments failed to process",
+            description: `${errors.length} error(s) occurred. Check the console for details.`,
+          });
+          console.error('Payment upload errors:', errors);
+        }
       };
 
       reader.readAsArrayBuffer(file);

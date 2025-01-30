@@ -2,10 +2,20 @@ import * as XLSX from 'xlsx';
 import { supabase } from "@/integrations/supabase/client";
 import type { Database } from "@/integrations/supabase/types";
 
-// Create a type that includes both Tables and Views
-type TableNames = keyof (Database['public']['Tables'] & Database['public']['Views']);
+// Separate types for tables and views
+type Tables = keyof Database['public']['Tables']
+type Views = keyof Database['public']['Views']
 
-export const generateTemplateFromTable = async <T extends TableNames>(tableName: T, exampleData: any = {}) => {
+// Function to check if a name is a view
+const isView = (name: Tables | Views): name is Views => {
+  const views: Views[] = ['customer_ledger_balance', 'invoice_reminder_status', 'user_management'];
+  return views.includes(name as Views);
+};
+
+export const generateTemplateFromTable = async (
+  tableName: Tables | Views,
+  exampleData: any = {}
+) => {
   try {
     // Fetch table structure
     const { data: columns, error } = await supabase

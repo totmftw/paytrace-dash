@@ -638,6 +638,14 @@ export type Database = {
           },
         ]
       }
+      financial_year_ranges: {
+        Row: {
+          financial_year: string | null
+          year_end: string | null
+          year_start: string | null
+        }
+        Relationships: []
+      }
       invoice_reminder_status: {
         Row: {
           custBusinessname: string | null
@@ -695,6 +703,21 @@ export type Database = {
       generate_unique_invoice_number: {
         Args: Record<PropertyKey, never>
         Returns: number[]
+      }
+      get_customer_ledger: {
+        Args: {
+          p_customer_id: number
+          p_start_date: string
+          p_end_date: string
+        }
+        Returns: {
+          transaction_date: string
+          description: string
+          invoice_number: string
+          debit: number
+          credit: number
+          balance: number
+        }[]
       }
       get_user_permissions: {
         Args: {

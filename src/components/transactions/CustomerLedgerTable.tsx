@@ -43,20 +43,11 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
       if (!selectedCustomerId) return null;
 
       const { data, error } = await supabase
-        .from('paymentLedger')
-        .select(`
-          ledgerId,
-          transactionType,
-          amount,
-          runningBalance,
-          description,
-          createdAt,
-          invoiceTable (invNumber)
-        `)
-        .eq('custId', selectedCustomerId)
-        .gte('createdAt', start.toISOString())
-        .lte('createdAt', end.toISOString())
-        .order('createdAt');
+        .rpc('get_customer_ledger', {
+          p_customer_id: selectedCustomerId,
+          p_start_date: start.toISOString(),
+          p_end_date: end.toISOString()
+        });
 
       if (error) throw error;
       return data;
@@ -90,7 +81,6 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
 
       if (response.error) throw response.error;
 
-      // Create a download link
       const url = response.data.url;
       const link = document.createElement('a');
       link.href = url;
@@ -243,17 +233,17 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
               </tr>
             ) : (
               ledgerEntries?.map((entry) => (
-                <tr key={entry.ledgerId}>
-                  <td>{new Date(entry.createdAt).toLocaleDateString()}</td>
-                  <td>{entry.description || entry.transactionType}</td>
-                  <td>{entry.invoiceTable?.invNumber || '-'}</td>
+                <tr key={entry.transaction_date}>
+                  <td>{new Date(entry.transaction_date).toLocaleDateString()}</td>
+                  <td>{entry.description}</td>
+                  <td>{entry.invoice_number || '-'}</td>
                   <td className="text-right">
-                    {entry.transactionType === 'invoice' ? formatCurrency(entry.amount) : '-'}
+                    {entry.debit > 0 ? formatCurrency(entry.debit) : '-'}
                   </td>
                   <td className="text-right">
-                    {entry.transactionType === 'payment' ? formatCurrency(entry.amount) : '-'}
+                    {entry.credit > 0 ? formatCurrency(entry.credit) : '-'}
                   </td>
-                  <td className="text-right">{formatCurrency(entry.runningBalance)}</td>
+                  <td className="text-right">{formatCurrency(entry.balance)}</td>
                 </tr>
               ))
             )}

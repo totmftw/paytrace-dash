@@ -93,12 +93,12 @@ function generateLedgerHTML(entries: any[], year: string) {
           <tbody>
             ${entries.map(entry => `
               <tr>
-                <td>${new Date(entry.createdAt).toLocaleDateString()}</td>
-                <td>${entry.description || entry.transactionType}</td>
-                <td>${entry.invoiceTable?.invNumber || '-'}</td>
-                <td>${entry.transactionType === 'invoice' ? entry.amount.toFixed(2) : '-'}</td>
-                <td>${entry.transactionType === 'payment' ? entry.amount.toFixed(2) : '-'}</td>
-                <td>${entry.runningBalance.toFixed(2)}</td>
+                <td>${new Date(entry.transaction_date).toLocaleDateString()}</td>
+                <td>${entry.description}</td>
+                <td>${entry.invoice_number || '-'}</td>
+                <td>${entry.debit > 0 ? entry.debit.toFixed(2) : '-'}</td>
+                <td>${entry.credit > 0 ? entry.credit.toFixed(2) : '-'}</td>
+                <td>${entry.balance.toFixed(2)}</td>
               </tr>
             `).join('')}
           </tbody>

@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect } from "react";
-import { addYears, subYears, startOfYear, endOfYear } from "date-fns";
 import { supabase } from "@/integrations/supabase/client";
 
 interface FinancialYearContextType {
@@ -15,19 +14,13 @@ const FinancialYearContext = createContext<FinancialYearContextType>({
   selectedYear: '',
   setSelectedYear: () => {},
   getFYDates: () => ({ start: new Date(), end: new Date() }),
-  isLoading: false,
+  isLoading: true,
   fyOptions: [],
   isTransitioning: false
 });
 
-const getCurrentFY = () => {
-  const now = new Date();
-  const year = now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
-  return `${year}-${year + 1}`;
-};
-
 export const FinancialYearProvider = ({ children }: { children: React.ReactNode }) => {
-  const [selectedYear, setSelectedYear] = useState(getCurrentFY());
+  const [selectedYear, setSelectedYear] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [fyOptions, setFyOptions] = useState<string[]>([]);
@@ -36,38 +29,18 @@ export const FinancialYearProvider = ({ children }: { children: React.ReactNode 
     const fetchFYOptions = async () => {
       try {
         const { data, error } = await supabase
-          .from('invoiceTable')
-          .select('invDate')
-          .order('invDate');
+          .from('financial_year_ranges')
+          .select('*')
+          .order('financial_year', { ascending: false });
 
         if (error) throw error;
 
         if (data && data.length > 0) {
-          const years = new Set(
-            data.map(invoice => {
-              const date = new Date(invoice.invDate);
-              return date.getMonth() >= 3 
-                ? `${date.getFullYear()}-${date.getFullYear() + 1}`
-                : `${date.getFullYear() - 1}-${date.getFullYear()}`;
-            })
-          );
-          
-          const options = Array.from(years);
-          if (!options.includes(getCurrentFY())) {
-            options.push(getCurrentFY());
-          }
-          setFyOptions(options.sort());
-          setSelectedYear(getCurrentFY());
-        } else {
-          const currentFY = getCurrentFY();
-          setFyOptions([currentFY]);
-          setSelectedYear(currentFY);
+          setFyOptions(data.map(fy => fy.financial_year));
+          setSelectedYear(data[0].financial_year);
         }
       } catch (error) {
         console.error('Error fetching financial years:', error);
-        const currentFY = getCurrentFY();
-        setFyOptions([currentFY]);
-        setSelectedYear(currentFY);
       } finally {
         setIsLoading(false);
       }
@@ -107,4 +80,10 @@ export const FinancialYearProvider = ({ children }: { children: React.ReactNode 
   );
 };
 
-export const useFinancialYear = () => useContext(FinancialYearContext);
+export const useFinancialYear = () => {
+  const context = useContext(FinancialYearContext);
+  if (!context) {
+    throw new Error("useFinancialYear must be used within a FinancialYearProvider");
+  }
+  return context;
+};

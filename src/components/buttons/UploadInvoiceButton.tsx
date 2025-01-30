@@ -55,7 +55,7 @@ const UploadInvoiceButton = ({ tableName }: UploadInvoiceButtonProps) => {
 
             if (existingInvoices && existingInvoices.length > 0) {
               const duplicateNumbers = existingInvoices
-                .map(inv => inv.invNumber)
+                .map(inv => (inv as { invNumber: string }).invNumber)
                 .filter(num => jsonData.some(item => item.invNumber === num));
 
               if (duplicateNumbers.length > 0) {

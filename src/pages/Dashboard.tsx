@@ -15,6 +15,7 @@ import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 import { FinancialYearProvider } from "@/contexts/FinancialYearContext";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
+import type { Json } from "@/integrations/supabase/types";
 import {
   Dialog,
   DialogContent,
@@ -123,11 +124,11 @@ const Dashboard = () => {
     }
 
     try {
-      const { error } = await supabase.from("dashboard_config").upsert([{
+      const { error } = await supabase.from("dashboard_config").upsert({
         user_id: user.id,
-        layout,
-        widgets
-      }]);
+        layout: layout as Json,
+        widgets: widgets as Json
+      });
 
       if (error) throw error;
 

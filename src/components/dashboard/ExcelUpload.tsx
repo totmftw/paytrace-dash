@@ -1,67 +1,120 @@
 import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { read, utils } from "xlsx";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import * as XLSX from 'xlsx';
-import { PaymentForm } from "@/components/invoices/PaymentForm";
-import { useQueryClient } from "@tanstack/react-query";
-
-interface ExcelRowData {
-  InvoiceNumber: string;
-  TransactionId: string;
-  PaymentMode: string;
-  ChequeNumber?: string;
-  BankName?: string;
-  PaymentDate: string;
-  Amount: string;
-  Remarks?: string;
-}
+import { Loader2 } from "lucide-react";
 
 export function ExcelUpload() {
   const [uploading, setUploading] = useState(false);
-  const [showPaymentForm, setShowPaymentForm] = useState(false);
-  const [selectedInvoice, setSelectedInvoice] = useState<{
-    invId: number;
-    invTotal: number;
-    invBalanceAmount: number;
-    invCustid: number;
-  } | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  const processPayment = async (invoice: any, paymentAmount: number, row: any) => {
+    const { data: duplicateCheck } = await supabase.rpc('check_duplicate_payments', {
+      p_inv_id: invoice.invId,
+      p_transaction_id: row.TransactionId,
+      p_payment_date: row.PaymentDate,
+      p_amount: paymentAmount
+    });
+
+    if (duplicateCheck && duplicateCheck[0]?.is_duplicate) {
+      throw new Error(`Duplicate payment detected for invoice ${row.InvoiceNumber}`);
+    }
+
+    const { error: paymentError } = await supabase
+      .from('paymentTransactions')
+      .insert({
+        invId: invoice.invId,
+        transactionId: row.TransactionId,
+        paymentMode: row.PaymentMode,
+        chequeNumber: row.ChequeNumber,
+        bankName: row.BankName,
+        paymentDate: row.PaymentDate,
+        amount: paymentAmount,
+        remarks: row.Remarks
+      });
+
+    if (paymentError) throw paymentError;
+
+    const newBalanceAmount = Number(invoice.invBalanceAmount) - paymentAmount;
+    const paymentStatus = newBalanceAmount <= 0 ? 'paid' : 'partial';
+
+    const { error: updateError } = await supabase
+      .from('invoiceTable')
+      .update({
+        invBalanceAmount: newBalanceAmount,
+        invPaymentStatus: paymentStatus,
+        invMarkcleared: newBalanceAmount <= 0
+      })
+      .eq('invId', invoice.invId);
+
+    if (updateError) throw updateError;
+
+    const { error: ledgerError } = await supabase
+      .from('paymentLedger')
+      .insert({
+        custId: invoice.invCustid,
+        invId: invoice.invId,
+        transactionType: 'payment',
+        amount: paymentAmount,
+        runningBalance: newBalanceAmount,
+        description: `Payment received for invoice ${row.InvoiceNumber}`
+      });
+
+    if (ledgerError) throw ledgerError;
+  };
+
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    if (!event.target.files || event.target.files.length === 0) {
+      return;
+    }
 
     setUploading(true);
     const errors: string[] = [];
     const processed: string[] = [];
     const notFoundInvoices: string[] = [];
+    const networkErrors: string[] = [];
 
     try {
       const reader = new FileReader();
       reader.onload = async (e) => {
         try {
-          const data = e.target?.result;
-          const workbook = XLSX.read(data, { type: 'array' });
-          const sheetName = workbook.SheetNames[0];
-          const worksheet = workbook.Sheets[sheetName];
-          const jsonData = XLSX.utils.sheet_to_json(worksheet) as ExcelRowData[];
-
-          console.log("Processing payment data:", jsonData);
+          const data = new Uint8Array(e.target?.result as ArrayBuffer);
+          const workbook = read(data, { type: 'array' });
+          const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+          const jsonData = utils.sheet_to_json(worksheet);
 
           for (const row of jsonData) {
             try {
-              // First, verify the invoice exists and get its details
-              const { data: invoices, error: invoiceError } = await supabase
-                .from('invoiceTable')
-                .select('invId, invTotal, invBalanceAmount, invCustid')
-                .eq('invNumber', row.InvoiceNumber);
+              const retryCount = 3;
+              let lastError = null;
+              let invoices = null;
 
-              if (invoiceError) {
-                errors.push(`Error fetching invoice ${row.InvoiceNumber}: ${invoiceError.message}`);
+              // Retry logic for network errors
+              for (let i = 0; i < retryCount; i++) {
+                try {
+                  const { data: invoiceData, error: invoiceError } = await supabase
+                    .from('invoiceTable')
+                    .select('invId, invTotal, invBalanceAmount, invCustid')
+                    .eq('invNumber', row.InvoiceNumber);
+                  
+                  if (!invoiceError) {
+                    invoices = invoiceData;
+                    break;
+                  }
+                  lastError = invoiceError;
+                  await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1))); // Exponential backoff
+                } catch (err) {
+                  lastError = err;
+                  await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+                }
+              }
+
+              if (lastError) {
+                networkErrors.push(`Network error for invoice ${row.InvoiceNumber}: ${lastError.message}`);
                 continue;
               }
 
@@ -78,85 +131,14 @@ export function ExcelUpload() {
                 continue;
               }
 
-              // Check for duplicate payments
-              const { data: duplicateCheck } = await supabase
-                .rpc('check_duplicate_payments', {
-                  p_inv_id: invoice.invId,
-                  p_transaction_id: row.TransactionId,
-                  p_payment_date: row.PaymentDate,
-                  p_amount: paymentAmount
-                });
-
-              if (duplicateCheck?.[0]?.is_duplicate) {
-                errors.push(`Duplicate payment detected for invoice ${row.InvoiceNumber}`);
-                continue;
-              }
-
-              const balanceAmount = invoice.invBalanceAmount || invoice.invTotal;
-              const paymentDifference = balanceAmount - paymentAmount;
-
-              // Insert payment record
-              const { error: paymentError } = await supabase
-                .from('paymentTransactions')
-                .insert({
-                  invId: invoice.invId,
-                  transactionId: row.TransactionId,
-                  paymentMode: row.PaymentMode,
-                  chequeNumber: row.ChequeNumber,
-                  bankName: row.BankName,
-                  paymentDate: row.PaymentDate,
-                  amount: paymentAmount,
-                  remarks: row.Remarks,
-                });
-
-              if (paymentError) {
-                errors.push(`Failed to record payment for invoice ${row.InvoiceNumber}: ${paymentError.message}`);
-                continue;
-              }
-
-              // Update invoice payment status
-              const { error: invoiceUpdateError } = await supabase
-                .from('invoiceTable')
-                .update({
-                  invBalanceAmount: paymentDifference,
-                  invPaymentDifference: paymentDifference,
-                  invPaymentStatus: paymentDifference <= 0 ? 'paid' : 
-                                  paymentDifference < balanceAmount ? 'partial' : 'pending',
-                  invMarkcleared: paymentDifference <= 0,
-                })
-                .eq('invId', invoice.invId);
-
-              if (invoiceUpdateError) {
-                errors.push(`Failed to update invoice ${row.InvoiceNumber}: ${invoiceUpdateError.message}`);
-                continue;
-              }
-
-              // Create ledger entry
-              const { error: ledgerError } = await supabase
-                .from('paymentLedger')
-                .insert({
-                  invId: invoice.invId,
-                  custId: invoice.invCustid,
-                  transactionType: 'payment',
-                  amount: paymentAmount,
-                  runningBalance: paymentDifference,
-                  description: `Payment received via ${row.PaymentMode}${row.Remarks ? ` - ${row.Remarks}` : ''}`,
-                });
-
-              if (ledgerError) {
-                errors.push(`Failed to create ledger entry for invoice ${row.InvoiceNumber}: ${ledgerError.message}`);
-                continue;
-              }
-
+              await processPayment(invoice, paymentAmount, row);
               processed.push(row.InvoiceNumber);
-
             } catch (error: any) {
               errors.push(`Error processing invoice ${row.InvoiceNumber}: ${error.message}`);
             }
           }
 
-          // Invalidate and refetch relevant queries
-          await queryClient.invalidateQueries({ queryKey: ['payments'] });
+          // Invalidate queries to refresh data
           await queryClient.invalidateQueries({ queryKey: ['invoices'] });
           await queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
 
@@ -187,100 +169,54 @@ export function ExcelUpload() {
             });
           }
 
+          // Show network errors
+          if (networkErrors.length > 0) {
+            toast({
+              variant: "destructive",
+              title: "Network Errors",
+              description: `Network issues occurred with ${networkErrors.length} invoice(s). These will need to be retried.`,
+            });
+            console.error('Network errors:', networkErrors);
+          }
+
         } catch (error: any) {
-          console.error('Processing error:', error);
+          console.error('File processing error:', error);
           toast({
             variant: "destructive",
             title: "Error",
-            description: error.message || "Failed to process payment data",
+            description: `Failed to process file: ${error.message}`,
           });
+        } finally {
+          setUploading(false);
+          event.target.value = '';
         }
       };
 
-      reader.readAsArrayBuffer(file);
+      reader.readAsArrayBuffer(event.target.files[0]);
     } catch (error: any) {
-      console.error('Upload error:', error);
+      setUploading(false);
+      console.error('File reading error:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to upload payment data",
+        description: `Failed to read file: ${error.message}`,
       });
-    } finally {
-      setUploading(false);
-      event.target.value = '';
     }
-  };
-
-  const downloadTemplate = () => {
-    const template = [
-      {
-        InvoiceNumber: '24-01-0001',
-        TransactionId: 'TXN123',
-        PaymentMode: 'cash',
-        ChequeNumber: '',
-        BankName: '',
-        PaymentDate: '2024-01-21',
-        Amount: '1000',
-        Remarks: 'Initial payment'
-      }
-    ];
-
-    const ws = XLSX.utils.json_to_sheet(template);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Template");
-    XLSX.writeFile(wb, "payment-template.xlsx");
   };
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-4">
-        <Button 
-          onClick={downloadTemplate} 
-          variant="outline"
-          className="bg-[#90BE6D] text-[#1B4332] hover:bg-[#70A349]"
-        >
-          <Download className="mr-2 h-4 w-4" />
-          Download Template
+      <Input
+        type="file"
+        accept=".xlsx,.xls"
+        onChange={handleFileUpload}
+        disabled={uploading}
+      />
+      {uploading && (
+        <Button disabled>
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          Processing...
         </Button>
-        <div className="relative">
-          <Input
-            type="file"
-            accept=".xlsx,.xls"
-            onChange={handleFileUpload}
-            className="hidden"
-            id="excel-upload"
-            disabled={uploading}
-          />
-          <Button 
-            asChild 
-            disabled={uploading}
-            className="bg-[#90BE6D] text-[#1B4332] hover:bg-[#70A349]"
-          >
-            <label htmlFor="excel-upload" className="cursor-pointer">
-              <Upload className="mr-2 h-4 w-4" />
-              {uploading ? "Uploading..." : "Upload Payment Data"}
-            </label>
-          </Button>
-        </div>
-      </div>
-
-      {showPaymentForm && selectedInvoice && (
-        <PaymentForm
-          isOpen={showPaymentForm}
-          onClose={() => {
-            setShowPaymentForm(false);
-            setSelectedInvoice(null);
-          }}
-          onSuccess={() => {
-            setShowPaymentForm(false);
-            setSelectedInvoice(null);
-            toast({
-              title: "Success",
-              description: "Payment recorded successfully",
-            });
-          }}
-          invoice={selectedInvoice}
-        />
       )}
     </div>
   );

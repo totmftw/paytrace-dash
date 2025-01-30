@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Outlet } from "react-router-dom";
 import { LucideIcon, LayoutDashboard, Users, Package, LogOut, Menu, FileText, CreditCard } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -18,11 +18,7 @@ const sidebarItems: SidebarItem[] = [
   { icon: Package, label: "Products", path: "/products" },
 ];
 
-interface DashboardLayoutProps {
-  children: React.ReactNode;
-}
-
-const DashboardLayout = ({ children }: DashboardLayoutProps) => {
+const DashboardLayout = () => {
   const navigate = useNavigate();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobileView, setIsMobileView] = useState(false);
@@ -109,7 +105,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         isCollapsed ? "ml-16" : "ml-64"
       )}>
         <div className="p-8">
-          {children}
+          <Outlet />
         </div>
       </main>
 

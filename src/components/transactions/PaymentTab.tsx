@@ -39,22 +39,22 @@ export default function PaymentTab() {
 
   const columns = [
     {
-      accessorKey: 'paymentDate',
+      key: 'paymentDate',
       header: 'Date',
-      cell: (row: any) => new Date(row.getValue('paymentDate')).toLocaleDateString()
+      cell: (item: Payment) => new Date(item.paymentDate).toLocaleDateString()
     },
     {
-      accessorKey: 'transactionId',
+      key: 'transactionId',
       header: 'Transaction ID'
     },
     {
-      accessorKey: 'paymentMode',
+      key: 'paymentMode',
       header: 'Payment Mode'
     },
     {
-      accessorKey: 'amount',
+      key: 'amount',
       header: 'Amount',
-      cell: (row: any) => row.getValue('amount').toFixed(2)
+      cell: (item: Payment) => item.amount.toFixed(2)
     }
   ];
 

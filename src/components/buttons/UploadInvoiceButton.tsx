@@ -44,16 +44,14 @@ const UploadInvoiceButton = ({ tableName }: UploadInvoiceButtonProps) => {
 
           if (Array.isArray(jsonData) && jsonData.length > 0) {
             // Check for duplicates
-            const { data: existingInvoices, error: fetchError } = await supabase
+            const { data: existingInvoices } = await supabase
               .from(tableName)
               .select('invNumber')
               .in('invNumber', jsonData.map(item => item.invNumber));
             
-            if (fetchError) throw fetchError;
-
-            const duplicates = jsonData.filter(item => 
-              existingInvoices?.find(inv => inv.invNumber === item.invNumber)
-            );
+            const duplicates = existingInvoices?.filter(inv => 
+              jsonData.some(item => item.invNumber === inv.invNumber)
+            ) || [];
 
             if (duplicates.length > 0) {
               toast({

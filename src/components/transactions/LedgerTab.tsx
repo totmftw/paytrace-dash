@@ -12,8 +12,8 @@ import { formatCurrency } from "@/lib/utils";
 interface CustomerData {
   custBusinessname: string;
   custAddress: string;
-  custGst: string;
-  custPhonenumber: string;
+  custGST: string;
+  custPhone: string;
 }
 
 interface DatabaseLedgerEntry {
@@ -36,7 +36,7 @@ export default function LedgerTab() {
       if (!selectedCustomerId) return null;
       const { data, error } = await supabase
         .from('customerMaster')
-        .select('custBusinessname, custAddress, custGst, custPhonenumber')
+        .select('custBusinessname, custAddress, custGST, custPhone')
         .eq('id', selectedCustomerId)
         .single();
       
@@ -79,28 +79,28 @@ export default function LedgerTab() {
 
   const columns = [
     {
-      accessorKey: 'transaction_date',
+      key: 'transaction_date',
       header: 'Date',
-      cell: (row: any) => new Date(row.getValue('transaction_date')).toLocaleDateString()
+      cell: (item: DatabaseLedgerEntry) => new Date(item.transaction_date).toLocaleDateString()
     },
     {
-      accessorKey: 'description',
+      key: 'description',
       header: 'Description'
     },
     {
-      accessorKey: 'debit',
+      key: 'debit',
       header: 'Debit',
-      cell: (row: any) => row.getValue('debit') ? formatCurrency(row.getValue('debit')) : '-'
+      cell: (item: DatabaseLedgerEntry) => item.debit ? formatCurrency(item.debit) : '-'
     },
     {
-      accessorKey: 'credit',
+      key: 'credit',
       header: 'Credit',
-      cell: (row: any) => row.getValue('credit') ? formatCurrency(row.getValue('credit')) : '-'
+      cell: (item: DatabaseLedgerEntry) => item.credit ? formatCurrency(item.credit) : '-'
     },
     {
-      accessorKey: 'balance',
+      key: 'balance',
       header: 'Balance',
-      cell: (row: any) => formatCurrency(row.getValue('balance'))
+      cell: (item: DatabaseLedgerEntry) => formatCurrency(item.balance)
     }
   ];
 

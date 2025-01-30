@@ -234,6 +234,27 @@ export type Database = {
         }
         Relationships: []
       }
+      expenses: {
+        Row: {
+          amount: number | null
+          date: string | null
+          description: string | null
+          expenseid: string
+        }
+        Insert: {
+          amount?: number | null
+          date?: string | null
+          description?: string | null
+          expenseid?: string
+        }
+        Update: {
+          amount?: number | null
+          date?: string | null
+          description?: string | null
+          expenseid?: string
+        }
+        Relationships: []
+      }
       feature_permissions: {
         Row: {
           created_at: string | null

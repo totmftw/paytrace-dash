@@ -5,14 +5,21 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function PaymentReminders() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
-  const { data: reminders } = useQuery({
+  const { data: reminders, error: fetchError } = useQuery({
     queryKey: ["payment-reminders"],
     queryFn: async () => {
+      if (!user) {
+        throw new Error("No authenticated session");
+      }
+
+      console.log("Fetching payment reminders...");
       const { data: invoices, error } = await supabase
         .from("invoiceTable")
         .select(`
@@ -26,8 +33,12 @@ export function PaymentReminders() {
         .eq("invMarkcleared", false)
         .order("invDuedate", { ascending: true });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase error:", error);
+        throw error;
+      }
 
+      console.log("Reminders fetched successfully:", invoices);
       const today = new Date();
       return invoices?.filter(invoice => {
         const dueDate = new Date(invoice.invDuedate);
@@ -50,6 +61,9 @@ export function PaymentReminders() {
         }
       });
     },
+    enabled: !!user,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
     refetchInterval: 300000,
   });
 
@@ -138,6 +152,26 @@ export function PaymentReminders() {
     );
   };
 
+  if (fetchError) {
+    toast({
+      variant: "destructive",
+      title: "Error fetching reminders",
+      description: fetchError instanceof Error ? fetchError.message : "Failed to load payment reminders. Please try again.",
+    });
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Payment Reminders</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center text-muted-foreground">
+            Unable to load reminders. Please refresh the page.
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
@@ -165,7 +199,7 @@ export function PaymentReminders() {
                 </div>
                 <div>
                   {getReminderStatus(invoice) && (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground mb-2">
                       Previous reminders sent: {getReminderStatus(invoice)?.props.children}
                     </p>
                   )}

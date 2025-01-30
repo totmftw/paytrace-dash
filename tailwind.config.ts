@@ -1,6 +1,6 @@
-import type { Config } from "tailwindcss";
+import { type Config } from "tailwindcss";
 
-const config = {
+export default {
   darkMode: ["class"],
   content: [
     './pages/**/*.{ts,tsx}',
@@ -8,7 +8,6 @@ const config = {
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
   ],
-  prefix: "",
   theme: {
     container: {
       center: true,
@@ -24,8 +23,7 @@ const config = {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
-        'forest-green': '#2C5530',
-        'table-link': '#2C5530', // Added this line
+        "forest-green": "#2B5329",
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -78,5 +76,3 @@ const config = {
   },
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;
-
-export default config;

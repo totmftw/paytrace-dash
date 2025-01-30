@@ -1,61 +1,48 @@
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
-import { Loader2 } from "lucide-react";
-import { format } from "date-fns";
-import { Skeleton } from "./ui/skeleton";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { Button } from "./ui/button";
-import { TimeFrame } from "@/utils/financialYearUtils";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect, useState } from "react";
+
+interface FinancialYear {
+  financial_year: string;
+}
 
 export const FinancialYearSelector = () => {
-  const { 
-    selectedYear, 
-    setSelectedYear, 
-    isLoading, 
-    fyOptions, 
-    getFYDates, 
-    isTransitioning,
-    timeFrame,
-    setTimeFrame 
-  } = useFinancialYear();
-  
-  const { start, end } = getFYDates();
+  const { selectedYear, setSelectedYear } = useFinancialYear();
+  const [availableYears, setAvailableYears] = useState<string[]>([]);
 
-  if (isLoading) return <Skeleton className="h-8 w-48" />;
+  useEffect(() => {
+    const fetchYears = async () => {
+      try {
+        const { data, error } = await supabase
+          .from<FinancialYear>("financial_years")
+          .select("financial_year")
+          .order("financial_year", { ascending: false });
+
+        if (error) throw error;
+        setAvailableYears(data.map((year) => year.financial_year));
+      } catch (error) {
+        console.error("Error fetching financial years:", error);
+      }
+    };
+
+    fetchYears();
+  }, []);
 
   return (
-    <div className="flex items-center gap-4">
-      <div className="flex items-center gap-2 bg-[#E6EFE9] px-3 py-1 rounded-lg">
-        <span className="text-sm font-medium text-[#1B4332]">FY:</span>
-        <Select value={selectedYear} onValueChange={setSelectedYear}>
-          <SelectTrigger className="w-[180px] bg-transparent border-none">
-            <SelectValue placeholder="Select year" />
-          </SelectTrigger>
-          <SelectContent>
-            {fyOptions.map(year => (
-              <SelectItem key={year} value={year}>{year}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      
-      <div className="flex items-center gap-2 bg-[#E6EFE9] px-3 py-1 rounded-lg">
-        <span className="text-sm font-medium text-[#1B4332]">View:</span>
-        <Select value={timeFrame} onValueChange={(value) => setTimeFrame(value as TimeFrame)}>
-          <SelectTrigger className="w-[120px] bg-transparent border-none">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="week">Weekly</SelectItem>
-            <SelectItem value="month">Monthly</SelectItem>
-            <SelectItem value="quarter">Quarterly</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="text-sm text-[#1B4332]">
-        {format(start, 'MMM dd, yyyy')} - {format(end, 'MMM dd, yyyy')}
-      </div>
-      {isTransitioning && <Loader2 className="h-4 w-4 animate-spin text-[#1B4332]" />}
+    <div className="flex items-center gap-2 bg-gray-200 px-4 py-2 rounded-lg">
+      <span className="text-sm font-semibold">Financial Year:</span>
+      <select
+        value={selectedYear}
+        onChange={(e) => setSelectedYear(e.target.value)}
+        className="bg-gray-200 border-none focus:ring-0 text-sm"
+      >
+        {availableYears.map((year) => (
+          <option key={year} value={year}>
+            {year}
+          </option>
+        ))}
+      </select>
     </div>
   );
 };

@@ -123,11 +123,11 @@ const Dashboard = () => {
     }
 
     try {
-      const { error } = await supabase.from("dashboard_config").upsert({
+      const { error } = await supabase.from("dashboard_config").upsert([{
         user_id: user.id,
         layout,
         widgets
-      });
+      }]);
 
       if (error) throw error;
 

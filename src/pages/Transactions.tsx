@@ -7,6 +7,7 @@ import { PaymentHistorySection } from "@/components/payments/PaymentHistorySecti
 import { Card } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 
 export default function Transactions() {
   const [selectedCustomer, setSelectedCustomer] = useState<any>(null);
@@ -39,11 +40,14 @@ export default function Transactions() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h2 className="text-3xl font-bold tracking-tight">Transactions</h2>
-        <p className="text-muted-foreground">
-          View and manage all transactions
-        </p>
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-3xl font-bold tracking-tight">Transactions</h2>
+          <p className="text-muted-foreground">
+            View and manage all transactions
+          </p>
+        </div>
+        <FinancialYearSelector />
       </div>
 
       <Tabs defaultValue="invoices" className="space-y-4">

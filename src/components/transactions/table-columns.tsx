@@ -29,7 +29,7 @@ export const columns = [
     header: "Invoice Number",
     cell: (item: LedgerEntry) => {
       return item.invoice_number ? (
-        <span className="text-forest-green hover:text-forest-green/80">
+        <span className="table-link">
           {item.invoice_number}
         </span>
       ) : "-";

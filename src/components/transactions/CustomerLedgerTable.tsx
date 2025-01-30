@@ -6,6 +6,7 @@ import { CustomerSelector } from "./CustomerSelector";
 import { DataTable } from "@/components/ui/data-table";
 import { columns, LedgerEntry } from "./table-columns";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
+import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 
 interface CustomerLedgerTableProps {
   onCustomerClick?: (customer: any) => void;
@@ -13,7 +14,8 @@ interface CustomerLedgerTableProps {
 
 export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProps) {
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
-  const { selectedYear } = useFinancialYear();
+  const { selectedYear, getFYDates } = useFinancialYear();
+  const { start, end } = getFYDates();
 
   const { data: customers = [], isLoading: isLoadingCustomers } = useQuery({
     queryKey: ["customers"],
@@ -33,15 +35,11 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
     queryFn: async () => {
       if (!selectedCustomerId) return [];
 
-      const year = parseInt(selectedYear.split('-')[0]);
-      const startDate = new Date(year, 3, 1).toISOString(); // April 1st
-      const endDate = new Date(year + 1, 2, 31).toISOString(); // March 31st
-
       const { data, error } = await supabase
         .rpc('get_customer_ledger', {
           p_customer_id: selectedCustomerId,
-          p_start_date: startDate,
-          p_end_date: endDate
+          p_start_date: start.toISOString(),
+          p_end_date: end.toISOString()
         });
 
       if (error) throw error;
@@ -52,8 +50,9 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle>Customer Ledger</CardTitle>
+        <FinancialYearSelector />
       </CardHeader>
       <CardContent>
         <div className="space-y-4">

@@ -123,7 +123,7 @@ export function DataTable<T extends Record<string, any>>({
       )}
       
       <div className="rounded-md border">
-        <ScrollArea className="relative rounded-md" style={{ maxHeight }}>
+        <ScrollArea style={{ maxHeight }}>
           <div className="overflow-auto">
             <Table>
               <TableHeader>
@@ -132,39 +132,39 @@ export function DataTable<T extends Record<string, any>>({
                     <TableHead
                       key={column.key}
                       style={{ width: columnWidths[column.key] }}
-                      className="relative"
                     >
-                      <Button
-                        variant="ghost"
-                        onClick={() => handleSort(column.key)}
-                        className="h-8 p-0 font-semibold"
-                      >
-                        {column.header}
-                        <ArrowUpDown className="ml-2 h-4 w-4" />
-                      </Button>
-                      <div
-                        className="resizer"
-                        onMouseDown={(e) => {
-                          const startX = e.pageX;
-                          const startWidth = columnWidths[column.key] || 150;
-                          
-                          const handleMouseMove = (e: MouseEvent) => {
-                            const width = startWidth + (e.pageX - startX);
-                            handleResize(column.key, width);
-                          };
-                          
-                          const handleMouseUp = () => {
-                            document.removeEventListener('mousemove', handleMouseMove);
-                            document.removeEventListener('mouseup', handleMouseUp);
-                            setResizingColumn(null);
-                          };
-                          
-                          document.addEventListener('mousemove', handleMouseMove);
-                          document.addEventListener('mouseup', handleMouseUp);
-                          setResizingColumn(column.key);
-                        }}
-                        className={`resizer ${resizingColumn === column.key ? 'isResizing' : ''}`}
-                      />
+                      <div className="flex items-center justify-between">
+                        <Button
+                          variant="ghost"
+                          onClick={() => handleSort(column.key)}
+                          className="h-8 p-0 font-semibold"
+                        >
+                          {column.header}
+                          <ArrowUpDown className="ml-2 h-4 w-4" />
+                        </Button>
+                        <div
+                          className="absolute right-0 top-0 h-full w-1 cursor-col-resize hover:bg-gray-300"
+                          onMouseDown={(e) => {
+                            const startX = e.pageX;
+                            const startWidth = columnWidths[column.key] || 150;
+                            
+                            const handleMouseMove = (e: MouseEvent) => {
+                              const width = startWidth + (e.pageX - startX);
+                              handleResize(column.key, width);
+                            };
+                            
+                            const handleMouseUp = () => {
+                              document.removeEventListener('mousemove', handleMouseMove);
+                              document.removeEventListener('mouseup', handleMouseUp);
+                              setResizingColumn(null);
+                            };
+                            
+                            document.addEventListener('mousemove', handleMouseMove);
+                            document.addEventListener('mouseup', handleMouseUp);
+                            setResizingColumn(column.key);
+                          }}
+                        />
+                      </div>
                     </TableHead>
                   ))}
                 </TableRow>

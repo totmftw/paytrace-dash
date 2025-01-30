@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -43,12 +43,13 @@ export function TransactionInvoiceTable({
   const columns: ColumnDef<any>[] = [
     {
       accessorKey: "customerMaster.custBusinessname",
-      header: "Customer Name",
+      header: "Business Name",
       cell: ({ row }) => {
         const businessName = row.original.customerMaster?.custBusinessname;
         return businessName ? (
           <Button
             variant="link"
+            className="text-table-link hover:text-table-link/80"
             onClick={() => onCustomerClick(row.original.customerMaster)}
           >
             {businessName}
@@ -144,7 +145,7 @@ export function TransactionInvoiceTable({
     <div className="space-y-4">
       <div className="flex items-center gap-4">
         <Input
-          placeholder="Filter customer names..."
+          placeholder="Filter business names..."
           value={(table.getColumn("customerMaster.custBusinessname")?.getFilterValue() as string) ?? ""}
           onChange={(event) =>
             table.getColumn("customerMaster.custBusinessname")?.setFilterValue(event.target.value)

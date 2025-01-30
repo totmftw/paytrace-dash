@@ -22,13 +22,14 @@ export default {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
-        background: '#F2FCE2', // Light green background
+        background: '#F2FCE2',
         foreground: 'hsl(var(--foreground))',
-        sidebar: '#FEC6A1', // Light orange sidebar
+        sidebar: '#FEC6A1',
+        'table-link': '#1B4332', // Dark forest green for table links
         primary: {
-          DEFAULT: '#E3D5CA', // Pastel beige for buttons
-          hover: '#D5BFB2', // Darker pastel beige for hover
-          foreground: '#2D2D2D' // Dark text on primary buttons
+          DEFAULT: '#E3D5CA',
+          hover: '#D5BFB2',
+          foreground: '#2D2D2D'
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',

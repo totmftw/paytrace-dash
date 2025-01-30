@@ -41,6 +41,11 @@
   #root {
     @apply h-full;
   }
+
+  /* Global link styling */
+  a, .table-link, button[variant="link"] {
+    @apply text-table-link hover:text-table-link/80;
+  }
 }
 
 @layer components {

@@ -3,9 +3,9 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import UserManagementForm from "@/components/users/UserManagementForm";
+import { CreateUserForm } from "@/components/users/CreateUserForm";
 import UsersList from "@/components/users/UsersList";
-import { RolePermissionsManager } from "@/components/users/RolePermissionsManager";
+import { RolePermissionsDialog } from "@/components/users/RolePermissionsDialog";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
@@ -15,7 +15,7 @@ export default function UserManagement() {
   const { user } = useAuth();
   const { toast } = useToast();
 
-  const { data: users, isLoading } = useQuery({
+  const { data: users, isLoading, refetch } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -35,6 +35,15 @@ export default function UserManagement() {
       return data;
     },
   });
+
+  const handleUserCreated = async () => {
+    await refetch();
+    setIsCreateDialogOpen(false);
+    toast({
+      title: "Success",
+      description: "User created successfully",
+    });
+  };
 
   if (!user || !["it_admin", "business_owner"].includes(user.role)) {
     return (
@@ -64,12 +73,8 @@ export default function UserManagement() {
               <Button>Add New User</Button>
             </DialogTrigger>
             <DialogContent className="max-w-4xl">
-              <UserManagementForm
-                onClose={() => setIsCreateDialogOpen(false)}
-                onSubmit={(formData) => {
-                  console.log("Form submitted:", formData);
-                  setIsCreateDialogOpen(false);
-                }}
+              <CreateUserForm
+                onSuccess={handleUserCreated}
               />
             </DialogContent>
           </Dialog>
@@ -83,7 +88,7 @@ export default function UserManagement() {
       )}
 
       {user.role === "it_admin" && (
-        <RolePermissionsManager
+        <RolePermissionsDialog
           isOpen={isPermissionsDialogOpen}
           onClose={() => setIsPermissionsDialogOpen(false)}
         />

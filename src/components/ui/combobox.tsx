@@ -22,11 +22,23 @@ interface ComboboxProps {
   items: { label: string; value: string }[]
   placeholder?: string
   onSelect: (value: string) => void
+  defaultValue?: string
 }
 
-export function Combobox({ items, placeholder = "Select item...", onSelect }: ComboboxProps) {
+export function Combobox({ 
+  items = [], 
+  placeholder = "Select item...", 
+  onSelect,
+  defaultValue = ""
+}: ComboboxProps) {
   const [open, setOpen] = React.useState(false)
-  const [value, setValue] = React.useState("")
+  const [value, setValue] = React.useState(defaultValue)
+
+  // Find the label for the current value
+  const selectedLabel = React.useMemo(() => {
+    const selectedItem = items.find((item) => item.value === value)
+    return selectedItem?.label || placeholder
+  }, [items, value, placeholder])
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -37,9 +49,7 @@ export function Combobox({ items, placeholder = "Select item...", onSelect }: Co
           aria-expanded={open}
           className="w-full justify-between"
         >
-          {value
-            ? items.find((item) => item.value === value)?.label
-            : placeholder}
+          {selectedLabel}
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>

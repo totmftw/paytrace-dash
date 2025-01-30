@@ -21,10 +21,6 @@ interface InvoiceData {
   fy: string;
 }
 
-interface ExistingInvoice {
-  invNumber: string;
-}
-
 const UploadInvoiceButton = ({ tableName }: UploadInvoiceButtonProps) => {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
@@ -57,15 +53,15 @@ const UploadInvoiceButton = ({ tableName }: UploadInvoiceButtonProps) => {
               throw error;
             }
 
-            if (existingInvoices) {
-              const duplicates = existingInvoices.filter(inv => 
-                jsonData.some(item => item.invNumber === inv.invNumber)
-              );
+            if (existingInvoices && existingInvoices.length > 0) {
+              const duplicateNumbers = existingInvoices
+                .map(inv => inv.invNumber)
+                .filter(num => jsonData.some(item => item.invNumber === num));
 
-              if (duplicates.length > 0) {
+              if (duplicateNumbers.length > 0) {
                 toast({
                   title: 'Duplicates Found',
-                  description: `Duplicate invoices detected: ${duplicates.map(d => d.invNumber).join(', ')}`,
+                  description: `Duplicate invoices detected: ${duplicateNumbers.join(', ')}`,
                   variant: 'destructive'
                 });
                 setIsUploading(false);

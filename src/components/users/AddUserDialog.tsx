@@ -22,6 +22,8 @@ const formSchema = z.object({
   address: z.string().min(5),
 });
 
+type FormValues = z.infer<typeof formSchema>;
+
 interface AddUserDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -30,27 +32,27 @@ interface AddUserDialogProps {
 const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const form = useForm<z.infer<typeof formSchema>>({
+  const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       role: "team_member",
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: FormValues) => {
     setIsLoading(true);
     try {
-      // Simplified user existence check
-      const { count, error: checkError } = await supabase
+      const { data: existingUser, error: checkError } = await supabase
         .from('user_profiles')
-        .select('*', { count: 'exact', head: true })
-        .eq('email', values.email);
+        .select('id')
+        .eq('email', values.email)
+        .maybeSingle();
 
       if (checkError) {
         throw checkError;
       }
 
-      if (count && count > 0) {
+      if (existingUser) {
         toast({
           variant: "destructive",
           title: "Error",

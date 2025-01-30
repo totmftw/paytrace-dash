@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { BasicInfoFields } from "./FormFields/BasicInfoFields";
 import { ContactFields } from "./FormFields/ContactFields";
 import { WorkInfoFields } from "./FormFields/WorkInfoFields";
-import { formSchema, FormValues } from "./types";
+import { formSchema, type FormValues } from "./types";
 
 interface AddUserDialogProps {
   open: boolean;

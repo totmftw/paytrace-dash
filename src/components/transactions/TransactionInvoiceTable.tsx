@@ -56,14 +56,17 @@ export function TransactionInvoiceTable({
     {
       accessorKey: "invNumber",
       header: "Invoice Number",
-      cell: ({ row }) => (
-        <Button
-          variant="link"
-          onClick={() => onInvoiceClick(row.original)}
-        >
-          {(row.getValue("invNumber") as number[]).join("-")}
-        </Button>
-      ),
+      cell: ({ row }) => {
+        const invNumber = row.getValue("invNumber");
+        return (
+          <Button
+            variant="link"
+            onClick={() => onInvoiceClick(row.original)}
+          >
+            {typeof invNumber === 'string' ? invNumber : String(invNumber)}
+          </Button>
+        );
+      },
     },
     {
       accessorKey: "invDate",

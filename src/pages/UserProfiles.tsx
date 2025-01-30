@@ -1,26 +1,14 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Dialog,
-  DialogContent,
-  DialogTrigger,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { CreateUserForm } from "@/components/users/CreateUserForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { 
-  Building2, 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Users, 
-  BadgeCheck,
-  Clock
-} from "lucide-react";
+import { Building2, Mail, Phone, MapPin, Users, BadgeCheck, Clock } from "lucide-react";
 
 export default function UserProfiles() {
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
@@ -70,15 +58,18 @@ export default function UserProfiles() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold tracking-tight">User Profiles</h2>
+    <div className="space-y-6 h-full">
+      <div className="flex justify-between items-center mb-6">
+        <div className="space-y-1">
+          <h2 className="text-3xl font-bold tracking-tight">TOTM User Profiles</h2>
+          <p className="text-sm text-muted-foreground">Top of The Mind Solutions</p>
+        </div>
         <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
             <Button>Add New User</Button>
           </DialogTrigger>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <CreateUserForm />
+            <CreateUserForm onSuccess={() => setIsCreateDialogOpen(false)} />
           </DialogContent>
         </Dialog>
       </div>
@@ -86,68 +77,70 @@ export default function UserProfiles() {
       {isLoading ? (
         <div className="text-center">Loading users...</div>
       ) : (
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {users?.map((user) => (
-            <Card key={user.id} className="overflow-hidden">
-              <CardHeader className="border-b bg-muted/40">
-                <div className="flex items-center space-x-4">
-                  <Avatar className="h-12 w-12">
-                    <AvatarImage src={user.profile_image_url} />
-                    <AvatarFallback>
-                      {user.full_name?.split(" ").map(n => n[0]).join("")}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="space-y-1">
-                    <CardTitle>{user.full_name}</CardTitle>
-                    <Badge variant="secondary" className={getRoleColor(user.role)}>
-                      {user.role.replace("_", " ").toUpperCase()}
-                    </Badge>
+        <ScrollArea className="h-[calc(100vh-10rem)]">
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 pb-6">
+            {users?.map((user) => (
+              <Card key={user.id} className="overflow-hidden">
+                <CardHeader className="border-b bg-muted/40">
+                  <div className="flex items-center space-x-4">
+                    <Avatar className="h-12 w-12">
+                      <AvatarImage src={user.profile_image_url} />
+                      <AvatarFallback>
+                        {user.full_name?.split(" ").map(n => n[0]).join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="space-y-1">
+                      <CardTitle>{user.full_name}</CardTitle>
+                      <Badge variant="secondary" className={getRoleColor(user.role)}>
+                        {user.role.replace("_", " ").toUpperCase()}
+                      </Badge>
+                    </div>
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent className="p-6">
-                <ScrollArea className="h-[280px] pr-4">
-                  <div className="space-y-4">
-                    <div className="flex items-center space-x-2 text-sm">
-                      <Mail className="h-4 w-4 opacity-70" />
-                      <span>{user.email}</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm">
-                      <Phone className="h-4 w-4 opacity-70" />
-                      <span>{user.phone_number || "Not provided"}</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm">
-                      <Building2 className="h-4 w-4 opacity-70" />
-                      <span>{user.department} - {user.designation}</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm">
-                      <Users className="h-4 w-4 opacity-70" />
-                      <span>{user.team}</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm">
-                      <MapPin className="h-4 w-4 opacity-70" />
-                      <span>{user.location}</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm">
-                      <BadgeCheck className="h-4 w-4 opacity-70" />
-                      <span>Employee ID: {user.employee_id}</span>
-                    </div>
-                    <div className="flex items-center space-x-2 text-sm">
-                      <Clock className="h-4 w-4 opacity-70" />
-                      <span>Joined: {formatDate(user.created_at)}</span>
-                    </div>
-                    {user.bio && (
-                      <div className="pt-2">
-                        <h4 className="text-sm font-medium mb-2">Bio</h4>
-                        <p className="text-sm text-muted-foreground">{user.bio}</p>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <ScrollArea className="h-[280px] pr-4">
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2 text-sm">
+                        <Mail className="h-4 w-4 opacity-70" />
+                        <span>{user.email}</span>
                       </div>
-                    )}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                      <div className="flex items-center space-x-2 text-sm">
+                        <Phone className="h-4 w-4 opacity-70" />
+                        <span>{user.phone_number || "Not provided"}</span>
+                      </div>
+                      <div className="flex items-center space-x-2 text-sm">
+                        <Building2 className="h-4 w-4 opacity-70" />
+                        <span>{user.department} - {user.designation}</span>
+                      </div>
+                      <div className="flex items-center space-x-2 text-sm">
+                        <Users className="h-4 w-4 opacity-70" />
+                        <span>{user.team}</span>
+                      </div>
+                      <div className="flex items-center space-x-2 text-sm">
+                        <MapPin className="h-4 w-4 opacity-70" />
+                        <span>{user.location}</span>
+                      </div>
+                      <div className="flex items-center space-x-2 text-sm">
+                        <BadgeCheck className="h-4 w-4 opacity-70" />
+                        <span>Employee ID: {user.employee_id}</span>
+                      </div>
+                      <div className="flex items-center space-x-2 text-sm">
+                        <Clock className="h-4 w-4 opacity-70" />
+                        <span>Joined: {formatDate(user.created_at)}</span>
+                      </div>
+                      {user.bio && (
+                        <div className="pt-2">
+                          <h4 className="text-sm font-medium mb-2">Bio</h4>
+                          <p className="text-sm text-muted-foreground">{user.bio}</p>
+                        </div>
+                      )}
+                    </div>
+                  </ScrollArea>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </ScrollArea>
       )}
     </div>
   );

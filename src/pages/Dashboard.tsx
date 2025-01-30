@@ -60,7 +60,6 @@ export default function Dashboard() {
         if (error) throw error;
 
         if (data?.layout) {
-          // Safely cast the JSON data to our expected layout type
           const layoutData = data.layout as unknown as { [key: string]: Layout[] };
           if (layoutData && typeof layoutData === 'object' && 'lg' in layoutData) {
             setLayouts(layoutData as ReactGridLayouts);
@@ -125,9 +124,12 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+    <div className="space-y-4 h-full">
+      <div className="flex justify-between items-center mb-6">
+        <div className="space-y-1">
+          <h2 className="text-3xl font-bold tracking-tight">TOTM Dashboard</h2>
+          <p className="text-sm text-muted-foreground">Top of The Mind Solutions</p>
+        </div>
         <div className="flex items-center gap-4">
           <FinancialYearSelector />
           <Button
@@ -145,35 +147,38 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <ResponsiveGridLayout
-        className="layout"
-        layouts={layouts}
-        onLayoutChange={handleLayoutChange}
-        isDraggable={isEditing}
-        isResizable={isEditing}
-        breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-        cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
-        rowHeight={30}
-      >
-        <Card key="revenue" className="p-4">
-          <RevenueChart />
-        </Card>
-        <Card key="customerStats" className="p-4">
-          <CustomerStats />
-        </Card>
-        <Card key="recentTransactions" className="p-4">
-          <RecentTransactions />
-        </Card>
-        <Card key="outstandingPayments" className="p-4">
-          <OutstandingPayments />
-        </Card>
-        <Card key="topCustomers" className="p-4">
-          <TopCustomers />
-        </Card>
-        <Card key="paymentTrends" className="p-4">
-          <PaymentTrends />
-        </Card>
-      </ResponsiveGridLayout>
+      <div className="h-[calc(100vh-12rem)] overflow-auto">
+        <ResponsiveGridLayout
+          className="layout"
+          layouts={layouts}
+          onLayoutChange={handleLayoutChange}
+          isDraggable={isEditing}
+          isResizable={isEditing}
+          breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
+          cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
+          rowHeight={30}
+          margin={[16, 16]}
+        >
+          <Card key="revenue" className="p-4 overflow-auto">
+            <RevenueChart />
+          </Card>
+          <Card key="customerStats" className="p-4 overflow-auto">
+            <CustomerStats />
+          </Card>
+          <Card key="recentTransactions" className="p-4 overflow-auto">
+            <RecentTransactions />
+          </Card>
+          <Card key="outstandingPayments" className="p-4 overflow-auto">
+            <OutstandingPayments />
+          </Card>
+          <Card key="topCustomers" className="p-4 overflow-auto">
+            <TopCustomers />
+          </Card>
+          <Card key="paymentTrends" className="p-4 overflow-auto">
+            <PaymentTrends />
+          </Card>
+        </ResponsiveGridLayout>
+      </div>
     </div>
   );
 }

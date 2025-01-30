@@ -5,16 +5,47 @@ import { InvoicePaymentTable } from "@/components/invoices-payments/InvoicePayme
 import { CustomerBalancesCard } from "@/components/payments/CustomerBalancesCard";
 import { PaymentHistoryCard } from "@/components/payments/PaymentHistoryCard";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Transactions() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+
+  const { data: invoicePayments } = useQuery({
+    queryKey: ['invoice-payments'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('invoiceTable')
+        .select(`
+          *,
+          customerMaster (
+            id,
+            custBusinessname
+          )
+        `)
+        .order('invDate', { ascending: false });
+
+      if (error) throw error;
+      return data;
+    }
+  });
 
   useEffect(() => {
     if (!loading && !user) {
       navigate("/login");
     }
   }, [user, loading, navigate]);
+
+  const handleCustomerClick = (customerId: number) => {
+    // Handle customer click - you can navigate to customer details or show a modal
+    console.log('Customer clicked:', customerId);
+  };
+
+  const handleInvoiceClick = (invoiceId: number) => {
+    // Handle invoice click - you can navigate to invoice details or show a modal
+    console.log('Invoice clicked:', invoiceId);
+  };
 
   if (loading) {
     return <div className="p-8 flex items-center justify-center">Loading...</div>;
@@ -31,7 +62,11 @@ export default function Transactions() {
         </TabsList>
 
         <TabsContent value="invoices" className="space-y-6">
-          <InvoicePaymentTable />
+          <InvoicePaymentTable 
+            data={invoicePayments || []}
+            onCustomerClick={handleCustomerClick}
+            onInvoiceClick={handleInvoiceClick}
+          />
         </TabsContent>
 
         <TabsContent value="payments" className="space-y-6">

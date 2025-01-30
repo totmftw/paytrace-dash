@@ -41,7 +41,15 @@ const AddInvoiceButton = ({ tableName }: AddInvoiceButtonProps) => {
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const { error } = await supabase.from(tableName).insert(values);
+      const { error } = await supabase.from(tableName).insert({
+        ...values,
+        invNumber: values.invNumber,
+        invValue: values.invValue,
+        invGst: values.invGst,
+        invTotal: values.invTotal,
+        fy: values.fy
+      });
+      
       if (error) throw error;
       
       toast({

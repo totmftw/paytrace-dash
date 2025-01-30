@@ -12,6 +12,8 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatCurrency } from "@/lib/utils";
 import * as XLSX from 'xlsx';
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface TransactionInvoiceTableProps {
   data: any[];
@@ -25,6 +27,7 @@ export function TransactionInvoiceTable({
   onInvoiceClick,
 }: TransactionInvoiceTableProps) {
   const [searchTerm, setSearchTerm] = useState("");
+  const { toast } = useToast();
 
   const filteredData = data.filter((invoice) =>
     invoice.customerMaster?.custBusinessname
@@ -33,23 +36,114 @@ export function TransactionInvoiceTable({
   );
 
   const downloadTemplate = () => {
-    const template = [
-      {
-        CustomerName: 'Example Customer',
-        InvoiceNumber: '2024-001',
-        InvoiceDate: '2024-01-01',
-        DueDate: '2024-02-01',
-        Value: 1000,
-        GST: 180,
-        AdditionalAmount: 0,
-        SubtractedAmount: 0,
-      }
-    ];
+    const template = [{
+      invCustid: 'Customer ID',
+      invNumber: 'Invoice Number',
+      invDate: 'YYYY-MM-DD',
+      invDuedate: 'YYYY-MM-DD',
+      invValue: 0,
+      invGst: 0,
+      invAddamount: 0,
+      invSubamount: 0,
+      invTotal: 0,
+      invReminder1: false,
+      invRemainder2: false,
+      invRemainder3: false,
+      invMarkcleared: false,
+      invAlert: '',
+      invMessage1: '',
+      invMessage2: '',
+      invMessage3: '',
+      invBalanceAmount: 0,
+      invPaymentDifference: 0,
+      invPaymentStatus: 'pending'
+    }];
 
     const ws = XLSX.utils.json_to_sheet(template);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Template");
+
+    // Add column widths for better readability
+    ws['!cols'] = Object.keys(template[0]).map(() => ({ wch: 20 }));
+
     XLSX.writeFile(wb, "invoice-template.xlsx");
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const data = event.target?.result;
+        const workbook = XLSX.read(data, { type: 'array' });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+        if (!Array.isArray(jsonData) || jsonData.length === 0) {
+          throw new Error("No valid data found in the Excel file");
+        }
+
+        // Process and validate each row
+        const invoices = jsonData.map((row: any) => ({
+          invCustid: row.invCustid,
+          invNumber: row.invNumber?.toString(),
+          invDate: row.invDate,
+          invDuedate: row.invDuedate,
+          invValue: Number(row.invValue) || 0,
+          invGst: Number(row.invGst) || 0,
+          invAddamount: Number(row.invAddamount) || 0,
+          invSubamount: Number(row.invSubamount) || 0,
+          invTotal: Number(row.invTotal) || 0,
+          invReminder1: Boolean(row.invReminder1),
+          invRemainder2: Boolean(row.invRemainder2),
+          invRemainder3: Boolean(row.invRemainder3),
+          invMarkcleared: Boolean(row.invMarkcleared),
+          invAlert: row.invAlert || '',
+          invMessage1: row.invMessage1 || '',
+          invMessage2: row.invMessage2 || '',
+          invMessage3: row.invMessage3 || '',
+          invBalanceAmount: Number(row.invBalanceAmount) || 0,
+          invPaymentDifference: Number(row.invPaymentDifference) || 0,
+          invPaymentStatus: row.invPaymentStatus || 'pending'
+        }));
+
+        const { error } = await supabase
+          .from('invoiceTable')
+          .insert(invoices);
+
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: `Successfully uploaded ${invoices.length} invoices`,
+        });
+
+      };
+
+      reader.onerror = (error) => {
+        console.error("FileReader error:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to read the Excel file",
+        });
+      };
+
+      reader.readAsArrayBuffer(file);
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to upload invoice data",
+      });
+    } finally {
+      // Reset the input
+      e.target.value = '';
+    }
   };
 
   return (
@@ -73,10 +167,7 @@ export function TransactionInvoiceTable({
             id="invoice-upload"
             accept=".xlsx,.xls,.csv"
             className="hidden"
-            onChange={(e) => {
-              // Handle file upload
-              console.log(e.target.files?.[0]);
-            }}
+            onChange={handleFileUpload}
           />
         </div>
       </div>
@@ -87,11 +178,11 @@ export function TransactionInvoiceTable({
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Invoice Number</TableHead>
-                  <TableHead>Customer Name</TableHead>
-                  <TableHead>Invoice Date</TableHead>
-                  <TableHead>Due Date</TableHead>
-                  <TableHead className="text-right">Total Amount</TableHead>
+                  <TableHead className="text-sm font-semibold">Invoice Number</TableHead>
+                  <TableHead className="text-sm font-semibold">Customer Name</TableHead>
+                  <TableHead className="text-sm font-semibold">Invoice Date</TableHead>
+                  <TableHead className="text-sm font-semibold">Due Date</TableHead>
+                  <TableHead className="text-sm font-semibold text-right">Total Amount</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>

@@ -71,43 +71,8 @@ const Dashboard = () => {
   const { user } = useAuth();
 
   const handleLayoutChange = (newLayout: Layout[]) => {
-    setLayout(newLayout as LayoutItem[]);
-  };
-
-  const handleAddWidget = (widget: DashboardWidget) => {
-    const newWidget = {
-      ...widget,
-      id: `${widget.type}-${Date.now()}`
-    };
-
-    const newLayout = [
-      ...layout,
-      {
-        i: newWidget.id,
-        x: 0,
-        y: Infinity,
-        w: 6,
-        h: 6,
-        minH: 4
-      }
-    ];
-
-    setWidgets([...widgets, newWidget]);
-    setLayout(newLayout);
-    setIsAddWidgetOpen(false);
-    toast.success("Widget added successfully");
-  };
-
-  const handleRemoveWidget = (widgetId: string) => {
-    setWidgetToRemove(widgetId);
-  };
-
-  const confirmRemoveWidget = () => {
-    if (widgetToRemove) {
-      setWidgets(widgets.filter(w => w.id !== widgetToRemove));
-      setLayout(layout.filter(l => l.i !== widgetToRemove));
-      setWidgetToRemove(null);
-      toast.success("Widget removed successfully");
+    if (isEditing) {
+      setLayout(newLayout as LayoutItem[]);
     }
   };
 
@@ -162,9 +127,15 @@ const Dashboard = () => {
                 <Button onClick={() => setIsAddWidgetOpen(true)}>
                   <PlusCircle className="h-4 w-4" />
                 </Button>
-                <Button onClick={() => setIsEditing(!isEditing)}>
-                  {isEditing ? <Check className="h-4 w-4" /> : <Wrench className="h-4 w-4" />}
-                </Button>
+                {isEditing ? (
+                  <Button onClick={handleApplyChanges}>
+                    <Check className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button onClick={() => setIsEditing(true)}>
+                    <Wrench className="h-4 w-4" />
+                  </Button>
+                )}
               </>
             )}
           </div>
@@ -191,7 +162,7 @@ const Dashboard = () => {
                     variant="ghost"
                     size="icon"
                     className="h-6 w-6 text-muted-foreground hover:text-foreground"
-                    onClick={() => handleRemoveWidget(widget.id)}
+                    onClick={() => setWidgetToRemove(widget.id)}
                   >
                     <X className="h-4 w-4" />
                   </Button>
@@ -207,7 +178,29 @@ const Dashboard = () => {
         <AddWidgetDialog
           open={isAddWidgetOpen}
           onOpenChange={setIsAddWidgetOpen}
-          onAdd={handleAddWidget}
+          onAdd={(widget) => {
+            const newWidget = {
+              ...widget,
+              id: `${widget.type}-${Date.now()}`
+            };
+
+            const newLayout = [
+              ...layout,
+              {
+                i: newWidget.id,
+                x: 0,
+                y: Infinity,
+                w: 6,
+                h: 6,
+                minH: 4
+              }
+            ];
+
+            setWidgets([...widgets, newWidget]);
+            setLayout(newLayout);
+            setIsAddWidgetOpen(false);
+            toast.success("Widget added successfully");
+          }}
         />
 
         <Dialog open={isApplyDialogOpen} onOpenChange={setIsApplyDialogOpen}>
@@ -231,7 +224,14 @@ const Dashboard = () => {
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={confirmRemoveWidget}>Remove</AlertDialogAction>
+              <AlertDialogAction onClick={() => {
+                if (widgetToRemove) {
+                  setWidgets(widgets.filter(w => w.id !== widgetToRemove));
+                  setLayout(layout.filter(l => l.i !== widgetToRemove));
+                  setWidgetToRemove(null);
+                  toast.success("Widget removed successfully");
+                }
+              }}>Remove</AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>

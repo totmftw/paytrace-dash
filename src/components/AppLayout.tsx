@@ -25,8 +25,8 @@ export function AppLayout() {
       });
     } catch (error) {
       toast({
+        variant: "destructive",
         title: "Error logging out",
-        variant: "destructive"
       });
     }
   };
@@ -34,8 +34,8 @@ export function AppLayout() {
   return (
     <div className="flex h-screen w-screen overflow-hidden">
       <AppSidebar isCollapsed={isCollapsed} toggleSidebar={toggleSidebar} />
-      <div className={`flex-1 flex flex-col transition-all duration-300 ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
-        <header className="h-16 shrink-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full flex items-center justify-end px-6">
+      <div className={`flex-1 flex flex-col ${isCollapsed ? 'ml-16' : 'ml-64'}`}>
+        <header className="h-16 shrink-0 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 z-50 w-full flex items-center justify-end px-6">
           <Button variant="ghost" size="icon" onClick={handleLogout}>
             <LogOut className="h-5 w-5" />
           </Button>

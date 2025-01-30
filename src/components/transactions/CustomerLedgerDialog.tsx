@@ -6,6 +6,8 @@ import { Download } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { calculateRunningBalance, formatLedgerDate, sortLedgerEntries } from "@/utils/ledgerCalculations";
 import { LedgerEntry, CustomerLedgerProps } from "@/types/ledger";
+import { useFinancialYear } from "@/contexts/FinancialYearContext";
+import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 import * as XLSX from 'xlsx';
 
 export function CustomerLedgerDialog({
@@ -17,23 +19,28 @@ export function CustomerLedgerDialog({
 }: CustomerLedgerProps) {
   const [entries, setEntries] = useState<LedgerEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { selectedYear, getFYDates } = useFinancialYear();
+  const { start, end } = getFYDates();
 
   useEffect(() => {
     async function fetchLedgerEntries() {
       try {
-        // Fetch invoices
+        // Fetch invoices within the selected financial year
         const { data: invoices } = await supabase
           .from('invoiceTable')
           .select('invId, invNumber, invDate, invTotal')
-          .eq('invCustid', customerId);
+          .eq('invCustid', customerId)
+          .gte('invDate', start.toISOString())
+          .lte('invDate', end.toISOString());
 
-        // Fetch payments
+        // Fetch payments within the selected financial year
         const { data: payments } = await supabase
           .from('paymentTransactions')
           .select('paymentId, transactionId, paymentDate, amount')
-          .eq('invId', customerId);
+          .eq('invId', customerId)
+          .gte('paymentDate', start.toISOString())
+          .lte('paymentDate', end.toISOString());
 
-        // Combine and format entries
         const ledgerEntries: LedgerEntry[] = [
           ...(invoices?.map(inv => ({
             id: inv.invId,
@@ -41,7 +48,7 @@ export function CustomerLedgerDialog({
             description: `Invoice #${inv.invNumber.join('-')}`,
             amount: inv.invTotal,
             type: 'invoice' as const,
-            balance: 0, // Will be calculated
+            balance: 0,
           })) || []),
           ...(payments?.map(pay => ({
             id: pay.paymentId,
@@ -49,7 +56,7 @@ export function CustomerLedgerDialog({
             description: `Payment (${pay.transactionId})`,
             amount: pay.amount,
             type: 'payment' as const,
-            balance: 0, // Will be calculated
+            balance: 0,
           })) || []),
         ];
 
@@ -63,10 +70,10 @@ export function CustomerLedgerDialog({
       }
     }
 
-    if (isOpen) {
+    if (isOpen && customerId) {
       fetchLedgerEntries();
     }
-  }, [customerId, isOpen]);
+  }, [customerId, isOpen, selectedYear, start, end]);
 
   const downloadLedger = () => {
     const workbook = XLSX.utils.book_new();
@@ -90,10 +97,13 @@ export function CustomerLedgerDialog({
         <DialogHeader>
           <div className="flex justify-between items-center">
             <DialogTitle>Customer Ledger - {customerName}</DialogTitle>
-            <Button variant="outline" size="sm" onClick={downloadLedger}>
-              <Download className="h-4 w-4 mr-2" />
-              Download
-            </Button>
+            <div className="flex items-center gap-4">
+              <FinancialYearSelector />
+              <Button variant="outline" size="sm" onClick={downloadLedger}>
+                <Download className="h-4 w-4 mr-2" />
+                Download
+              </Button>
+            </div>
           </div>
         </DialogHeader>
         <ScrollArea className="h-[calc(100vh-300px)]">

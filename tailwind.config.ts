@@ -22,10 +22,11 @@ export default {
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
-        background: 'hsl(var(--background))',
+        background: '#F2FCE2', // Light green background
         foreground: 'hsl(var(--foreground))',
+        sidebar: '#FEC6A1', // Light orange sidebar
         primary: {
-          DEFAULT: 'hsl(var(--primary))',
+          DEFAULT: '#D3E4FD', // Light blue for buttons
           foreground: 'hsl(var(--primary-foreground))'
         },
         secondary: {
@@ -51,11 +52,6 @@ export default {
         card: {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))'
-        },
-        dashboard: {
-          card: '#1E1F25',
-          highlight: '#2A2C35',
-          accent: '#3182CE'
         }
       },
       borderRadius: {
@@ -81,28 +77,3 @@ export default {
   },
   plugins: [require("tailwindcss-animate")],
 } satisfies Config;
-
-/** @type {import('tailwindcss').Config} */
-module.exports = {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
-  theme: {
-    extend: {
-      colors: {
-        background: 'hsl(var(--background))',
-        foreground: 'hsl(var(--foreground))',
-        primary: 'hsl(var(--primary))',
-        secondary: 'hsl(var(--secondary))',
-        muted: 'hsl(var(--muted))',
-        accent: 'hsl(var(--accent))',
-        destructive: 'hsl(var(--destructive))',
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
-      },
-    },
-  },
-  plugins: [],
-}

@@ -60,10 +60,13 @@ export function AppSidebar({ isCollapsed, toggleSidebar }: AppSidebarProps) {
   ];
 
   return (
-    <div className={cn("h-full bg-[#1A1F2C] flex flex-col transition-all duration-300", isCollapsed ? "w-16" : "w-64")}>
+    <div className={cn(
+      "h-full bg-sidebar flex flex-col transition-all duration-300",
+      isCollapsed ? "w-16" : "w-64"
+    )}>
       <div className="flex justify-between items-center h-16 px-4">
         {!isCollapsed && <img className="h-8 w-auto" src="/logo.svg" alt="Your Company" />}
-        <button onClick={toggleSidebar} className="text-white p-2">
+        <button onClick={toggleSidebar} className="text-gray-800 p-2 hover:bg-white/10 rounded-lg">
           {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
         </button>
       </div>
@@ -78,8 +81,8 @@ export function AppSidebar({ isCollapsed, toggleSidebar }: AppSidebarProps) {
                     className={({ isActive }) =>
                       cn(
                         isActive
-                          ? "bg-[#221F26] text-white"
-                          : "text-gray-400 hover:text-white hover:bg-[#221F26]",
+                          ? "bg-white/20 text-gray-900"
+                          : "text-gray-700 hover:text-gray-900 hover:bg-white/10",
                         "group flex items-center gap-x-3 rounded-md p-2 text-sm leading-6"
                       )
                     }
@@ -88,7 +91,7 @@ export function AppSidebar({ isCollapsed, toggleSidebar }: AppSidebarProps) {
                       <>
                         <item.icon
                           className={cn(
-                            isActive ? "text-white" : "text-gray-400 group-hover:text-white",
+                            isActive ? "text-gray-900" : "text-gray-700 group-hover:text-gray-900",
                             "h-6 w-6 shrink-0"
                           )}
                           aria-hidden="true"

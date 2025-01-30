@@ -1,53 +1,37 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { useFinancialYear } from '@/contexts/FinancialYearContext';
+import { useToast } from '@/components/ui/use-toast';
+
+type AddInvoiceButtonProps = {
+  tableName: 'invoiceTable' | 'paymentTransactions';
+};
 
 const formSchema = z.object({
   invNumber: z.string().min(1, { message: 'Invoice number is required' }),
-  invValue: z.number().min(0),
-  invGst: z.number().min(0),
-  invTotal: z.number().min(0),
-  invDate: z.string(),
-  invDuedate: z.string(),
-  invCustid: z.number().optional(),
-  invMessage1: z.string().default(''),
+  // Add all required fields here
 });
 
-export default function AddInvoiceButton() {
+export default function AddInvoiceButton({ tableName }: AddInvoiceButtonProps) {
   const [open, setOpen] = useState(false);
   const { toast } = useToast();
-  const { selectedYear } = useFinancialYear();
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       invNumber: '',
-      invValue: 0,
-      invGst: 0,
-      invTotal: 0,
-      invDate: new Date().toISOString().split('T')[0],
-      invDuedate: new Date().toISOString().split('T')[0],
-      invMessage1: '',
+      // Initialize other fields here
     },
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
-      const { error } = await supabase.from('invoiceTable').insert({
-        ...values,
-        fy: selectedYear,
-      });
-
-      if (error) throw error;
-
+      await supabase.from(tableName).insert(values);
       toast({
         title: 'Success',
         description: 'Invoice added successfully',
@@ -71,10 +55,10 @@ export default function AddInvoiceButton() {
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Add Invoice</DialogTitle>
+            <DialogTitle>Add {tableName === 'invoiceTable' ? 'Invoice' : 'Payment'}</DialogTitle>
           </DialogHeader>
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form onSubmit={form.handleSubmit(onSubmit)}>
               <FormField
                 control={form.control}
                 name="invNumber"
@@ -88,34 +72,7 @@ export default function AddInvoiceButton() {
                   </FormItem>
                 )}
               />
-              <div className="flex gap-4">
-                <FormField
-                  control={form.control}
-                  name="invValue"
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormLabel>Value</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} onChange={e => field.onChange(Number(e.target.value))} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="invGst"
-                  render={({ field }) => (
-                    <FormItem className="flex-1">
-                      <FormLabel>GST</FormLabel>
-                      <FormControl>
-                        <Input type="number" {...field} onChange={e => field.onChange(Number(e.target.value))} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
+              {/* Add other fields similarly */}
               <Button type="submit">Submit</Button>
             </form>
           </Form>

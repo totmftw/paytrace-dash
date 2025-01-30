@@ -35,7 +35,7 @@ export default function PDFExport({ data, customer }: PDFExportProps) {
     const columns = ['Date', 'Description', 'Amount', 'Balance'];
     const rows = data.map((item) => [item.date, item.description, item.amount, item.balance]);
 
-    (doc as any).autoTable({
+    doc.autoTable({
       head: [columns],
       body: rows,
       startY: 35,

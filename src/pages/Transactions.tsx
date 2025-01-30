@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { InvoicePaymentTable } from "@/components/invoices-payments/InvoicePaymentTable";
-import { CustomerBalancesCard } from "@/components/payments/CustomerBalancesCard";
-import { PaymentHistoryCard } from "@/components/payments/PaymentHistoryCard";
+import { TransactionInvoiceTable } from "@/components/transactions/TransactionInvoiceTable";
+import { CustomerLedgerTable } from "@/components/transactions/CustomerLedgerTable";
+import { PaymentTabs } from "@/components/payments/PaymentTabs";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -45,12 +45,10 @@ export default function Transactions() {
   }, [user, loading, navigate]);
 
   const handleCustomerClick = (customer: CustomerData) => {
-    // Handle customer click - you can navigate to customer details or show a modal
     console.log('Customer clicked:', customer);
   };
 
   const handleInvoiceClick = (invoice: any) => {
-    // Handle invoice click - you can navigate to invoice details or show a modal
     console.log('Invoice clicked:', invoice);
   };
 
@@ -66,10 +64,11 @@ export default function Transactions() {
         <TabsList>
           <TabsTrigger value="invoices">Invoices</TabsTrigger>
           <TabsTrigger value="payments">Payments</TabsTrigger>
+          <TabsTrigger value="ledger">Customer Ledger</TabsTrigger>
         </TabsList>
 
         <TabsContent value="invoices" className="space-y-6">
-          <InvoicePaymentTable 
+          <TransactionInvoiceTable 
             data={invoicePayments || []}
             onCustomerClick={handleCustomerClick}
             onInvoiceClick={handleInvoiceClick}
@@ -77,10 +76,11 @@ export default function Transactions() {
         </TabsContent>
 
         <TabsContent value="payments" className="space-y-6">
-          <div className="grid gap-6">
-            <CustomerBalancesCard />
-            <PaymentHistoryCard />
-          </div>
+          <PaymentTabs />
+        </TabsContent>
+
+        <TabsContent value="ledger" className="space-y-6">
+          <CustomerLedgerTable />
         </TabsContent>
       </Tabs>
     </div>

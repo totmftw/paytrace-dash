@@ -43,9 +43,9 @@ export function CustomerExcelUpload() {
             custWhatsapp: Number(row.WhatsApp) || 0,
             custOwnerphone: Number(row.OwnerPhone) || 0,
             custOwnerwhatsapp: Number(row.OwnerWhatsApp) || 0,
-            custEmail: String(row.Email || '').trim(),
-            custOwneremail: String(row.OwnerEmail || '').trim(),
-            custType: String(row.Type || 'retail').trim(),
+            custEmail: String(row.Email || '').trim().toLowerCase(),
+            custOwneremail: String(row.OwnerEmail || '').trim().toLowerCase(),
+            custType: String(row.Type || 'retail').trim().toLowerCase(),
             custAddress: String(row.Address || '').trim(),
             custProvince: String(row.Province || '').trim(),
             custCity: String(row.City || '').trim(),
@@ -53,7 +53,7 @@ export function CustomerExcelUpload() {
             custGST: String(row.GST || '0').trim(),
             custCreditperiod: Number(row.CreditPeriod) || 0,
             custRemarks: String(row.Remarks || '').trim(),
-            custStatus: String(row.Status || 'active').trim()
+            custStatus: String(row.Status || 'active').trim().toLowerCase()
           }));
 
           console.log("Processed customer data:", customers);
@@ -76,33 +76,39 @@ export function CustomerExcelUpload() {
             !existingBusinessNames.has(customer.custBusinessname.toLowerCase())
           );
 
-          const skippedCustomers = customers.length - newCustomers.length;
-
           if (newCustomers.length === 0) {
             toast({
               variant: "destructive",
-              title: "No new customers added",
+              title: "No new customers to add",
               description: "All business names in the file already exist in the database.",
             });
             return;
           }
 
-          // Insert customers one by one for better error tracking
+          const skippedCount = customers.length - newCustomers.length;
           const successfulInserts = [];
           const failedInserts = [];
 
+          // Insert customers one by one
           for (const customer of newCustomers) {
-            const { error: insertError } = await supabase
-              .from('customerMaster')
-              .insert([customer]);
+            try {
+              const { error: insertError } = await supabase
+                .from('customerMaster')
+                .insert([customer]);
 
-            if (insertError) {
+              if (insertError) {
+                failedInserts.push({
+                  name: customer.custBusinessname,
+                  error: insertError.message
+                });
+              } else {
+                successfulInserts.push(customer.custBusinessname);
+              }
+            } catch (error: any) {
               failedInserts.push({
                 name: customer.custBusinessname,
-                error: insertError.message
+                error: error.message
               });
-            } else {
-              successfulInserts.push(customer.custBusinessname);
             }
           }
 
@@ -113,19 +119,19 @@ export function CustomerExcelUpload() {
           if (successfulInserts.length > 0) {
             toast({
               title: "Success",
-              description: `Successfully added ${successfulInserts.length} customers.${
-                skippedCustomers > 0 ? ` ${skippedCustomers} duplicate entries were skipped.` : ''
+              description: `Successfully added ${successfulInserts.length} customers. ${
+                skippedCount > 0 ? `${skippedCount} duplicate entries were skipped.` : ''
               }`,
             });
           }
 
           if (failedInserts.length > 0) {
+            console.error("Failed insertions:", failedInserts);
             toast({
               variant: "destructive",
               title: "Some insertions failed",
-              description: `Failed to add ${failedInserts.length} customers. Please check the console for details.`,
+              description: `Failed to add ${failedInserts.length} customers. Check console for details.`,
             });
-            console.error("Failed insertions:", failedInserts);
           }
 
         } catch (error: any) {
@@ -136,15 +142,6 @@ export function CustomerExcelUpload() {
             description: error.message || "Failed to process customer data",
           });
         }
-      };
-
-      reader.onerror = (error) => {
-        console.error("FileReader error:", error);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to read the Excel file",
-        });
       };
 
       reader.readAsArrayBuffer(file);
@@ -189,7 +186,6 @@ export function CustomerExcelUpload() {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Template");
     
-    // Add column widths for better readability
     ws['!cols'] = [
       { wch: 20 }, // BusinessName
       { wch: 15 }, // OwnerName

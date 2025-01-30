@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card } from "@/components/ui/card";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, LineChart, Line, CompositeChart } from 'recharts';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, LineChart, Line, ComposedChart } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useFinancialYear } from '@/contexts/FinancialYearContext';
@@ -74,7 +74,7 @@ const SalesOverview = () => {
         <h3 className="text-lg font-semibold mb-4">Sales & Collections Overview</h3>
         <div className="h-[320px]">
           <ResponsiveContainer width="100%" height="100%">
-            <CompositeChart data={salesData}>
+            <ComposedChart data={salesData}>
               <XAxis dataKey="month" />
               <YAxis tickFormatter={(value) => `₹${value / 1000}k`} />
               <Tooltip 
@@ -95,7 +95,7 @@ const SalesOverview = () => {
                 name="Collections"
               />
               <Legend />
-            </CompositeChart>
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
       </div>

@@ -1,4 +1,3 @@
-// Dashboard.tsx
 import { useState } from "react";
 import { Responsive, WidthProvider } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
@@ -97,7 +96,7 @@ const Dashboard = () => {
 
     try {
       const { error } = await supabase.from("dashboard_config").upsert({
-        userId: user.id,
+        user_id: user.id,
         layout: JSON.stringify(layout),
         widgets: JSON.stringify(widgets)
       });

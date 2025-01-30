@@ -45,10 +45,9 @@ const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
-      // Check if user exists
       const { data: existingUser, error: checkError } = await supabase
         .from('user_profiles')
-        .select<'id, email', ExistingUserCheck>('id, email')
+        .select('id, email')
         .eq('email', values.email)
         .maybeSingle();
 

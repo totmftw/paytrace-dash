@@ -1,8 +1,8 @@
 import React from "react";
 import { TransactionInvoiceTable } from "./TransactionInvoiceTable";
 import { Button } from "@/components/ui/button";
-import { DownloadTemplateButton } from "./buttons/DownloadTemplateButton";
-import { UploadInvoiceButton } from "./buttons/UploadInvoiceButton";
+import { DownloadTemplateButton } from "@/components/buttons/DownloadTemplateButton";
+import { UploadInvoiceButton } from "@/components/buttons/UploadInvoiceButton";
 
 export default function PaymentTab() {
   return (

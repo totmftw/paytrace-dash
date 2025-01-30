@@ -18,7 +18,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import React from "react";
 import { Button } from "@/components/ui/button";
-import PDFExport from "../buttons/PDFExport";
+import PDFExport from "@/components/buttons/PDFExport";
 import { useColumnConfig } from "@/contexts/columnConfigContext";
 import { Invoice } from "@/types/types";
 import { formatCurrency } from "@/lib/utils";
@@ -38,7 +38,7 @@ export function TransactionInvoiceTable({
   
   const columns: ColumnDef<Invoice>[] = [
     {
-      accessorKey: "invNumber",
+      id: "invNumber",
       header: "Invoice Number",
       cell: ({ row }) => {
         return (
@@ -52,33 +52,33 @@ export function TransactionInvoiceTable({
       },
     },
     {
-      accessorKey: "invDate",
+      id: "invDate",
       header: "Invoice Date",
       cell: ({ row }) => {
-        const date = row.getValue("invDate") as string | null;
-        return date ? new Date(date).toLocaleDateString() : "-";
+        const date = row.getValue("invDate");
+        return date ? new Date(date as string).toLocaleDateString() : "-";
       },
     },
     {
-      accessorKey: "invDuedate",
+      id: "invDuedate",
       header: "Due Date",
       cell: ({ row }) => {
-        const date = row.getValue("invDuedate") as string | null;
-        return date ? new Date(date).toLocaleDateString() : "-";
+        const date = row.getValue("invDuedate");
+        return date ? new Date(date as string).toLocaleDateString() : "-";
       },
     },
     {
-      accessorKey: "invTotal",
+      id: "invTotal",
       header: "Total Amount",
-      cell: ({ row }) => formatCurrency(row.getValue("invTotal")),
+      cell: ({ row }) => formatCurrency(row.getValue("invTotal") as number),
     },
     {
-      accessorKey: "invBalanceAmount",
+      id: "invBalanceAmount",
       header: "Balance Amount",
-      cell: ({ row }) => formatCurrency(row.getValue("invBalanceAmount")),
+      cell: ({ row }) => formatCurrency(row.getValue("invBalanceAmount") as number),
     },
     {
-      accessorKey: "invPaymentStatus",
+      id: "invPaymentStatus",
       header: "Payment Status",
       cell: ({ row }) => {
         const status = row.getValue("invPaymentStatus") as string;
@@ -101,20 +101,29 @@ export function TransactionInvoiceTable({
 
   const table = useReactTable({
     data: data || [],
-    columns: columns.filter(col => visibleColumns.includes(col.accessorKey as string)),
+    columns: columns.filter((col) => visibleColumns.includes(col.id)),
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
   });
 
+  const pdfData = data.map(invoice => ({
+    date: invoice.invDate || '',
+    description: `Invoice #${invoice.invNumber}`,
+    amount: invoice.invTotal,
+    balance: invoice.invBalanceAmount || 0
+  }));
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-end space-x-2">
-        <PDFExport data={data} />
-        <Button 
+        <PDFExport data={pdfData} />
+        <Button
           variant="ghost"
-          onClick={() => {/* open column config modal */}}
+          onClick={() => {
+            // Configure columns logic
+          }}
         >
           Configure Columns
         </Button>
@@ -126,7 +135,12 @@ export function TransactionInvoiceTable({
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
                   <TableHead key={header.id}>
-                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
                   </TableHead>
                 ))}
               </TableRow>
@@ -135,17 +149,26 @@ export function TransactionInvoiceTable({
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
                     </TableCell>
                   ))}
                 </TableRow>
               ))
             ) : (
               <TableRow>
-                <TableCell colSpan={columns.length} className="h-24 text-center">
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
                   No results.
                 </TableCell>
               </TableRow>

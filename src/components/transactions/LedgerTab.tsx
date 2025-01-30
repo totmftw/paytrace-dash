@@ -4,8 +4,26 @@ import { supabase } from "@/integrations/supabase/client";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 import { CustomerSelector } from "./CustomerSelector";
 import { DataTable } from "@/components/ui/data-table";
-import { calculateRunningBalance } from "@/utils/ledgerUtils";
-import PDFExport from "../buttons/PDFExport";
+import PDFExport from "@/components/buttons/PDFExport";
+
+const columns = [
+  {
+    accessorKey: 'date',
+    header: 'Date'
+  },
+  {
+    accessorKey: 'description',
+    header: 'Description'
+  },
+  {
+    accessorKey: 'amount',
+    header: 'Amount'
+  },
+  {
+    accessorKey: 'balance',
+    header: 'Balance'
+  }
+];
 
 export default function LedgerTab() {
   const { selectedYear, getFYDates } = useFinancialYear();
@@ -15,30 +33,43 @@ export default function LedgerTab() {
   const { data: ledgerData } = useQuery({
     queryKey: ["ledger", selectedCustomerId, selectedYear],
     queryFn: async () => {
+      if (!selectedCustomerId) return [];
+
       const { data: invoices } = await supabase
         .from('invoiceTable')
         .select('*')
         .gte('invDate', start.toISOString())
         .lte('invDate', end.toISOString())
-        .eq('customer_id', selectedCustomerId);
+        .eq('invCustid', selectedCustomerId);
 
       const { data: payments } = await supabase
         .from('paymentTransactions')
         .select('*')
         .gte('paymentDate', start.toISOString())
         .lte('paymentDate', end.toISOString())
-        .eq('customer_id', selectedCustomerId);
+        .eq('invId', selectedCustomerId);
 
-      return calculateRunningBalance([...invoices, ...payments]);
+      return (invoices || []).map(inv => ({
+        date: inv.invDate,
+        description: `Invoice #${inv.invNumber}`,
+        amount: inv.invTotal,
+        balance: inv.invBalanceAmount
+      })).concat(
+        (payments || []).map(payment => ({
+          date: payment.paymentDate,
+          description: `Payment #${payment.transactionId}`,
+          amount: -payment.amount,
+          balance: 0 // This will be calculated cumulatively
+        }))
+      ).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
     },
-    enabled: !!selectedCustomerId,
+    enabled: !!selectedCustomerId
   });
 
   return (
     <div className="space-y-4">
       <CustomerSelector
-        customers={[]}
-        selectedCustomerId={selectedCustomerId}
+        selectedCustomer={selectedCustomerId}
         onSelect={setSelectedCustomerId}
       />
       

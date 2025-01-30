@@ -48,33 +48,40 @@ const UploadInvoiceButton = ({ tableName }: UploadInvoiceButtonProps) => {
 
           if (Array.isArray(jsonData) && jsonData.length > 0) {
             // Check for duplicates
-            const { data: existingInvoices } = await supabase
+            const { data: existingInvoices, error } = await supabase
               .from(tableName)
               .select('invNumber')
               .in('invNumber', jsonData.map(item => item.invNumber));
 
-            const duplicates = (existingInvoices as ExistingInvoice[] | null)?.filter(inv => 
-              jsonData.some(item => item.invNumber === inv.invNumber)
-            ) || [];
+            if (error) {
+              throw error;
+            }
 
-            if (duplicates.length > 0) {
-              toast({
-                title: 'Duplicates Found',
-                description: `Duplicate invoices detected: ${duplicates.map(d => d.invNumber).join(', ')}`,
-                variant: 'destructive'
-              });
-              setIsUploading(false);
-              return;
+            if (existingInvoices) {
+              const duplicates = existingInvoices.filter(inv => 
+                jsonData.some(item => item.invNumber === inv.invNumber)
+              );
+
+              if (duplicates.length > 0) {
+                toast({
+                  title: 'Duplicates Found',
+                  description: `Duplicate invoices detected: ${duplicates.map(d => d.invNumber).join(', ')}`,
+                  variant: 'destructive'
+                });
+                setIsUploading(false);
+                return;
+              }
             }
 
             // Proceed with insert if no duplicates
-            const { error } = await supabase.from(tableName).insert(
+            const { error: insertError } = await supabase.from(tableName).insert(
               jsonData.map(item => ({
                 ...item,
                 fy: selectedYear 
               }))
             );
-            if (error) throw error;
+            
+            if (insertError) throw insertError;
 
             toast({
               title: 'Success',

@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ColumnConfigProvider } from "@/contexts/columnConfigContext";
 import InvoiceTab from "./InvoiceTab";
 import PaymentTab from "./PaymentTab";
 import LedgerTab from "./LedgerTab";
@@ -25,22 +26,24 @@ export default function TransactionsCore() {
         <FinancialYearSelector />
       </div>
 
-      <Tabs defaultValue="invoices" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="invoices">Invoices</TabsTrigger>
-          <TabsTrigger value="payments">Payments</TabsTrigger>
-          <TabsTrigger value="ledger">Ledger</TabsTrigger>
-        </TabsList>
-        <TabsContent value="invoices">
-          <InvoiceTab />
-        </TabsContent>
-        <TabsContent value="payments">
-          <PaymentTab />
-        </TabsContent>
-        <TabsContent value="ledger">
-          <LedgerTab />
-        </TabsContent>
-      </Tabs>
+      <ColumnConfigProvider>
+        <Tabs defaultValue="invoices" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="invoices">Invoices</TabsTrigger>
+            <TabsTrigger value="payments">Payments</TabsTrigger>
+            <TabsTrigger value="ledger">Ledger</TabsTrigger>
+          </TabsList>
+          <TabsContent value="invoices">
+            <InvoiceTab />
+          </TabsContent>
+          <TabsContent value="payments">
+            <PaymentTab />
+          </TabsContent>
+          <TabsContent value="ledger">
+            <LedgerTab />
+          </TabsContent>
+        </Tabs>
+      </ColumnConfigProvider>
     </div>
   );
 }

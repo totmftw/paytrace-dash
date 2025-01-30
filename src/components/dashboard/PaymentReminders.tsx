@@ -24,7 +24,7 @@ export function PaymentReminders() {
         .from("invoiceTable")
         .select(`
           *,
-          customerMaster!invoiceTable_invCustid_fkey (
+          customerMaster:customerMaster!invoiceTable_invCustid_fkey (
             custBusinessname,
             custCreditperiod,
             custWhatsapp

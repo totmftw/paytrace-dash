@@ -1,8 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
@@ -23,8 +22,7 @@ export default function Dashboard() {
 
       const { data, error } = await supabase
         .from("dashboard_metrics")
-        .select("*")
-        .single();
+        .select("*");
 
       if (error) throw error;
       return data;
@@ -44,10 +42,10 @@ export default function Dashboard() {
 
   const getVariant = (status: string) => {
     switch (status) {
-      case 'success':
+      case 'normal':
         return 'default';
       case 'warning':
-        return 'warning';
+        return 'secondary';
       case 'danger':
         return 'destructive';
       default:
@@ -63,25 +61,22 @@ export default function Dashboard() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {dashboardData?.metrics.map((metric: any) => (
+        {dashboardData?.map((metric) => (
           <Card key={metric.id}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
-                {metric.title}
+                {metric.metric_name}
               </CardTitle>
-              <Badge variant={getVariant(metric.status)}>
-                {metric.status}
+              <Badge variant={getVariant(metric.metric_status)}>
+                {metric.metric_status}
               </Badge>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {metric.type === 'currency' 
-                  ? formatCurrency(metric.value)
-                  : metric.value}
+                {metric.metric_type === 'currency' 
+                  ? formatCurrency(metric.metric_value)
+                  : metric.metric_value}
               </div>
-              <p className="text-xs text-muted-foreground">
-                {metric.description}
-              </p>
             </CardContent>
           </Card>
         ))}

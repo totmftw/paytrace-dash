@@ -22,17 +22,20 @@ import PDFExport from "@/components/buttons/PDFExport";
 import { useColumnConfig } from "@/contexts/columnConfigContext";
 import { Invoice } from "@/types/types";
 import { formatCurrency } from "@/lib/utils";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface TransactionInvoiceTableProps {
   data: Invoice[];
   onCustomerClick: (customer: any) => void;
   onInvoiceClick: (invoice: Invoice) => void;
+  isLoading?: boolean;
 }
 
 export function TransactionInvoiceTable({
   data,
   onCustomerClick,
   onInvoiceClick,
+  isLoading = false,
 }: TransactionInvoiceTableProps) {
   const { visibleColumns, setVisibleColumns } = useColumnConfig();
   
@@ -100,7 +103,7 @@ export function TransactionInvoiceTable({
   ];
 
   const table = useReactTable({
-    data: data || [],
+    data,
     columns: columns.filter((col) => visibleColumns.includes(col.id)),
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -108,17 +111,30 @@ export function TransactionInvoiceTable({
     getFilteredRowModel: getFilteredRowModel(),
   });
 
-  const pdfData = data.map(invoice => ({
-    date: invoice.invDate || '',
-    description: `Invoice #${invoice.invNumber}`,
-    amount: invoice.invTotal,
-    balance: invoice.invBalanceAmount || 0
-  }));
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center justify-end space-x-2">
+          <Skeleton className="h-10 w-32" />
+          <Skeleton className="h-10 w-32" />
+        </div>
+        <div className="border rounded-md">
+          <div className="h-[400px] flex items-center justify-center">
+            <div className="space-y-4">
+              <Skeleton className="h-4 w-[250px]" />
+              <Skeleton className="h-4 w-[200px]" />
+              <Skeleton className="h-4 w-[150px]" />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-end space-x-2">
-        <PDFExport data={pdfData} />
+        <PDFExport data={data} />
         <Button
           variant="ghost"
           onClick={() => {

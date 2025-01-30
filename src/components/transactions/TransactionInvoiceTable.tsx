@@ -102,7 +102,7 @@ export function TransactionInvoiceTable({
                         variant="link"
                         onClick={() => onInvoiceClick(invoice)}
                       >
-                        {invoice.invNumber.join("-")}
+                        {invoice.invNumber}
                       </Button>
                     </TableCell>
                     <TableCell>

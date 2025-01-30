@@ -23,12 +23,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { formatCurrency } from "@/lib/utils";
-import { useState } from "react";
-import { useReactTable } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
 import { PDFExport } from "./PDFExport";
 
-export function TransactionInvoiceTable(props) {
 interface TransactionInvoiceTableProps {
   data: any[];
   onCustomerClick: (customer: any) => void;
@@ -48,7 +44,7 @@ interface InvoiceData {
 }
 
 export function TransactionInvoiceTable({
-  data,
+  data = [], // Provide default empty array
   onCustomerClick,
   onInvoiceClick,
 }: TransactionInvoiceTableProps) {
@@ -56,41 +52,6 @@ export function TransactionInvoiceTable({
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = useState({});
   const [isColumnConfigOpen, setIsColumnConfigOpen] = useState(false);
-
-  const table = useReactTable({
-    data,
-    columns,
-    state: {
-      sorting,
-      columnVisibility,
-    },
-    onSortingChange: setSorting,
-    onColumnVisibilityChange: setColumnVisibility,
-    enableColumnResizing: true,
-  });
-
-  return (
-    <div className="space-y-4">
-      {/* ... existing code ... */}
-
-      <div className="flex items-center justify-end space-x-2">
-        <PDFExport data={data} />
-        <Button 
-          variant="ghost"
-          onClick={() => setIsColumnConfigOpen(true)}
-        >
-          Configure Columns
-        </Button>
-        {isColumnConfigOpen && (
-          <div>
-            {/* Column configuration modal */}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-  const [rowSelection, setRowSelection] = useState({});
 
   const formatInvoiceNumber = (invNumber: InvoiceData['invNumber']): string => {
     if (Array.isArray(invNumber)) {
@@ -182,7 +143,7 @@ export function TransactionInvoiceTable({
   ];
 
   const table = useReactTable({
-    data,
+    data: data || [], // Ensure data is never undefined
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -191,14 +152,21 @@ export function TransactionInvoiceTable({
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
-      rowSelection,
     },
   });
+
+  // Show loading state if data is undefined
+  if (!data) {
+    return (
+      <div className="flex items-center justify-center h-48">
+        <p>Loading transactions...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -211,6 +179,13 @@ export function TransactionInvoiceTable({
           }
           className="max-w-sm"
         />
+        <PDFExport data={data} />
+        <Button 
+          variant="ghost"
+          onClick={() => setIsColumnConfigOpen(true)}
+        >
+          Configure Columns
+        </Button>
       </div>
 
       <ScrollArea className="h-[calc(100vh-300px)]">

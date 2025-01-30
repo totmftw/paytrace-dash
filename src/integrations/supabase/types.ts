@@ -50,6 +50,41 @@ export type Database = {
           },
         ]
       }
+      customer_ledger: {
+        Row: {
+          amount: number | null
+          balance: number | null
+          customer_id: number | null
+          fiscal_year: string | null
+          id: number
+          transaction_type: string | null
+        }
+        Insert: {
+          amount?: number | null
+          balance?: number | null
+          customer_id?: number | null
+          fiscal_year?: string | null
+          id?: number
+          transaction_type?: string | null
+        }
+        Update: {
+          amount?: number | null
+          balance?: number | null
+          customer_id?: number | null
+          fiscal_year?: string | null
+          id?: number
+          transaction_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_ledger_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customerMaster"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customerMaster: {
         Row: {
           custAddress: string | null

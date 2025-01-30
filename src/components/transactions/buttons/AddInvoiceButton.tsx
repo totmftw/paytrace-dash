@@ -1,19 +1,27 @@
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
-import { useForm } from "react-hook-form";
-import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+
+const formSchema = z.object({
+  invNumber: z.string().min(1, "Invoice number is required"),
+});
+
+type FormData = z.infer<typeof formSchema>;
 
 export function AddInvoiceButton() {
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
-  const form = useForm();
+  const form = useForm<FormData>({
+    resolver: zodResolver(formSchema),
+  });
 
-  const handleSubmit = async (data: any) => {
-    // Add form submission logic here
-    console.log('Form data:', data);
+  const handleSubmit = async (data: FormData) => {
     toast({
       title: "Invoice Added",
       description: "Your invoice has been added successfully"

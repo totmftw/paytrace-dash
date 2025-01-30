@@ -5,7 +5,7 @@ interface PDFExportProps {
   data: any[];
 }
 
-export function PDFExport({ data }: PDFExportProps) {
+export default function PDFExport({ data }: PDFExportProps) {
   const handleExport = () => {
     // Add PDF export logic here
     console.log('Exporting data:', data);

@@ -5,11 +5,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import InvoiceTab from "../components/transactions/InvoiceTab";
-import PaymentTab from "../components/transactions/PaymentTab";
-import LedgerTab from "../components/transactions/LedgerTab";
+import InvoiceTab from "./InvoiceTab";
+import PaymentTab from "./PaymentTab";
+import LedgerTab from "./LedgerTab";
 
-export default function Transactions() {
+export default function TransactionsCore() {
   const navigate = useNavigate();
   const { selectedYear } = useFinancialYear();
 

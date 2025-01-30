@@ -10,17 +10,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
+const roles = [
+  "business_owner",
+  "business_manager",
+  "order_manager",
+  "it_admin",
+  "team_member"
+] as const;
+
 const formSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
   full_name: z.string().min(2),
-  role: z.enum(["business_owner", "business_manager", "order_manager", "it_admin", "team_member"]),
+  role: z.enum(roles),
   phone_number: z.string().min(10),
   designation: z.string().min(2),
   department: z.string().min(2),
   emergency_contact: z.string().min(10),
   address: z.string().min(5),
 });
+
+type FormSchema = z.infer<typeof formSchema>;
 
 interface AddUserDialogProps {
   open: boolean;
@@ -31,14 +41,14 @@ const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   
-  const form = useForm({
+  const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       role: "team_member",
     },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: FormSchema) => {
     setIsLoading(true);
     try {
       const { count } = await supabase
@@ -148,11 +158,13 @@ const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="business_owner">Business Owner</SelectItem>
-                      <SelectItem value="business_manager">Business Manager</SelectItem>
-                      <SelectItem value="order_manager">Order Manager</SelectItem>
-                      <SelectItem value="it_admin">IT Admin</SelectItem>
-                      <SelectItem value="team_member">Team Member</SelectItem>
+                      {roles.map((role) => (
+                        <SelectItem key={role} value={role}>
+                          {role.split('_').map(word => 
+                            word.charAt(0).toUpperCase() + word.slice(1)
+                          ).join(' ')}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />

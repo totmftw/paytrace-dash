@@ -1,71 +1,68 @@
-import { ColumnDef } from "@tanstack/react-table";
-import { Button } from "@/components/ui/button";
 import { formatCurrency } from "@/lib/utils";
 
 export const balanceColumns = (
   setSelectedCustomer: (customer: { id: number; name: string; whatsapp: number; } | null) => void
-): ColumnDef<any>[] => [
+) => [
   {
-    accessorKey: "custBusinessname",
+    key: "custBusinessname",
     header: "Business Name",
   },
   {
-    accessorKey: "balance",
+    key: "balance",
     header: "Balance",
-    cell: ({ row }) => formatCurrency(row.getValue("balance")),
+    cell: (item) => formatCurrency(item.balance),
   },
   {
-    accessorKey: "last_transaction_date",
+    key: "last_transaction_date",
     header: "Last Transaction",
-    cell: ({ row }) => row.getValue("last_transaction_date")
-      ? new Date(row.getValue("last_transaction_date")).toLocaleDateString()
+    cell: (item) => item.last_transaction_date
+      ? new Date(item.last_transaction_date).toLocaleDateString()
       : '-',
   },
   {
-    id: "actions",
-    cell: ({ row }) => (
-      <Button
-        variant="ghost"
-        size="sm"
+    key: "actions",
+    header: "Actions",
+    cell: (item) => (
+      <button
+        className="text-black hover:text-gray-700"
         onClick={() => setSelectedCustomer({
-          id: row.original.custId,
-          name: row.original.custBusinessname,
-          whatsapp: row.original.custWhatsapp
+          id: item.custId,
+          name: item.custBusinessname,
+          whatsapp: item.custWhatsapp
         })}
-        className="text-black"
       >
         View Ledger
-      </Button>
+      </button>
     ),
   },
 ];
 
-export const paymentColumns: ColumnDef<any>[] = [
+export const paymentColumns = [
   {
-    accessorKey: "paymentDate",
+    key: "paymentDate",
     header: "Date",
-    cell: ({ row }) => new Date(row.getValue("paymentDate")).toLocaleDateString(),
+    cell: (item) => new Date(item.paymentDate).toLocaleDateString(),
   },
   {
-    accessorKey: "invoiceTable.invNumber",
+    key: "invoiceTable.invNumber",
     header: "Invoice Number",
-    cell: ({ row }) => row.original.invoiceTable?.invNumber?.join("-"),
+    cell: (item) => item.invoiceTable?.invNumber?.join("-"),
   },
   {
-    accessorKey: "invoiceTable.customerMaster.custBusinessname",
+    key: "invoiceTable.customerMaster.custBusinessname",
     header: "Business Name",
   },
   {
-    accessorKey: "transactionId",
+    key: "transactionId",
     header: "Transaction ID",
   },
   {
-    accessorKey: "paymentMode",
+    key: "paymentMode",
     header: "Payment Mode",
   },
   {
-    accessorKey: "amount",
+    key: "amount",
     header: "Amount",
-    cell: ({ row }) => formatCurrency(row.getValue("amount")),
+    cell: (item) => formatCurrency(item.amount),
   },
 ];

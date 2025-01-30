@@ -47,7 +47,7 @@ export function DataTable<T extends Record<string, any>>({
   const handleResize = (columnKey: string, width: number) => {
     setColumnWidths(prev => ({
       ...prev,
-      [columnKey]: Math.max(width, 100) // Minimum width of 100px
+      [columnKey]: Math.max(width, 100)
     }));
   };
 

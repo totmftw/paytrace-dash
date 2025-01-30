@@ -131,10 +131,17 @@ export function TransactionInvoiceTable({
     );
   }
 
+  const pdfData = data.map(invoice => ({
+    date: invoice.invDate || '',
+    description: `Invoice #${invoice.invNumber}`,
+    amount: invoice.invTotal,
+    balance: invoice.invBalanceAmount || 0
+  }));
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-end space-x-2">
-        <PDFExport data={data} />
+        <PDFExport data={pdfData} />
         <Button
           variant="ghost"
           onClick={() => {

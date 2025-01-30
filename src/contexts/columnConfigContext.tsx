@@ -1,4 +1,3 @@
-// src/contexts/columnConfigContext.tsx
 import { createContext, useContext, useState } from "react";
 
 interface ColumnConfigContextType {
@@ -11,7 +10,14 @@ const ColumnConfigContext = createContext<ColumnConfigContextType | undefined>(
 );
 
 export function ColumnConfigProvider({ children }: { children: React.ReactNode }) {
-  const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
+  const [visibleColumns, setVisibleColumns] = useState<string[]>([
+    "invNumber",
+    "invDate",
+    "invDuedate",
+    "invTotal",
+    "invBalanceAmount",
+    "invPaymentStatus"
+  ]);
 
   return (
     <ColumnConfigContext.Provider value={{ visibleColumns, setVisibleColumns }}>

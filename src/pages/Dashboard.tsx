@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Responsive, WidthProvider } from "react-grid-layout";
+import { Responsive, WidthProvider, Layout } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 import { PaymentMetrics } from "@/components/dashboard/PaymentMetrics";
@@ -37,22 +37,15 @@ import {
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
-interface LayoutItem {
-  i: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  minW?: number;
-  minH?: number;
-  [key: string]: string | number | undefined; // Add index signature for Json compatibility
+interface LayoutItem extends Layout {
+  [key: string]: string | number | undefined;
 }
 
 interface DashboardWidget {
   id: string;
   type: string;
   title: string;
-  [key: string]: string | number | undefined; // Add index signature for Json compatibility
+  [key: string]: string | number | undefined;
 }
 
 const defaultLayout: LayoutItem[] = [
@@ -78,8 +71,8 @@ const Dashboard = () => {
   const [widgetToRemove, setWidgetToRemove] = useState<string | null>(null);
   const { user } = useAuth();
 
-  const handleLayoutChange = (newLayout: LayoutItem[]) => {
-    setLayout(newLayout);
+  const handleLayoutChange = (newLayout: Layout[]) => {
+    setLayout(newLayout as LayoutItem[]);
   };
 
   const handleAddWidget = (widget: DashboardWidget) => {

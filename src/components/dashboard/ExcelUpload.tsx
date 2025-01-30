@@ -47,7 +47,7 @@ export function ExcelUpload() {
           // First, verify the invoice exists and get its ID
           const { data: invoices, error: invoiceError } = await supabase
             .from('invoiceTable')
-            .select('invId, invTotal, invBalanceAmount')
+            .select('invId, invTotal, invBalanceAmount, invCustid')
             .eq('invNumber', row.InvoiceNumber)
             .single();
 
@@ -89,12 +89,13 @@ export function ExcelUpload() {
 
           if (invoiceUpdateError) throw invoiceUpdateError;
 
-          // Create ledger entry
+          // Create ledger entry - Fixed transaction type to 'payment'
           const { error: ledgerError } = await supabase
             .from("paymentLedger")
             .insert({
               invId: invoices.invId,
-              transactionType: 'payment',
+              custId: invoices.invCustid,
+              transactionType: 'payment', // Explicitly set to 'payment'
               amount: paymentAmount,
               runningBalance: paymentDifference,
               description: `Payment received via ${row.PaymentMode}${row.Remarks ? ` - ${row.Remarks}` : ''}`,

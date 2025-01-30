@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { format, addYears, subYears } from "date-fns";
+import { supabase } from "@/integrations/supabase/client";
 
 interface FinancialYearContextType {
   selectedYear: string;
@@ -24,12 +25,6 @@ const getCurrentFY = () => {
   return now.getMonth() >= 3 ? now.getFullYear() : now.getFullYear() - 1;
 };
 
-const generateFYOptions = (currentFY: number) => 
-  Array.from({ length: 5 }, (_, i) => {
-    const year = currentFY - i;
-    return `${year}-${year + 1}`;
-  });
-
 export const FinancialYearProvider = ({ children }: { children: React.ReactNode }) => {
   const [selectedYear, setSelectedYear] = useState('');
   const [isLoading, setIsLoading] = useState(true);
@@ -37,19 +32,49 @@ export const FinancialYearProvider = ({ children }: { children: React.ReactNode 
   const [fyOptions, setFyOptions] = useState<string[]>([]);
 
   useEffect(() => {
-    const savedYear = localStorage.getItem('selectedFY');
-    const currentFY = getCurrentFY();
-    const options = generateFYOptions(currentFY);
-    
-    setFyOptions(options);
-    setSelectedYear(savedYear || `${currentFY}-${currentFY + 1}`);
-    setIsLoading(false);
+    const fetchFYOptions = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('invoiceTable')
+          .select('invDate')
+          .order('invDate');
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          const years = new Set(
+            data.map(invoice => {
+              const date = new Date(invoice.invDate);
+              return date.getMonth() >= 3 
+                ? date.getFullYear() 
+                : date.getFullYear() - 1;
+            })
+          );
+          
+          const options = Array.from(years).map(year => `${year}-${year + 1}`);
+          setFyOptions(options);
+          setSelectedYear(options[options.length - 1]);
+        } else {
+          const currentFY = getCurrentFY();
+          setFyOptions([`${currentFY}-${currentFY + 1}`]);
+          setSelectedYear(`${currentFY}-${currentFY + 1}`);
+        }
+      } catch (error) {
+        console.error('Error fetching financial years:', error);
+        const currentFY = getCurrentFY();
+        setFyOptions([`${currentFY}-${currentFY + 1}`]);
+        setSelectedYear(`${currentFY}-${currentFY + 1}`);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFYOptions();
   }, []);
 
   const handleYearChange = (year: string) => {
     if (!fyOptions.includes(year) || isTransitioning) return;
     setIsTransitioning(true);
-    localStorage.setItem('selectedFY', year);
     setSelectedYear(year);
     setTimeout(() => setIsTransitioning(false), 500);
   };

@@ -10,7 +10,7 @@ import Dashboard from "@/pages/Dashboard";
 import Customers from "@/pages/Customers";
 import Products from "@/pages/Products";
 import Transactions from "@/pages/Transactions";
-import UserManagement from "@/pages/UserManagement";
+import UserManagement from "@/pages/UserProfiles";
 import WhatsappReminders from "@/pages/WhatsappReminders";
 
 const AppRoutes = () => {

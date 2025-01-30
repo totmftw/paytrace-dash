@@ -38,6 +38,7 @@ export function ExcelUpload() {
     setUploading(true);
     const errors: string[] = [];
     const processed: string[] = [];
+    const notFoundInvoices: string[] = [];
 
     try {
       const reader = new FileReader();
@@ -59,12 +60,17 @@ export function ExcelUpload() {
                 .select('invId, invTotal, invBalanceAmount, invCustid')
                 .eq('invNumber', row.InvoiceNumber);
 
-              if (invoiceError || !invoices || invoices.length === 0) {
-                errors.push(`Invoice ${row.InvoiceNumber} not found`);
+              if (invoiceError) {
+                errors.push(`Error fetching invoice ${row.InvoiceNumber}: ${invoiceError.message}`);
                 continue;
               }
 
-              const invoice = invoices[0]; // Take the first matching invoice
+              if (!invoices || invoices.length === 0) {
+                notFoundInvoices.push(row.InvoiceNumber);
+                continue;
+              }
+
+              const invoice = invoices[0];
 
               const paymentAmount = Number(row.Amount);
               if (isNaN(paymentAmount) || paymentAmount <= 0) {
@@ -154,19 +160,30 @@ export function ExcelUpload() {
           await queryClient.invalidateQueries({ queryKey: ['invoices'] });
           await queryClient.invalidateQueries({ queryKey: ['dashboard-stats'] });
 
+          // Show success message for processed payments
           if (processed.length > 0) {
             toast({
               title: "Success",
-              description: `Successfully processed ${processed.length} payments${errors.length > 0 ? '. Some errors occurred.' : ''}`,
+              description: `Successfully processed ${processed.length} payments`,
             });
           }
 
+          // Show error message for failed payments
           if (errors.length > 0) {
             console.error('Payment upload errors:', errors);
             toast({
               variant: "destructive",
               title: "Some payments failed to process",
               description: `${errors.length} error(s) occurred. Check the console for details.`,
+            });
+          }
+
+          // Show message for not found invoices
+          if (notFoundInvoices.length > 0) {
+            toast({
+              variant: "destructive",
+              title: "Invoices not found",
+              description: `The following invoices were not found in the system: ${notFoundInvoices.join(', ')}`,
             });
           }
 

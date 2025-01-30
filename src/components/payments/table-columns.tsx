@@ -10,19 +10,19 @@ export const balanceColumns = (
   {
     key: "balance",
     header: "Balance",
-    cell: (item) => formatCurrency(item.balance),
+    cell: (item: any) => formatCurrency(item.balance),
   },
   {
     key: "last_transaction_date",
     header: "Last Transaction",
-    cell: (item) => item.last_transaction_date
+    cell: (item: any) => item.last_transaction_date
       ? new Date(item.last_transaction_date).toLocaleDateString()
       : '-',
   },
   {
     key: "actions",
     header: "Actions",
-    cell: (item) => (
+    cell: (item: any) => (
       <button
         className="text-black hover:text-gray-700"
         onClick={() => setSelectedCustomer({
@@ -41,12 +41,12 @@ export const paymentColumns = [
   {
     key: "paymentDate",
     header: "Date",
-    cell: (item) => new Date(item.paymentDate).toLocaleDateString(),
+    cell: (item: any) => new Date(item.paymentDate).toLocaleDateString(),
   },
   {
     key: "invoiceTable.invNumber",
     header: "Invoice Number",
-    cell: (item) => item.invoiceTable?.invNumber?.join("-"),
+    cell: (item: any) => item.invoiceTable?.invNumber?.join("-"),
   },
   {
     key: "invoiceTable.customerMaster.custBusinessname",
@@ -63,6 +63,6 @@ export const paymentColumns = [
   {
     key: "amount",
     header: "Amount",
-    cell: (item) => formatCurrency(item.amount),
+    cell: (item: any) => formatCurrency(item.amount),
   },
 ];

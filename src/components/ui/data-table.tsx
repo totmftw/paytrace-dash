@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { ArrowUpDown } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface DataTableProps<T> {
   data: T[];
@@ -21,13 +22,15 @@ interface DataTableProps<T> {
   }[];
   searchable?: boolean;
   maxHeight?: string;
+  isLoading?: boolean;
 }
 
 export function DataTable<T extends Record<string, any>>({
   data,
   columns,
   searchable = true,
-  maxHeight = "calc(100vh - 12rem)"
+  maxHeight = "calc(100vh - 12rem)",
+  isLoading = false
 }: DataTableProps<T>) {
   const [searchTerm, setSearchTerm] = useState("");
   const [sortConfig, setSortConfig] = useState<{
@@ -75,6 +78,38 @@ export function DataTable<T extends Record<string, any>>({
 
     return filtered;
   }, [data, searchTerm, sortConfig]);
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        {searchable && <Skeleton className="h-10 w-[200px]" />}
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                {columns.map((column, index) => (
+                  <TableHead key={index}>
+                    <Skeleton className="h-4 w-[100px]" />
+                  </TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {[...Array(5)].map((_, rowIndex) => (
+                <TableRow key={rowIndex}>
+                  {columns.map((_, colIndex) => (
+                    <TableCell key={colIndex}>
+                      <Skeleton className="h-4 w-[100px]" />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">

@@ -17,11 +17,12 @@ export const generateTemplateFromTable = async (
   exampleData: any = {}
 ) => {
   try {
-    // Fetch table structure
-    const { data: columns, error } = await supabase
-      .from(tableName)
-      .select('*')
-      .limit(1);
+    // Fetch table structure based on whether it's a table or view
+    const query = isView(tableName) 
+      ? supabase.from(tableName).select('*').limit(1)
+      : supabase.from(tableName as Tables).select('*').limit(1);
+
+    const { data: columns, error } = await query;
 
     if (error) throw error;
 

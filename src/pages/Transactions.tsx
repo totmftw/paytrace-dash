@@ -1,31 +1,20 @@
-// src/pages/Transactions.tsx
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import InvoiceTab from "@/components/transactions/InvoiceTab";
 import PaymentTab from "@/components/transactions/PaymentTab";
 import LedgerTab from "@/components/transactions/LedgerTab";
-// src/pages/Transactions.tsx
-const isMobile = useIsMobile();
+import { FinancialYearSelector } from "@/components/FinancialYearSelector";
+import { useIsMobile } from "@/hooks/use-mobile";
 
-return (
-  <div className={`space-y-6 bg-[#E8F3E8] min-h-screen p-6 ${isMobile ? 'p-2' : 'p-6'}`}>
-    <div className="flex justify-between items-center flex-col md:flex-row">
-      {/* Content */}
-    </div>
-  </div>
-);
 export default function Transactions() {
   const navigate = useNavigate();
   const { selectedYear } = useFinancialYear();
+  const isMobile = useIsMobile();
 
   return (
-    <div className="space-y-6 bg-[#E8F3E8] min-h-screen p-6">
-      <div className="flex justify-between items-center">
+    <div className={`space-y-6 bg-[#E8F3E8] min-h-screen ${isMobile ? 'p-2' : 'p-6'}`}>
+      <div className="flex justify-between items-center flex-col md:flex-row">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-[#1B4D3E]">Transactions</h2>
           <p className="text-[#4A7862]">

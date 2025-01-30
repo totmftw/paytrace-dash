@@ -57,7 +57,7 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
 
   const handleCustomerSelect = (customerId: number) => {
     setSelectedCustomerId(customerId);
-    const customer = customers?.find(c => c.id === customerId);
+    const customer = customers.find(c => c.id === customerId);
     if (customer) {
       onCustomerClick({
         id: customer.id,
@@ -65,6 +65,7 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
         whatsappNumber: customer.custWhatsapp
       });
     }
+    setOpen(false);
   };
 
   const handleDownloadPDF = async () => {
@@ -131,7 +132,7 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
     }
   };
 
-  const selectedCustomer = customers?.find((customer) => customer.id === selectedCustomerId);
+  const selectedCustomer = customers.find((customer) => customer.id === selectedCustomerId);
 
   return (
     <div className="space-y-4">
@@ -160,10 +161,7 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
                     <CommandItem
                       key={customer.id}
                       value={customer.custBusinessname}
-                      onSelect={() => {
-                        handleCustomerSelect(customer.id);
-                        setOpen(false);
-                      }}
+                      onSelect={() => handleCustomerSelect(customer.id)}
                     >
                       <Check
                         className={cn(

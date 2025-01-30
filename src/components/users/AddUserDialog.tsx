@@ -40,7 +40,7 @@ const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
     },
   });
 
-  const onSubmit = async (data: FormValues) => {
+  const handleSubmit = async (data: FormValues) => {
     setIsLoading(true);
     try {
       const { count } = await supabase
@@ -99,7 +99,7 @@ const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
           <DialogTitle>Add New User</DialogTitle>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="email"

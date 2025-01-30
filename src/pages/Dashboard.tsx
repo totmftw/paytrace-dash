@@ -7,7 +7,7 @@ import SalesOverview from "@/components/dashboard/SalesOverview";
 import { PaymentTracking } from "@/components/dashboard/PaymentTracking";
 import { PaymentReminders } from "@/components/dashboard/PaymentReminders";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Wrench, Check } from "lucide-react";
+import { PlusCircle, Wrench, Check, X } from "lucide-react";
 import { AddWidgetDialog } from "@/components/dashboard/AddWidgetDialog";
 import { useLocalStorage } from "@/hooks/use-local-storage";
 import { toast } from "sonner";
@@ -15,7 +15,24 @@ import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 import { FinancialYearProvider } from "@/contexts/FinancialYearContext";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -55,6 +72,7 @@ const Dashboard = () => {
   const [isAddWidgetOpen, setIsAddWidgetOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isApplyDialogOpen, setIsApplyDialogOpen] = useState(false);
+  const [widgetToRemove, setWidgetToRemove] = useState<string | null>(null);
   const { user } = useAuth();
 
   const handleLayoutChange = (newLayout: LayoutItem[]) => {
@@ -86,9 +104,16 @@ const Dashboard = () => {
   };
 
   const handleRemoveWidget = (widgetId: string) => {
-    setWidgets(widgets.filter(w => w.id !== widgetId));
-    setLayout(layout.filter(l => l.i !== widgetId));
-    toast.success("Widget removed successfully");
+    setWidgetToRemove(widgetId);
+  };
+
+  const confirmRemoveWidget = () => {
+    if (widgetToRemove) {
+      setWidgets(widgets.filter(w => w.id !== widgetToRemove));
+      setLayout(layout.filter(l => l.i !== widgetToRemove));
+      setWidgetToRemove(null);
+      toast.success("Widget removed successfully");
+    }
   };
 
   const handleApplyChanges = async () => {
@@ -97,8 +122,8 @@ const Dashboard = () => {
     try {
       const { error } = await supabase.from("dashboard_config").upsert({
         userid: user.id,
-        layout: layout,
-        widgets: widgets
+        layout,
+        widgets
       });
 
       if (error) throw error;
@@ -163,11 +188,11 @@ const Dashboard = () => {
                 <h3 className="text-lg font-semibold">{widget.title}</h3>
                 <Button
                   variant="ghost"
-                  size="sm"
-                  className="text-red-500 hover:text-red-700"
+                  size="icon"
+                  className="h-6 w-6 text-muted-foreground hover:text-foreground"
                   onClick={() => handleRemoveWidget(widget.id)}
                 >
-                  Remove
+                  <X className="h-4 w-4" />
                 </Button>
               </div>
               <div className="overflow-auto h-[calc(100%-4rem)]">
@@ -184,15 +209,30 @@ const Dashboard = () => {
         />
 
         <Dialog open={isApplyDialogOpen} onOpenChange={setIsApplyDialogOpen}>
-          <DialogContent className="sm:max-w-[425px]">
+          <DialogContent>
             <DialogHeader>
               <DialogTitle>Configuration Applied</DialogTitle>
+              <DialogDescription>
+                The configuration has been applied and will not be editable.
+              </DialogDescription>
             </DialogHeader>
-            <p className="text-center text-muted-foreground">
-              The configuration has been applied and will not be editable.
-            </p>
           </DialogContent>
         </Dialog>
+
+        <AlertDialog open={!!widgetToRemove} onOpenChange={() => setWidgetToRemove(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Remove Widget</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to remove this widget? This action cannot be undone.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={confirmRemoveWidget}>Remove</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </FinancialYearProvider>
   );

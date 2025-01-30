@@ -117,20 +117,25 @@ const Dashboard = () => {
   };
 
   const handleApplyChanges = async () => {
-    setIsEditing(false);
+    if (!user?.id) {
+      toast.error("User not authenticated");
+      return;
+    }
 
     try {
       const { error } = await supabase.from("dashboard_config").upsert({
-        userid: user.id,
+        user_id: user.id,
         layout,
         widgets
       });
 
       if (error) throw error;
 
+      setIsEditing(false);
       toast.success("Changes applied successfully");
       setIsApplyDialogOpen(true);
     } catch (error) {
+      console.error("Error saving dashboard config:", error);
       toast.error("Failed to apply changes");
     }
   };
@@ -186,14 +191,16 @@ const Dashboard = () => {
               <div className="drag-handle" title="Drag to move" />
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold">{widget.title}</h3>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-6 w-6 text-muted-foreground hover:text-foreground"
-                  onClick={() => handleRemoveWidget(widget.id)}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
+                {isEditing && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-6 w-6 text-muted-foreground hover:text-foreground"
+                    onClick={() => handleRemoveWidget(widget.id)}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
               <div className="overflow-auto h-[calc(100%-4rem)]">
                 {renderWidget(widget)}

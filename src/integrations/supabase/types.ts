@@ -117,19 +117,19 @@ export type Database = {
         Row: {
           id: number
           layout: Json
-          userid: string
+          user_id: string
           widgets: Json
         }
         Insert: {
           id?: number
           layout: Json
-          userid: string
+          user_id: string
           widgets: Json
         }
         Update: {
           id?: number
           layout?: Json
-          userid?: string
+          user_id?: string
           widgets?: Json
         }
         Relationships: []

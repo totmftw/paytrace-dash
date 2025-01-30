@@ -40,23 +40,17 @@ const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
     try {
-      const { data, error: checkError } = await supabase
+      // Simplified user existence check
+      const { count, error: checkError } = await supabase
         .from('user_profiles')
-        .select('id')
-        .eq('email', values.email)
-        .single();
+        .select('*', { count: 'exact', head: true })
+        .eq('email', values.email);
 
-      if (checkError && checkError.code !== 'PGRST116') {
-        console.error("Error checking existing user:", checkError);
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to check if user exists. Please try again.",
-        });
-        return;
+      if (checkError) {
+        throw checkError;
       }
 
-      if (data) {
+      if (count && count > 0) {
         toast({
           variant: "destructive",
           title: "Error",
@@ -78,13 +72,7 @@ const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
       });
 
       if (error) {
-        console.error("Error details:", error);
-        toast({
-          variant: "destructive",
-          title: "Error creating user",
-          description: error.message || "An unexpected error occurred",
-        });
-        return;
+        throw error;
       }
 
       toast({
@@ -95,7 +83,7 @@ const AddUserDialog = ({ open, onOpenChange }: AddUserDialogProps) => {
       form.reset();
       onOpenChange(false);
     } catch (error: any) {
-      console.error("Full error:", error);
+      console.error("Error:", error);
       toast({
         variant: "destructive",
         title: "Error creating user",

@@ -37,75 +37,95 @@ export function CustomerExcelUpload() {
 
           // Process and validate each row
           const customers = jsonData.map((row: any) => ({
-            custBusinessname: row.BusinessName || '',
-            custOwnername: row.OwnerName || '',
+            custBusinessname: String(row.BusinessName || '').trim(),
+            custOwnername: String(row.OwnerName || '').trim(),
             custPhone: Number(row.Phone) || 0,
             custWhatsapp: Number(row.WhatsApp) || 0,
             custOwnerphone: Number(row.OwnerPhone) || 0,
             custOwnerwhatsapp: Number(row.OwnerWhatsApp) || 0,
-            custEmail: row.Email || '',
-            custOwneremail: row.OwnerEmail || '',
-            custType: row.Type || 'retail',
-            custAddress: row.Address || '',
-            custProvince: row.Province || '',
-            custCity: row.City || '',
+            custEmail: String(row.Email || '').trim(),
+            custOwneremail: String(row.OwnerEmail || '').trim(),
+            custType: String(row.Type || 'retail').trim(),
+            custAddress: String(row.Address || '').trim(),
+            custProvince: String(row.Province || '').trim(),
+            custCity: String(row.City || '').trim(),
             custPincode: Number(row.Pincode) || null,
-            custGST: row.GST || '0',
+            custGST: String(row.GST || '0').trim(),
             custCreditperiod: Number(row.CreditPeriod) || 0,
-            custRemarks: row.Remarks || '',
-            custStatus: row.Status || 'active'
+            custRemarks: String(row.Remarks || '').trim(),
+            custStatus: String(row.Status || 'active').trim()
           }));
 
           console.log("Processed customer data:", customers);
 
-          // First check for existing business names
-          const existingBusinessNames = new Set();
-          const { data: existingCustomers } = await supabase
+          // Get existing business names (case-insensitive)
+          const { data: existingCustomers, error: fetchError } = await supabase
             .from('customerMaster')
             .select('custBusinessname');
-          
-          existingCustomers?.forEach(customer => {
-            existingBusinessNames.add(customer.custBusinessname.toLowerCase());
-          });
 
-          // Filter out duplicates and insert new customers
+          if (fetchError) {
+            throw new Error(`Failed to fetch existing customers: ${fetchError.message}`);
+          }
+
+          const existingBusinessNames = new Set(
+            existingCustomers?.map(c => c.custBusinessname.toLowerCase()) || []
+          );
+
+          // Filter out duplicates (case-insensitive)
           const newCustomers = customers.filter(customer => 
             !existingBusinessNames.has(customer.custBusinessname.toLowerCase())
           );
 
           const skippedCustomers = customers.length - newCustomers.length;
 
-          if (newCustomers.length > 0) {
-            const { error } = await supabase
-              .from('customerMaster')
-              .insert(newCustomers);
-
-            if (error) {
-              console.error("Supabase insert error:", error);
-              toast({
-                variant: "destructive",
-                title: "Error",
-                description: "Failed to add some customers. Please try again.",
-              });
-              return;
-            }
-
-            // Invalidate and refetch customers query
-            await queryClient.invalidateQueries({ queryKey: ["customers"] });
-
-            // Show success message with details about skipped records
-            toast({
-              title: "Success",
-              description: `Successfully added ${newCustomers.length} customers.${
-                skippedCustomers > 0 ? ` ${skippedCustomers} duplicate entries were skipped.` : ''
-              }`,
-            });
-          } else {
+          if (newCustomers.length === 0) {
             toast({
               variant: "destructive",
               title: "No new customers added",
               description: "All business names in the file already exist in the database.",
             });
+            return;
+          }
+
+          // Insert customers one by one for better error tracking
+          const successfulInserts = [];
+          const failedInserts = [];
+
+          for (const customer of newCustomers) {
+            const { error: insertError } = await supabase
+              .from('customerMaster')
+              .insert([customer]);
+
+            if (insertError) {
+              failedInserts.push({
+                name: customer.custBusinessname,
+                error: insertError.message
+              });
+            } else {
+              successfulInserts.push(customer.custBusinessname);
+            }
+          }
+
+          // Invalidate and refetch customers query
+          await queryClient.invalidateQueries({ queryKey: ["customers"] });
+
+          // Show appropriate toast messages
+          if (successfulInserts.length > 0) {
+            toast({
+              title: "Success",
+              description: `Successfully added ${successfulInserts.length} customers.${
+                skippedCustomers > 0 ? ` ${skippedCustomers} duplicate entries were skipped.` : ''
+              }`,
+            });
+          }
+
+          if (failedInserts.length > 0) {
+            toast({
+              variant: "destructive",
+              title: "Some insertions failed",
+              description: `Failed to add ${failedInserts.length} customers. Please check the console for details.`,
+            });
+            console.error("Failed insertions:", failedInserts);
           }
 
         } catch (error: any) {

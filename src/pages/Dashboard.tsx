@@ -45,12 +45,14 @@ interface LayoutItem {
   h: number;
   minW?: number;
   minH?: number;
+  [key: string]: string | number | undefined; // Add index signature for Json compatibility
 }
 
 interface DashboardWidget {
   id: string;
   type: string;
   title: string;
+  [key: string]: string | number | undefined; // Add index signature for Json compatibility
 }
 
 const defaultLayout: LayoutItem[] = [
@@ -126,8 +128,8 @@ const Dashboard = () => {
     try {
       const { error } = await supabase.from("dashboard_config").upsert({
         user_id: user.id,
-        layout: layout as Json,
-        widgets: widgets as Json
+        layout: layout as unknown as Json,
+        widgets: widgets as unknown as Json
       });
 
       if (error) throw error;

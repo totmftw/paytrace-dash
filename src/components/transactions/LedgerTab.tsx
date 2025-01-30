@@ -13,7 +13,7 @@ interface CustomerData {
   custBusinessname: string;
   custAddress: string;
   custGST: string;
-  custPhone: string;
+  custPhone: number;  // Changed from string to number to match the database type
 }
 
 interface DatabaseLedgerEntry {

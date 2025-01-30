@@ -39,7 +39,7 @@ export default function Dashboard() {
       
       const { data, error } = await supabase
         .from('dashboard_config')
-        .select('layout')
+        .select('layout, widgets')
         .eq('user_id', user.id)
         .single();
 
@@ -60,6 +60,7 @@ export default function Dashboard() {
         .upsert({
           user_id: user.id,
           layout: layout,
+          widgets: {} // Required field
         });
 
       if (error) throw error;
@@ -80,7 +81,8 @@ export default function Dashboard() {
 
   const handleLayoutChange = (layout: any) => {
     if (isEditing) {
-      setLayouts({ ...layouts, lg: layout });
+      const newLayouts = { ...layouts, lg: layout };
+      setLayouts(newLayouts);
     }
   };
 

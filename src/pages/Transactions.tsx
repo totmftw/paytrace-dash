@@ -17,17 +17,20 @@ export default function Transactions() {
   const { data: invoices, isLoading } = useQuery({
     queryKey: ['invoices', selectedYear],
     queryFn: async () => {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('invoiceTable')
         .select(`
           *,
-          customerMaster:invCustid (
-            id, custBusinessname, custWhatsapp
+          customerMaster!invoiceTable_invCustid_fkey (
+            id, 
+            custBusinessname, 
+            custWhatsapp
           )
         `)
         .gte('invDate', start.toISOString())
         .lte('invDate', end.toISOString());
-  
+
+      if (error) throw error;
       return data;
     }
   });

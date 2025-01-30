@@ -1,7 +1,16 @@
 import React from "react";
 import { ColumnConfigProvider, useColumnConfig } from "@/contexts/columnConfigContext";
-// src/components/ColumnConfig.tsx
+import { Button } from "@/components/ui/button";
 import Sortable from 'sortablejs';
+
+interface SortEvent {
+  oldIndex?: number;
+  newIndex?: number;
+}
+
+type ColumnConfigProps = {
+  columns: string[];
+};
 
 function ColumnConfigContent({ columns }: ColumnConfigProps) {
   const { visibleColumns, setVisibleColumns } = useColumnConfig();
@@ -33,7 +42,7 @@ function ColumnConfigContent({ columns }: ColumnConfigProps) {
       <div className="flex items-center gap-2">
         <span className="text-sm font-medium">Columns:</span>
         {columns.map((column) => (
-          <label key={column}>
+          <label key={column} className="flex items-center gap-1">
             <input
               type="checkbox"
               checked={visibleColumns.includes(column)}
@@ -57,36 +66,6 @@ function ColumnConfigContent({ columns }: ColumnConfigProps) {
           Reset Columns
         </Button>
       </div>
-    </div>
-  );
-}
-type ColumnConfigProps = {
-  columns: string[];
-};
-
-function ColumnConfigContent({ columns }: ColumnConfigProps) {
-  const { visibleColumns, setVisibleColumns } = useColumnConfig();
-
-  return (
-    <div>
-      {columns.map((column) => (
-        <label key={column}>
-          <input
-            type="checkbox"
-            checked={visibleColumns.includes(column)}
-            onChange={(e) => {
-              const updated = [...visibleColumns];
-              if (e.target.checked) {
-                updated.push(column);
-              } else {
-                updated.splice(updated.indexOf(column), 1);
-              }
-              setVisibleColumns(updated);
-            }}
-          />
-          {column}
-        </label>
-      ))}
     </div>
   );
 }

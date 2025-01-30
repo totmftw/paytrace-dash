@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { useFinancialYear } from '@/contexts/FinancialYearContext';
-import { CustomerSelector } from './CustomerSelector';
-import { DataTable } from '@/components/ui/data-table';
-import { Button } from '@/components/ui/button';
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
-import { formatCurrency } from '@/lib/utils';
+import React, { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useFinancialYear } from "@/contexts/FinancialYearContext";
+import { CustomerSelector } from "./CustomerSelector";
+import { DataTable } from "@/components/ui/data-table";
+import { Button } from "@/components/ui/button";
+import { jsPDF } from "jspdf";
+import "jspdf-autotable";
+import { formatCurrency } from "@/lib/utils";
 
 interface CustomerData {
   custBusinessname: string;
@@ -79,28 +79,28 @@ export default function LedgerTab() {
 
   const columns = [
     {
-      key: 'transaction_date',
+      accessorKey: 'transaction_date',
       header: 'Date',
-      cell: (row: DatabaseLedgerEntry) => new Date(row.transaction_date).toLocaleDateString()
+      cell: (row: any) => new Date(row.getValue('transaction_date')).toLocaleDateString()
     },
     {
-      key: 'description',
+      accessorKey: 'description',
       header: 'Description'
     },
     {
-      key: 'debit',
+      accessorKey: 'debit',
       header: 'Debit',
-      cell: (row: DatabaseLedgerEntry) => row.debit ? formatCurrency(row.debit) : '-'
+      cell: (row: any) => row.getValue('debit') ? formatCurrency(row.getValue('debit')) : '-'
     },
     {
-      key: 'credit',
+      accessorKey: 'credit',
       header: 'Credit',
-      cell: (row: DatabaseLedgerEntry) => row.credit ? formatCurrency(row.credit) : '-'
+      cell: (row: any) => row.getValue('credit') ? formatCurrency(row.getValue('credit')) : '-'
     },
     {
-      key: 'balance',
+      accessorKey: 'balance',
       header: 'Balance',
-      cell: (row: DatabaseLedgerEntry) => formatCurrency(row.balance)
+      cell: (row: any) => formatCurrency(row.getValue('balance'))
     }
   ];
 

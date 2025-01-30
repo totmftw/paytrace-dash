@@ -1,17 +1,29 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { TransactionInvoiceTable } from "./TransactionInvoiceTable";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
-import { useToast } from "@/components/ui/use-toast";
-import { ColumnConfigProvider } from "@/contexts/columnConfigContext";
+import { DataTable } from "@/components/ui/data-table";
+
+interface Payment {
+  paymentId: number;
+  invId: number;
+  transactionId: string;
+  paymentMode: string;
+  chequeNumber?: string;
+  bankName?: string;
+  paymentDate: string;
+  amount: number;
+  remarks?: string;
+  createdAt: string;
+  createdBy?: string;
+  updatedAt: string;
+}
 
 export default function PaymentTab() {
   const { selectedYear, getFYDates } = useFinancialYear();
-  const { toast } = useToast();
   const { start, end } = getFYDates();
 
-  const { data: payments, isLoading, error } = useQuery({
+  const { data: payments } = useQuery({
     queryKey: ['payments', selectedYear],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -20,40 +32,38 @@ export default function PaymentTab() {
         .gte('paymentDate', start.toISOString())
         .lte('paymentDate', end.toISOString());
 
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Error fetching payments",
-          description: error.message
-        });
-        throw error;
-      }
-      return data || [];
+      if (error) throw error;
+      return data as Payment[];
     }
   });
 
-  if (error) {
-    return (
-      <div className="p-4 text-red-500">
-        Failed to load payments. Please try again later.
-      </div>
-    );
-  }
+  const columns = [
+    {
+      accessorKey: 'paymentDate',
+      header: 'Date',
+      cell: (row: any) => new Date(row.getValue('paymentDate')).toLocaleDateString()
+    },
+    {
+      accessorKey: 'transactionId',
+      header: 'Transaction ID'
+    },
+    {
+      accessorKey: 'paymentMode',
+      header: 'Payment Mode'
+    },
+    {
+      accessorKey: 'amount',
+      header: 'Amount',
+      cell: (row: any) => row.getValue('amount').toFixed(2)
+    }
+  ];
 
   return (
     <div className="space-y-4">
-      <ColumnConfigProvider>
-        <TransactionInvoiceTable 
-          data={payments || []}
-          onCustomerClick={(customer) => {
-            // Handle customer click
-          }}
-          onInvoiceClick={(invoice) => {
-            // Handle invoice click
-          }}
-          isLoading={isLoading}
-        />
-      </ColumnConfigProvider>
+      <DataTable
+        columns={columns}
+        data={payments || []}
+      />
     </div>
   );
 }

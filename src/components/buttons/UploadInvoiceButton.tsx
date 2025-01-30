@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import * as XLSX from 'xlsx';
+import { useFinancialYear } from '@/contexts/FinancialYearContext';
 
 interface UploadInvoiceButtonProps {
   tableName: 'invoiceTable' | 'paymentTransactions';
@@ -23,6 +24,7 @@ interface InvoiceData {
 const UploadInvoiceButton = ({ tableName }: UploadInvoiceButtonProps) => {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
+  const { selectedYear } = useFinancialYear();
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -30,41 +32,73 @@ const UploadInvoiceButton = ({ tableName }: UploadInvoiceButtonProps) => {
 
     setIsUploading(true);
     try {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        const data = e.target?.result;
-        const workbook = XLSX.read(data, { type: 'binary' });
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(sheet) as InvoiceData[];
+      const fileReader = new FileReader();
+      
+      fileReader.onload = async (e) => {
+        try {
+          const data = e.target?.result;
+          const workbook = XLSX.read(data, { type: 'binary' });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet) as InvoiceData[];
 
-        if (Array.isArray(jsonData) && jsonData.length > 0) {
-          const { error } = await supabase.from(tableName).insert(
-            jsonData.map(item => ({
-              ...item,
-              fy: new Date().getFullYear().toString(),
-              invGst: item.invGst || 0,
-              invValue: item.invValue || 0,
-              invTotal: item.invTotal || 0
-            }))
-          );
-          if (error) throw error;
+          if (Array.isArray(jsonData) && jsonData.length > 0) {
+            // Check for duplicates
+            const { data: existingInvoices, error: fetchError } = await supabase
+              .from(tableName)
+              .select('invNumber')
+              .in('invNumber', jsonData.map(item => item.invNumber));
+            
+            if (fetchError) throw fetchError;
 
+            const duplicates = jsonData.filter(item => 
+              existingInvoices?.find(inv => inv.invNumber === item.invNumber)
+            );
+
+            if (duplicates.length > 0) {
+              toast({
+                title: 'Duplicates Found',
+                description: `Duplicate invoices detected: ${duplicates.map(d => d.invNumber).join(', ')}`,
+                variant: 'destructive'
+              });
+              setIsUploading(false);
+              return;
+            }
+
+            // Proceed with insert if no duplicates
+            const { error } = await supabase.from(tableName).insert(
+              jsonData.map(item => ({
+                ...item,
+                fy: selectedYear 
+              }))
+            );
+            if (error) throw error;
+
+            toast({
+              title: 'Success',
+              description: 'File uploaded successfully',
+            });
+          }
+        } catch (error) {
+          console.error('Error processing file:', error);
           toast({
-            title: 'Success',
-            description: 'File uploaded successfully',
+            title: 'Error',
+            description: 'Failed to process file',
+            variant: 'destructive',
           });
+        } finally {
+          setIsUploading(false);
         }
       };
-      reader.readAsBinaryString(file);
+
+      fileReader.readAsBinaryString(file);
     } catch (error) {
-      console.error(error);
+      console.error('Error reading file:', error);
       toast({
         title: 'Error',
-        description: 'Failed to upload file',
+        description: 'Failed to read file',
         variant: 'destructive',
       });
-    } finally {
       setIsUploading(false);
     }
   };
@@ -83,51 +117,5 @@ const UploadInvoiceButton = ({ tableName }: UploadInvoiceButtonProps) => {
     </Button>
   );
 };
-// src/components/buttons/UploadInvoiceButton.tsx
-interface InvoiceData {
-  invNumber: string;
-  // ... other fields
-}
 
-// Inside handleFileUpload
-reader.onload = async (e) => {
-  const jsonData = XLSX.utils.sheet_to_json(sheet) as InvoiceData[];
-  if (Array.isArray(jsonData) && jsonData.length > 0) {
-    // Check for duplicates
-    const { data: existingInvoices, error: fetchError } = await supabase
-      .from('invoiceTable')
-      .select('invNumber')
-      .in('invNumber', jsonData.map(item => item.invNumber));
-    
-    if (fetchError) throw fetchError;
-
-    const duplicates = jsonData.filter(item => 
-      existingInvoices?.find(inv => inv.invNumber === item.invNumber)
-    );
-
-    if (duplicates.length > 0) {
-      toast({
-        title: 'Duplicates Found',
-        description: `Duplicate invoices detected: ${duplicates.map(d => d.invNumber).join(', ')}`,
-        variant: 'destructive'
-      });
-      setIsUploading(false);
-      return;
-    }
-
-    // Proceed with insert if no duplicates
-    const { error } = await supabase.from(tableName).insert(
-      jsonData.map(item => ({
-        ...item,
-        fy: selectedYear 
-      }))
-    );
-    if (error) throw error;
-
-    toast({
-      title: 'Success',
-      description: 'File uploaded successfully',
-    });
-  }
-};
 export default UploadInvoiceButton;

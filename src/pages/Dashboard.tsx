@@ -37,7 +37,7 @@ import {
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
-interface LayoutItem extends Layout {
+interface LayoutItem extends Omit<Layout, 'moved' | 'static' | 'isDraggable' | 'isResizable' | 'isBounded' | 'resizeHandles'> {
   [key: string]: string | number | undefined;
 }
 

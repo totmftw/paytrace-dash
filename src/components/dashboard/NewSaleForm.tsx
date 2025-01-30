@@ -57,10 +57,9 @@ export function NewSaleForm() {
   const generateInvoiceNumber = async () => {
     try {
       const now = new Date();
-      const year = now.getFullYear() % 100; // Get last 2 digits of year
+      const year = now.getFullYear() % 100;
       const month = (now.getMonth() + 1).toString().padStart(2, '0');
       
-      // Get the latest invoice number for this month
       const { data: latestInvoices } = await supabase
         .from('invoiceTable')
         .select('invNumber')
@@ -68,19 +67,14 @@ export function NewSaleForm() {
         .limit(1);
 
       let sequence = 1;
-      if (latestInvoices && latestInvoices.length > 0 && Array.isArray(latestInvoices[0].invNumber)) {
-        const lastInvoiceNumber = latestInvoices[0].invNumber[1];
-        if (typeof lastInvoiceNumber === 'number') {
-          const lastSequence = lastInvoiceNumber % 10000;
-          sequence = lastSequence + 1;
-        }
+      if (latestInvoices && latestInvoices.length > 0) {
+        const lastInvoiceNumber = latestInvoices[0].invNumber;
+        const lastSequence = parseInt(lastInvoiceNumber.split('-')[2] || '0');
+        sequence = lastSequence + 1;
       }
 
       const sequenceStr = sequence.toString().padStart(4, '0');
-      const timestamp = Date.now();
-      const monthlyNumber = parseInt(`${year}${month}${sequenceStr}`);
-      
-      return [timestamp, monthlyNumber];
+      return `${year}-${month}-${sequenceStr}`;
     } catch (error) {
       console.error("Error generating invoice number:", error);
       throw error;
@@ -132,7 +126,6 @@ export function NewSaleForm() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      // Verify customer exists before creating invoice
       const { data: customerExists, error: customerError } = await supabase
         .from("customerMaster")
         .select("id")

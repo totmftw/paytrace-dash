@@ -31,7 +31,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 const invoiceSchema = z.object({
-  invNumber: z.array(z.number()).min(1, "Invoice number is required"),
+  invNumber: z.string().min(1, "Invoice number is required"),
   invDate: z.date({
     required_error: "Invoice date is required",
   }),
@@ -79,7 +79,6 @@ export function InvoiceForm({ isOpen, onClose, onSuccess, invoice }: InvoiceForm
                     (values.invSubamount ? parseFloat(values.invSubamount) : 0);
 
       if (invoice) {
-        // Update existing invoice
         const { error } = await supabase
           .from("invoiceTable")
           .update({
@@ -101,7 +100,6 @@ export function InvoiceForm({ isOpen, onClose, onSuccess, invoice }: InvoiceForm
           description: "The invoice has been successfully updated.",
         });
       } else {
-        // Create new invoice
         const { error } = await supabase
           .from("invoiceTable")
           .insert({
@@ -157,12 +155,8 @@ export function InvoiceForm({ isOpen, onClose, onSuccess, invoice }: InvoiceForm
                     <Input 
                       {...field} 
                       type="text" 
-                      value={field.value?.join('-') || ''} 
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        const numbers = value.split('-').map(num => parseInt(num)).filter(num => !isNaN(num));
-                        field.onChange(numbers);
-                      }}
+                      value={field.value || ''} 
+                      onChange={(e) => field.onChange(e.target.value)}
                     />
                   </FormControl>
                   <FormMessage />

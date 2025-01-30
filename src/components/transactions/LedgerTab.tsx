@@ -12,6 +12,15 @@ interface LedgerEntry {
   balance: number;
 }
 
+interface DatabaseLedgerEntry {
+  transaction_date: string;
+  description: string;
+  invoice_number: string;
+  debit: number;
+  credit: number;
+  balance: number;
+}
+
 const columns = [
   {
     key: 'date',
@@ -49,7 +58,14 @@ export default function LedgerTab() {
         p_end_date: end.toISOString()
       });
       if (error) throw error;
-      return data as LedgerEntry[];
+      
+      // Transform the database response to match our LedgerEntry interface
+      return (data as DatabaseLedgerEntry[]).map(entry => ({
+        date: entry.transaction_date,
+        description: `${entry.description}${entry.invoice_number ? ` - ${entry.invoice_number}` : ''}`,
+        amount: entry.debit || -entry.credit, // Positive for debit, negative for credit
+        balance: entry.balance
+      }));
     },
     enabled: !!selectedCustomerId
   });

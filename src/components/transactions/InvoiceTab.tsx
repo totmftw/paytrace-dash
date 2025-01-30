@@ -6,7 +6,6 @@ import AddInvoiceButton from "../buttons/AddInvoiceButton";
 import DownloadTemplateButton from "../buttons/DownloadTemplateButton";
 import UploadInvoiceButton from "../buttons/UploadInvoiceButton";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
-import { ColumnConfigProvider } from "@/contexts/columnConfigContext";
 import { useToast } from "@/components/ui/use-toast";
 
 export default function InvoiceTab() {
@@ -61,18 +60,16 @@ export default function InvoiceTab() {
         <UploadInvoiceButton tableName="invoiceTable" />
       </div>
       
-      <ColumnConfigProvider>
-        <TransactionInvoiceTable 
-          data={invoices || []}
-          onCustomerClick={(customer) => {
-            // Handle customer click
-          }}
-          onInvoiceClick={(invoice) => {
-            // Handle invoice click
-          }}
-          isLoading={isLoading}
-        />
-      </ColumnConfigProvider>
+      <TransactionInvoiceTable 
+        data={invoices || []}
+        onCustomerClick={(customer) => {
+          // Handle customer click
+        }}
+        onInvoiceClick={(invoice) => {
+          // Handle invoice click
+        }}
+        isLoading={isLoading}
+      />
     </div>
   );
 }

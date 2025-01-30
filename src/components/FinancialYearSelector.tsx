@@ -11,12 +11,12 @@ export const FinancialYearSelector = () => {
 
   return (
     <div className="flex items-center gap-4">
-      <div className="flex items-center gap-2 bg-muted px-3 py-1 rounded-lg">
-        <span className="text-sm font-medium">FY:</span>
+      <div className="flex items-center gap-2 bg-[#E6EFE9] px-3 py-1 rounded-lg">
+        <span className="text-sm font-medium text-[#1B4332]">FY:</span>
         <select 
           value={selectedYear}
           onChange={(e) => setSelectedYear(e.target.value)}
-          className="bg-transparent outline-none disabled:opacity-50"
+          className="bg-transparent outline-none disabled:opacity-50 text-[#1B4332]"
           disabled={isTransitioning}
         >
           {fyOptions.map(year => (
@@ -24,10 +24,10 @@ export const FinancialYearSelector = () => {
           ))}
         </select>
       </div>
-      <div className="text-sm text-muted-foreground">
+      <div className="text-sm text-[#1B4332]">
         {format(start, 'MMM dd, yyyy')} - {format(end, 'MMM dd, yyyy')}
       </div>
-      {isTransitioning && <Loader2 className="h-4 w-4 animate-spin" />}
+      {isTransitioning && <Loader2 className="h-4 w-4 animate-spin text-[#1B4332]" />}
     </div>
   );
 };

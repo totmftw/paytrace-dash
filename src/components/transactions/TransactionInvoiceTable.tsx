@@ -30,6 +30,18 @@ interface TransactionInvoiceTableProps {
   onInvoiceClick: (invoice: any) => void;
 }
 
+interface InvoiceData {
+  invDate: string | null;
+  invDuedate: string | null;
+  invNumber: string | number | (string | number)[];
+  invTotal: number;
+  invBalanceAmount: number;
+  invPaymentStatus: string;
+  customerMaster?: {
+    custBusinessname: string;
+  };
+}
+
 export function TransactionInvoiceTable({
   data,
   onCustomerClick,
@@ -40,14 +52,14 @@ export function TransactionInvoiceTable({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [rowSelection, setRowSelection] = useState({});
 
-  const formatInvoiceNumber = (invNumber: any): string => {
+  const formatInvoiceNumber = (invNumber: InvoiceData['invNumber']): string => {
     if (Array.isArray(invNumber)) {
       return invNumber.join("-");
     }
     return String(invNumber || '');
   };
 
-  const columns: ColumnDef<any>[] = [
+  const columns: ColumnDef<InvoiceData>[] = [
     {
       accessorKey: "customerMaster.custBusinessname",
       header: "Business Name",
@@ -85,7 +97,7 @@ export function TransactionInvoiceTable({
       accessorKey: "invDate",
       header: "Invoice Date",
       cell: ({ row }) => {
-        const date = row.getValue("invDate");
+        const date = row.getValue("invDate") as string | null;
         return date ? new Date(date).toLocaleDateString() : "-";
       },
     },
@@ -93,7 +105,7 @@ export function TransactionInvoiceTable({
       accessorKey: "invDuedate",
       header: "Due Date",
       cell: ({ row }) => {
-        const date = row.getValue("invDuedate");
+        const date = row.getValue("invDuedate") as string | null;
         return date ? new Date(date).toLocaleDateString() : "-";
       },
     },

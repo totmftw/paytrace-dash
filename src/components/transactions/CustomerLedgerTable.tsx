@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CustomerSelector } from "./CustomerSelector";
 import { DataTable } from "@/components/ui/data-table";
-import { columns } from "./table-columns";
+import { columns, LedgerEntry } from "./table-columns";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 
 interface CustomerLedgerTableProps {
@@ -28,7 +28,7 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
     },
   });
 
-  const { data: ledgerData, isLoading: isLoadingLedger } = useQuery({
+  const { data: ledgerData, isLoading: isLoadingLedger } = useQuery<LedgerEntry[]>({
     queryKey: ["customer-ledger", selectedCustomerId, selectedYear],
     queryFn: async () => {
       if (!selectedCustomerId) return [];

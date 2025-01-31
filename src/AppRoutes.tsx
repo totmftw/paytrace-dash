@@ -1,52 +1,78 @@
-import { Routes, Route, Navigate } from "react-router-dom";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { AppLayout } from "@/components/AppLayout";
-import DashboardLayout from "@/components/DashboardLayout";
-import { useFinancialYear } from "@/hooks/useFinancialYear";
+// src/Routes.tsx
+import { lazy, Suspense } from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { useSessionContext } from '@supabase/auth-helpers-react';
+import { AuthProvider } from './contexts/AuthContext';
+import { FinancialYearProvider } from './contexts/FinancialYearContext';
 
-// Pages
-import Index from "@/pages/Index";
-import Login from "@/pages/Login";
-import Dashboard from "@/pages/Dashboard";
-import Customers from "@/pages/Customers";
-import Products from "@/pages/Products";
-import WhatsappReminders from "@/pages/WhatsappReminders";
-import TransactionsPage from "@/pages/Transactions";
-import UserManagement from "@/pages/UserProfiles";
+const Login = lazy(() => import('./pages/Login'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+
+const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
+  const { session, isLoading } = useSessionContext();
+  const location = useLocation();
+// src/AppRoutes.tsx
+import { lazy, Suspense } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
+import { PrivateRoute } from './components/PrivateRoute';
+
+const Login = lazy(() => import('./pages/Login'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
 
 const AppRoutes = () => {
-  const { currentYear } = useFinancialYear();
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route
+          path="/"
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
+  );
+};
+
+export default AppRoutes;
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!session) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
 
   return (
-    <Routes>
-      <Route path="/" element={<Index />} />
-      <Route path="/login" element={<Login />} />
-      
-      <Route 
-        element={
-          <ProtectedRoute>
-            <AppLayout />
-          </ProtectedRoute>
-        }
-      >
-        <Route element={<DashboardLayout />}>
-          <Route path="/dashboard" element={<Dashboard year={currentYear} />} />
-          <Route path="/customers" element={<Customers />} />
-          <Route path="/whatsapp-reminders" element={<WhatsappReminders />} />
-          <Route path="/transactions" element={<TransactionsPage />} />
-          <Route 
-            path="/user-management" 
-            element={
-              <ProtectedRoute adminOnly>
-                <UserManagement />
-              </ProtectedRoute>
-            } 
-          />
-        </Route>
-      </Route>
+    <AuthProvider>
+      <FinancialYearProvider>
+        {children}
+      </FinancialYearProvider>
+    </AuthProvider>
+  );
+};
 
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
-    </Routes>
+const AppRoutes = () => {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route
+          path="/"
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </Suspense>
   );
 };
 

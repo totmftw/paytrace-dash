@@ -50,5 +50,30 @@ const Dashboard = () => {
     </div>
   );
 };
+// src/pages/Dashboard.tsx
+import { useAuth } from '../contexts/AuthContext';
+import { useFinancialYear } from '../contexts/FinancialYearContext';
+import { FinancialYearSelector } from '../components/FinancialYearSelector';
+
+const Dashboard = () => {
+  const { user } = useAuth();
+  const { selectedYear } = useFinancialYear();
+
+  if (!user) return null;
+
+  return (
+    <div className="p-4">
+      <div className="mb-4">
+        <FinancialYearSelector />
+      </div>
+      <div>
+        <h1>Welcome to Dashboard</h1>
+        {/* Add your dashboard components here */}
+      </div>
+    </div>
+  );
+};
+
+
 
 export default Dashboard;

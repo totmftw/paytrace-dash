@@ -1,48 +1,58 @@
-import { createContext, useContext, useState } from "react";
+// src/contexts/ColumnConfigContext.tsx
+import { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ColumnConfigContextType {
   visibleColumns: string[];
-  setVisibleColumns: (columns: string[]) => void;
-  setColumnOrder: (columns: string[]) => void;
+  setColumnOrder: (order: string[]) => Promise<void>;
 }
 
-const ColumnConfigContext = createContext<ColumnConfigContextType | undefined>(
-  undefined
-);
+export const ColumnConfigContext = createContext<ColumnConfigContextType>({
+  visibleColumns: [],
+  setColumnOrder: async () => {},
+});
 
-export function ColumnConfigProvider({ children }: { children: React.ReactNode }) {
-  const [visibleColumns, setVisibleColumns] = useState<string[]>([
-    "invNumber",
-    "invDate",
-    "invDuedate",
-    "invTotal",
-    "invBalanceAmount",
-    "invPaymentStatus"
-  ]);
+export const ColumnConfigProvider = ({ children }: { children: React.ReactNode }) => {
+  const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
+  const { user } = useAuth();
 
-  const setColumnOrder = (columns: string[]) => {
-    setVisibleColumns(columns);
+  useEffect(() => {
+    const fetchColumns = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from('user_profiles')
+        .select('preferences')
+        .eq('id', user.id)
+        .single();
+
+      if (data?.preferences && data.preferences?.columns) {
+        setVisibleColumns(data.preferences.columns);
+      }
+    };
+    fetchColumns();
+  }, [user]);
+
+  const setColumnOrder = async (newOrder: string[]) => {
+    if (!user) return;
+    setVisibleColumns(newOrder);
+    await supabase
+      .from('user_profiles')
+      .update({ preferences: { columns: newOrder } })
+      .eq('id', user.id);
   };
 
   return (
-    <ColumnConfigContext.Provider 
-      value={{ 
-        visibleColumns, 
-        setVisibleColumns, 
-        setColumnOrder 
-      }}
-    >
+    <ColumnConfigContext.Provider value={{ visibleColumns, setColumnOrder }}>
       {children}
     </ColumnConfigContext.Provider>
   );
-}
+};
 
-export function useColumnConfig() {
+export const useColumnConfig = () => {
   const context = useContext(ColumnConfigContext);
   if (!context) {
-    throw new Error(
-      "useColumnConfig must be used within a ColumnConfigProvider"
-    );
+    throw new Error('useColumnConfig must be used within ColumnConfigProvider');
   }
   return context;
-}
+};

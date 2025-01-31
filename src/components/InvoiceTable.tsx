@@ -1,127 +1,41 @@
-import React, { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { ColumnDef, useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { InvoiceDetailsPopup } from './InvoiceDetailsPopup';
-import type { Invoice, InvoiceTableProps } from '@/types';
+// src/components/transactions/InvoiceTable.tsx
+import React from 'react';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 
-export function InvoiceTable({ selectedYear }: InvoiceTableProps) {
-  const [selectedInvoice, setSelectedInvoice] = useState<number | null>(null);
-  const [isInvoiceDetailOpen, setIsInvoiceDetailOpen] = useState(false);
+interface InvoiceTableProps {
+  data: Invoice[];
+  isLoading: boolean;
+  visibleColumns: string[];
+}
 
-  const { data: invoices } = useQuery({
-    queryKey: ['invoices', selectedYear],
-    queryFn: async () => {
-      const [startYear, endYear] = selectedYear.split('-');
-      const { data, error } = await supabase
-        .from('invoiceTable')
-        .select(`
-          *,
-          customerMaster:customerMaster!invoiceTable_invCustid_fkey (
-            custBusinessname,
-            custCreditperiod,
-            custWhatsapp
-          ),
-          paymentTransactions!paymentTransactions_invId_fkey (
-            paymentId,
-            amount,
-            paymentDate
-          )
-        `)
-        .gte('invDate', `${startYear}-04-01`)
-        .lte('invDate', `${endYear}-03-31`);
-
-      if (error) throw error;
-      return data as unknown as Invoice[];
-    },
-  });
-
-  const columns: ColumnDef<Invoice>[] = [
-    {
-      accessorKey: 'invNumber',
-      header: 'Invoice #',
-      cell: ({ row }) => (
-        <button
-          onClick={() => {
-            setSelectedInvoice(row.original.invId);
-            setIsInvoiceDetailOpen(true);
-          }}
-          className="text-blue-600 hover:text-blue-800"
-        >
-          {row.original.invNumber}
-        </button>
-      ),
-    },
-    {
-      accessorKey: 'customerMaster.custBusinessname',
-      header: 'Customer',
-    },
-    {
-      accessorKey: 'invDate',
-      header: 'Invoice Date',
-      cell: ({ getValue }) => {
-        const value = getValue() as string;
-        return value ? new Date(value).toLocaleDateString() : '';
-      },
-    },
-    {
-      accessorKey: 'invDuedate',
-      header: 'Due Date',
-      cell: ({ getValue }) => {
-        const value = getValue() as string;
-        return value ? new Date(value).toLocaleDateString() : '';
-      },
-    },
-    {
-      accessorKey: 'invTotal',
-      header: 'Total Amount',
-      cell: ({ getValue }) => {
-        const value = getValue() as number;
-        return value ? `₹${value.toLocaleString()}` : '';
-      },
-    },
-  ];
-
-  const table = useReactTable({
-    data: invoices || [],
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-  });
+export function InvoiceTable({ data, isLoading, visibleColumns }: InvoiceTableProps) {
+  if (isLoading) return <div>Loading...</div>;
 
   return (
-    <div className="h-full overflow-y-auto">
-      <Table>
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => (
-                <TableHead key={header.id}>
-                  {flexRender(header.column.columnDef.header, header.getContext())}
-                </TableHead>
-              ))}
-            </TableRow>
+    <Table>
+      <TableHeader>
+        <TableRow>
+          {visibleColumns.map((column) => (
+            <TableHead key={column}>{column}</TableHead>
           ))}
-        </TableHeader>
-        <TableBody>
-          {table.getRowModel().rows.map((row) => (
-            <TableRow key={row.id}>
-              {row.getVisibleCells().map((cell) => (
-                <TableCell key={cell.id}>
-                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
-      {isInvoiceDetailOpen && selectedInvoice && (
-        <InvoiceDetailsPopup
-          invoiceId={selectedInvoice}
-          isOpen={isInvoiceDetailOpen}
-          onClose={() => setIsInvoiceDetailOpen(false)}
-        />
-      )}
-    </div>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {data.map((invoice) => (
+          <TableRow key={invoice.invId}>
+            {visibleColumns.map((column) => (
+              <TableCell key={column}>{invoice[column]}</TableCell>
+            ))}
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
   );
 }

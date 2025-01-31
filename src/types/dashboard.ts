@@ -23,8 +23,15 @@ export interface Invoice {
   invTotal: number;
   invBalanceAmount: number;
   invPaymentStatus: string;
+  fy: string;
+  invAddamount?: number;
+  invAlert?: string;
+  invGst: number;
+  invMarkcleared?: boolean;
+  invMessage1: string;
   customerMaster: {
     custBusinessname: string;
+    custCreditperiod?: number;
   };
   paymentTransactions: PaymentTransaction[];
 }

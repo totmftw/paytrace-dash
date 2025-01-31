@@ -16,9 +16,11 @@ export const useDashboardData = (selectedYear: string) => {
         .select(`
           *,
           customerMaster!invoiceTable_invCustid_fkey (
-            custBusinessname
+            custBusinessname,
+            custCreditperiod
           ),
           paymentTransactions (
+            paymentId,
             amount,
             paymentDate
           )
@@ -28,7 +30,7 @@ export const useDashboardData = (selectedYear: string) => {
 
       if (error) throw error;
 
-      const processedInvoices = invoices as Invoice[];
+      const processedInvoices = invoices as unknown as Invoice[];
       const pendingInvoices = processedInvoices.filter(
         inv => new Date(inv.invDuedate) > new Date(today)
       );
@@ -44,12 +46,12 @@ export const useDashboardData = (selectedYear: string) => {
         return invoice.invTotal - payments;
       };
 
-      const pendingAmount = pendingInvoices.reduce(
+      const pendingPayments = pendingInvoices.reduce(
         (sum, inv) => sum + calculateBalance(inv),
         0
       );
 
-      const outstandingAmount = outstandingInvoices.reduce(
+      const outstandingPayments = outstandingInvoices.reduce(
         (sum, inv) => sum + calculateBalance(inv),
         0
       );
@@ -60,14 +62,13 @@ export const useDashboardData = (selectedYear: string) => {
       );
 
       return {
-        pendingAmount,
-        outstandingAmount,
         totalSales,
-        totalOrders: processedInvoices.length,
-        pendingInvoices,
-        outstandingInvoices,
-        allInvoices: processedInvoices,
+        pendingPayments,
+        outstandingPayments,
+        totalInvoices: processedInvoices.length,
       };
     },
+    retry: 3,
+    retryDelay: 1000,
   });
 };

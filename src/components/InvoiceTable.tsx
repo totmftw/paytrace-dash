@@ -20,7 +20,8 @@ export function InvoiceTable() {
         .select(`
           *,
           customerMaster!invoiceTable_invCustid_fkey (
-            custBusinessname
+            custBusinessname,
+            custCreditperiod
           ),
           paymentTransactions (
             paymentId,
@@ -32,8 +33,10 @@ export function InvoiceTable() {
         .lte('invDate', `${selectedYear.split('-')[1]}-03-31`);
 
       if (error) throw error;
-      return data as unknown as Invoice[];
+      return data as Invoice[];
     },
+    retry: 3,
+    retryDelay: 1000,
   });
 
   const columns = [

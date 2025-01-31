@@ -6,6 +6,10 @@ import InvoiceTab from "@/components/transactions/InvoiceTab";
 import PaymentTab from "@/components/transactions/PaymentTab";
 import LedgerTab from "@/components/transactions/LedgerTab";
 
+interface TabProps {
+  year: string;
+}
+
 export default function Transactions() {
   const navigate = useNavigate();
   const { selectedYear } = useFinancialYear();
@@ -33,7 +37,7 @@ export default function Transactions() {
           <PaymentTab year={selectedYear} />
         </TabsContent>
         <TabsContent value="ledger">
-          <LedgerTab year={selectedYear} />
+          <LedgerTab />
         </TabsContent>
       </Tabs>
     </div>

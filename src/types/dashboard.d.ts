@@ -30,6 +30,9 @@ export interface PaymentTransaction {
 export interface CustomerMaster {
   custBusinessname: string;
   custCreditperiod?: number;
+  custWhatsapp?: number;
+  custGST?: string;
+  custPhone?: number;
 }
 
 export interface Invoice {
@@ -55,4 +58,12 @@ export interface MetricsSummary {
   pendingPayments: number;
   outstandingPayments: number;
   totalInvoices: number;
+}
+
+export interface LayoutItem {
+  i: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
 }

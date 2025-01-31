@@ -5,7 +5,7 @@ import { Layout } from "react-grid-layout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { LayoutData } from "@/types/dashboard";
+import { LayoutData, LayoutItem } from "@/types/dashboard";
 
 export default function DashboardLayout() {
   const { user } = useAuth();
@@ -29,15 +29,15 @@ export default function DashboardLayout() {
 
       const parsedLayout = data?.layout ? 
         (typeof data.layout === 'string' ? 
-          JSON.parse(data.layout) : 
+          JSON.parse(data.layout) as LayoutItem[] : 
           Array.isArray(data.layout) ? 
-            data.layout.map(item => ({
+            data.layout.map((item: any) => ({
               i: String(item.i || ''),
               x: Number(item.x || 0),
               y: Number(item.y || 0),
               w: Number(item.w || 1),
               h: Number(item.h || 1)
-            } as Layout)) : 
+            })) : 
             []
         ) : [];
 

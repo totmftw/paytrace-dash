@@ -1,22 +1,13 @@
-export interface PaymentData {
-  invId: number;
-  transactionId: string;
-  paymentDate: string;
+export interface PaymentTransaction {
+  paymentId: number;
   amount: number;
-  paymentMode: 'cash' | 'cheque' | 'online';
-  remarks: string;
-  chequeNumber?: string;
-  bankName?: string;
+  paymentDate: string;
 }
 
-export interface LedgerEntry {
-  transaction_date: string;
-  transaction_type: string;
-  reference_number: string;
-  debit_amount: number;
-  credit_amount: number;
-  balance: number;
-  description: string;
+export interface CustomerMaster {
+  custBusinessname: string;
+  custCreditperiod?: number;
+  custWhatsapp?: number;
 }
 
 export interface Invoice {
@@ -25,23 +16,13 @@ export interface Invoice {
   invDate: string;
   invDuedate: string;
   invTotal: number;
-  invBalanceAmount: number;
-  invGst: number;
   invValue: number;
-  invAddamount?: number;
-  invSubamount?: number;
-  invMarkcleared?: boolean;
-  invMessage1?: string;
+  invGst: number;
+  invBalanceAmount: number;
+  invPaymentStatus: string;
   fy: string;
-  customerMaster: {
-    custBusinessname: string;
-    custCreditperiod: number;
-    custWhatsapp: number;  // Changed from string to number to match database
-  };
-  paymentTransactions: {
-    amount: number;
-    paymentId: number;
-  }[];
+  customerMaster: CustomerMaster;
+  paymentTransactions: PaymentTransaction[];
 }
 
 export type TableName = 

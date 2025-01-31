@@ -1,75 +1,72 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
+import { useAuth } from '@/hooks/use-auth';
 
 interface ColumnConfigContextType {
   visibleColumns: string[];
   setVisibleColumns: (columns: string[]) => void;
-  setColumnOrder: (order: string[]) => Promise<void>;
+  toggleColumn: (columnId: string) => void;
+  reorderColumns: (startIndex: number, endIndex: number) => void;
 }
-
-const defaultColumns = [
-  'invNumber',
-  'invDate',
-  'invDuedate',
-  'invTotal',
-  'invBalanceAmount',
-  'invPaymentStatus'
-];
 
 const ColumnConfigContext = createContext<ColumnConfigContextType | undefined>(undefined);
 
-export const ColumnConfigProvider = ({ children }: { children: React.ReactNode }) => {
-  const [visibleColumns, setVisibleColumns] = useState<string[]>(defaultColumns);
+export function ColumnConfigProvider({ children }: { children: ReactNode }) {
+  const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
   const { user } = useAuth();
 
   useEffect(() => {
-    const fetchColumns = async () => {
-      if (!user) return;
-      const { data } = await supabase
-        .from('user_profiles')
-        .select('preferences')
-        .eq('id', user.id)
+    const loadConfig = async () => {
+      if (!user?.id) return;
+
+      const { data: config } = await supabase
+        .from('dashboard_config')
+        .select('layout')
+        .eq('user_id', user.id)
         .single();
 
-      if (data?.preferences && typeof data.preferences === 'object') {
-        const prefs = data.preferences as { columns?: string[] };
-        if (prefs.columns) {
-          setVisibleColumns(prefs.columns);
-        }
+      if (config?.layout) {
+        const savedColumns = config.layout.columns || [];
+        setVisibleColumns(savedColumns);
       }
     };
-    fetchColumns();
-  }, [user]);
 
-  const setColumnOrder = async (newOrder: string[]) => {
-    if (!user) return;
-    setVisibleColumns(newOrder);
-    await supabase
-      .from('user_profiles')
-      .update({ 
-        preferences: { 
-          columns: newOrder 
-        } 
-      })
-      .eq('id', user.id);
+    loadConfig();
+  }, [user?.id]);
+
+  const toggleColumn = (columnId: string) => {
+    setVisibleColumns(prev => 
+      prev.includes(columnId)
+        ? prev.filter(id => id !== columnId)
+        : [...prev, columnId]
+    );
+  };
+
+  const reorderColumns = (startIndex: number, endIndex: number) => {
+    setVisibleColumns(prev => {
+      const result = Array.from(prev);
+      const [removed] = result.splice(startIndex, 1);
+      result.splice(endIndex, 0, removed);
+      return result;
+    });
   };
 
   return (
-    <ColumnConfigContext.Provider value={{ 
-      visibleColumns, 
+    <ColumnConfigContext.Provider value={{
+      visibleColumns,
       setVisibleColumns,
-      setColumnOrder 
+      toggleColumn,
+      reorderColumns
     }}>
       {children}
     </ColumnConfigContext.Provider>
   );
-};
+}
 
-export const useColumnConfig = () => {
+export function useColumnConfig() {
   const context = useContext(ColumnConfigContext);
-  if (!context) {
+  if (context === undefined) {
     throw new Error('useColumnConfig must be used within a ColumnConfigProvider');
   }
   return context;
-};
+}

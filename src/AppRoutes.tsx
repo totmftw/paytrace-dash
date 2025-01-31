@@ -2,6 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/AppLayout";
 import DashboardLayout from "@/components/DashboardLayout";
+import { useFinancialYear } from "@/hooks/useFinancialYear";
 
 // Pages
 import Index from "@/pages/Index";
@@ -14,12 +15,13 @@ import TransactionsPage from "@/pages/Transactions";
 import UserManagement from "@/pages/UserProfiles";
 
 const AppRoutes = () => {
+  const { currentYear } = useFinancialYear();
+
   return (
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/login" element={<Login />} />
       
-      {/* Protected routes wrapped in AppLayout */}
       <Route 
         element={
           <ProtectedRoute>
@@ -27,9 +29,8 @@ const AppRoutes = () => {
           </ProtectedRoute>
         }
       >
-        {/* Dashboard layout for main content */}
         <Route element={<DashboardLayout />}>
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboard" element={<Dashboard year={currentYear} />} />
           <Route path="/customers" element={<Customers />} />
           <Route path="/whatsapp-reminders" element={<WhatsappReminders />} />
           <Route path="/transactions" element={<TransactionsPage />} />
@@ -44,7 +45,6 @@ const AppRoutes = () => {
         </Route>
       </Route>
 
-      {/* Catch-all redirect to dashboard */}
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );

@@ -54,7 +54,7 @@ export function InvoiceTable() {
           }}
           className="text-blue-600 hover:text-blue-800"
         >
-          {row.getValue('invNumber')}
+          {row.original.invNumber}
         </button>
       ),
     },
@@ -102,7 +102,7 @@ export function InvoiceTable() {
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
                 <TableHead key={header.id}>
-                  {header.column.columnDef.header as string}
+                  {header.column.columnDef.header}
                 </TableHead>
               ))}
             </TableRow>

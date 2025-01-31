@@ -1,18 +1,22 @@
+import { useState } from "react";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { DetailedDataTable } from "@/components/DetailedDataTable";
 import { MetricsCard } from "@/components/MetricsCard";
+import { DetailedDataTable } from "@/components/DetailedDataTable";
 
 interface PaymentMetricsData {
   pendingAmount: number;
   outstandingAmount: number;
   totalSales: number;
   totalOrders: number;
+  pendingInvoices: any[];
+  outstandingInvoices: any[];
+  allInvoices: any[];
 }
 
-const PaymentMetrics = () => {
-  const { selectedYear, startDate, endDate } = useFinancialYear();
+export function PaymentMetrics() {
+  const { selectedYear } = useFinancialYear();
   const [selectedData, setSelectedData] = useState<any[]>([]);
   const [dialogTitle, setDialogTitle] = useState("");
 
@@ -31,36 +35,27 @@ const PaymentMetrics = () => {
             amount
           )
         `)
-        .gte("invDate", startDate.toISOString())
-        .lte("invDate", endDate.toISOString());
+        .gte("invDate", selectedYear.split('-')[0] + "-04-01")
+        .lte("invDate", selectedYear.split('-')[1] + "-03-31");
 
       if (error) throw error;
 
-      const totalSales = invoices.reduce(
-        (sum, inv) => sum + inv.invTotal,
-        0
-      );
-      const totalOrders = invoices.length;
-
       const today = new Date();
-      const pending = invoices.filter(
-        (inv) =>
-          new Date(inv.invDuedate) > today &&
-          inv.paymentTransactions.reduce((sum, p) => sum + p.amount, 0) < inv.invTotal
+      const pendingInvoices = invoices.filter(
+        (inv) => new Date(inv.invDuedate) > today
       );
-      const outstanding = invoices.filter(
-        (inv) =>
-          new Date(inv.invDuedate) < today &&
-          inv.paymentTransactions.reduce((sum, p) => sum + p.amount, 0) < inv.invTotal
+      const outstandingInvoices = invoices.filter(
+        (inv) => new Date(inv.invDuedate) < today
       );
 
       return {
-        pendingAmount: pending.reduce((sum, inv) => sum + inv.invTotal, 0) -
-          pending.reduce((sum, inv) => sum + inv.paymentTransactions.reduce((s, p) => s + p.amount, 0), 0),
-        outstandingAmount: outstanding.reduce((sum, inv) => sum + inv.invTotal, 0) -
-          outstanding.reduce((sum, inv) => sum + inv.paymentTransactions.reduce((s, p) => s + p.amount, 0), 0),
-        totalSales,
-        totalOrders,
+        pendingAmount: pendingInvoices.reduce((sum, inv) => sum + inv.invTotal, 0),
+        outstandingAmount: outstandingInvoices.reduce((sum, inv) => sum + inv.invTotal, 0),
+        totalSales: invoices.reduce((sum, inv) => sum + inv.invTotal, 0),
+        totalOrders: invoices.length,
+        pendingInvoices,
+        outstandingInvoices,
+        allInvoices: invoices,
       };
     },
   });
@@ -70,19 +65,19 @@ const PaymentMetrics = () => {
 
     switch (type) {
       case "pending":
-        setSelectedData(pending);
+        setSelectedData(data.pendingInvoices);
         setDialogTitle("Pending Payments");
         break;
       case "outstanding":
-        setSelectedData(outstanding);
+        setSelectedData(data.outstandingInvoices);
         setDialogTitle("Outstanding Payments");
         break;
       case "sales":
-        setSelectedData(allInvoices);
+        setSelectedData(data.allInvoices);
         setDialogTitle("Total Sales");
         break;
       case "orders":
-        setSelectedData(allInvoices);
+        setSelectedData(data.allInvoices);
         setDialogTitle("Total Orders");
         break;
     }
@@ -90,25 +85,25 @@ const PaymentMetrics = () => {
 
   return (
     <>
-      <div className="metrics-grid">
+      <div className="grid grid-cols-2 gap-4">
         <MetricsCard
           title="Pending Payments"
-          amount={data?.pendingAmount || 0}
+          value={data?.pendingAmount || 0}
           onClick={() => handleMetricClick("pending")}
         />
         <MetricsCard
           title="Outstanding Payments"
-          amount={data?.outstandingAmount || 0}
+          value={data?.outstandingAmount || 0}
           onClick={() => handleMetricClick("outstanding")}
         />
         <MetricsCard
           title="Total Sales"
-          amount={data?.totalSales || 0}
+          value={data?.totalSales || 0}
           onClick={() => handleMetricClick("sales")}
         />
         <MetricsCard
           title="Total Orders"
-          count={data?.totalOrders || 0}
+          value={data?.totalOrders || 0}
           onClick={() => handleMetricClick("orders")}
         />
       </div>
@@ -123,6 +118,4 @@ const PaymentMetrics = () => {
       />
     </>
   );
-};
-
-export default PaymentMetrics;
+}

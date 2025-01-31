@@ -1,8 +1,10 @@
 import { Table, useReactTable, getCoreRowModel } from "@tanstack/react-table";
-import { TableContent } from "@/components/TableContent";
+import { Table as TableUI, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
-import { useQuery, useMutation } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
+import { InvoiceDetailsPopup } from "./InvoiceDetailsPopup";
 
 interface Invoice {
   invId: number;
@@ -67,10 +69,35 @@ export function InvoiceTable() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <TableContent table={table} />
-      {isInvoiceDetailOpen && (
+      <TableUI>
+        <TableHeader>
+          {table.getHeaderGroups().map((headerGroup) => (
+            <TableRow key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <TableHead key={header.id}>
+                  {header.column.columnDef.header as string}
+                </TableHead>
+              ))}
+            </TableRow>
+          ))}
+        </TableHeader>
+        <TableBody>
+          {table.getRowModel().rows.map((row) => (
+            <TableRow key={row.id}>
+              {row.getVisibleCells().map((cell) => (
+                <TableCell key={cell.id}>
+                  {cell.column.columnDef.cell ? 
+                    cell.column.columnDef.cell({ row }) : 
+                    cell.getValue() as string}
+                </TableCell>
+              ))}
+            </TableRow>
+          ))}
+        </TableBody>
+      </TableUI>
+      {isInvoiceDetailOpen && selectedInvoice && (
         <InvoiceDetailsPopup
-          invoiceId={selectedInvoice || 0}
+          invoiceId={selectedInvoice}
           isOpen={isInvoiceDetailOpen}
           onClose={() => setIsInvoiceDetailOpen(false)}
         />

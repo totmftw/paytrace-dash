@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import GridLayout from "react-grid-layout";
+import React, { useState, ReactElement } from "react";
+import GridLayout, { Layout } from "react-grid-layout";
 import { Button } from "@/components/ui/button";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
@@ -15,8 +15,8 @@ interface DashboardWidget {
 
 interface DashboardGridLayoutProps {
   widgets: DashboardWidget[];
-  layout: LayoutItem[];
-  onLayoutChange: (newLayout: LayoutItem[]) => void;
+  layout: Layout[];
+  onLayoutChange: (newLayout: Layout[]) => void;
   isEditMode: boolean;
 }
 

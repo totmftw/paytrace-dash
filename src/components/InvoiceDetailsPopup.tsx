@@ -3,6 +3,12 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import React from "react";
 
+interface PaymentTransaction {
+  paymentId: number;
+  amount: number;
+  paymentDate: string;
+}
+
 interface InvoiceDetailsPopupProps {
   invoiceId: number;
   isOpen: boolean;
@@ -24,7 +30,8 @@ export function InvoiceDetailsPopup({
           customerMaster!invoiceTable_invCustid_fkey (
             custBusinessname
           ),
-          paymentTransactions:paymentTransactions (
+          paymentTransactions (
+            paymentId,
             amount,
             paymentDate
           )
@@ -77,7 +84,7 @@ export function InvoiceDetailsPopup({
             </dl>
             <h4 className="text-sm font-bold mt-4">Payments Made</h4>
             <ul>
-              {data?.paymentTransactions?.map((payment) => (
+              {data?.paymentTransactions?.map((payment: PaymentTransaction) => (
                 <li key={payment.paymentId}>
                   ₹{payment.amount} -{" "}
                   {new Date(payment.paymentDate).toLocaleDateString()}

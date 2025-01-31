@@ -1,18 +1,15 @@
 import { useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+import { DashboardGridLayout } from "@/components/DashboardGridLayout";
 import { PaymentMetrics } from "@/components/dashboard/PaymentMetrics";
 import { SalesOverview } from "@/components/dashboard/SalesOverview";
 import { CustomerStats } from "@/components/dashboard/CustomerStats";
 import { PaymentTracking } from "@/components/dashboard/PaymentTracking";
-import { FinancialYearSelector } from "@/components/FinancialYearSelector";
-import { DashboardGridLayout } from "@/components/DashboardGridLayout";
-import { Button } from "@/components/ui/button";
-import { useLayouts } from "@/hooks/useLayouts";
 
-const defaultLayout = [
+const defaultWidgets = [
   {
     id: "payment-metrics",
     x: 0,
@@ -48,23 +45,21 @@ const defaultLayout = [
 ];
 
 export default function Dashboard() {
-  const { toast } = useToast();
   const { user } = useAuth();
-  const { saveLayout, resetLayout, undo, redo } = useLayouts();
+  const { toast } = useToast();
   const isITAdmin = user?.role === "it_admin";
 
   const { data: layoutData } = useQuery({
     queryKey: ["dashboard-layout", user?.id],
     queryFn: async () => {
       if (!user) throw new Error("No user");
-      
       const { data, error } = await supabase
         .from("dashboard_layouts")
         .select("*")
         .eq("created_by", user.id)
         .eq("is_active", true)
         .maybeSingle();
-
+      
       if (error) {
         console.error("Error fetching layout:", error);
         return null;
@@ -72,7 +67,7 @@ export default function Dashboard() {
 
       return data;
     },
-    enabled: !!user
+    enabled: !!user,
   });
 
   const updateLayoutMutation = useMutation({
@@ -100,40 +95,19 @@ export default function Dashboard() {
         title: "Success",
         description: "Layout saved successfully"
       });
-    }
+    },
   });
 
-  const handleLayoutChange = async (newLayout: any) => {
-    try {
-      await updateLayoutMutation.mutateAsync(newLayout);
-    } catch (error) {
-      console.error("Error updating layout:", error);
-    }
-  };
+  const currentWidgets = layoutData?.layout || defaultWidgets;
 
   return (
-    <div className="space-y-8 p-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Dashboard</h1>
-        <div className="flex items-center gap-4">
-          <FinancialYearSelector />
-          {isITAdmin && (
-            <div className="flex gap-2">
-              <Button onClick={() => saveLayout(layoutData?.layout || defaultLayout)}>
-                Save Layout
-              </Button>
-              <Button onClick={resetLayout}>Reset Layout</Button>
-              <Button onClick={undo}>Undo</Button>
-              <Button onClick={redo}>Redo</Button>
-            </div>
-          )}
-        </div>
+    <div className="h-full overflow-y-auto overflow-x-hidden bg-[#E8F3E8]">
+      <div className="container mx-auto p-6">
+        <DashboardGridLayout 
+          widgets={currentWidgets} 
+          onApply={updateLayoutMutation.mutate}
+        />
       </div>
-
-      <DashboardGridLayout
-        widgets={layoutData?.layout || defaultLayout}
-        onApply={handleLayoutChange}
-      />
     </div>
   );
 }

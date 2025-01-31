@@ -1,22 +1,29 @@
-import { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState } from 'react';
+import { supabase } from "@/integrations/supabase/client";
 
-interface FinancialYearContextType {
-  selectedYear: string;
-  setSelectedYear: (year: string) => void;
+export interface FinancialYearContextType {
+  selectedYear: number;
+  setSelectedYear: (year: number) => void;
   getFYDates: () => { start: Date; end: Date };
 }
 
-const FinancialYearContext = createContext<FinancialYearContextType | undefined>(undefined);
+export const FinancialYearContext = createContext<FinancialYearContextType | undefined>(undefined);
 
-export const FinancialYearProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [selectedYear, setSelectedYear] = useState<string>(new Date().getFullYear().toString());
+export function useFinancialYear() {
+  const context = useContext(FinancialYearContext);
+  if (!context) {
+    throw new Error('useFinancialYear must be used within a FinancialYearProvider');
+  }
+  return context;
+}
+
+export function FinancialYearProvider({ children }: { children: React.ReactNode }) {
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   const getFYDates = () => {
-    const [startYear, endYear] = selectedYear.split('-').map(Number);
-    return {
-      start: new Date(`${startYear}-04-01`),
-      end: new Date(`${endYear}-03-31`)
-    };
+    const start = new Date(selectedYear, 3, 1); // April 1st
+    const end = new Date(selectedYear + 1, 2, 31); // March 31st
+    return { start, end };
   };
 
   return (
@@ -24,12 +31,4 @@ export const FinancialYearProvider: React.FC<{ children: React.ReactNode }> = ({
       {children}
     </FinancialYearContext.Provider>
   );
-};
-
-export const useFinancialYear = () => {
-  const context = useContext(FinancialYearContext);
-  if (!context) {
-    throw new Error("useFinancialYear must be used within a FinancialYearProvider");
-  }
-  return context;
-};
+}

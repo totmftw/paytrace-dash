@@ -10,29 +10,34 @@ export function ProtectedRoute({ children, adminOnly = false }: { children: Reac
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const { data: userProfile, isLoading: profileLoading, error } = useQuery({
+  const { data: userProfile, isLoading: profileLoading, error, refetch } = useQuery({
     queryKey: ['userProfile', user?.id],
     queryFn: async () => {
       if (!user) return null;
       
-      const { data, error } = await supabase
-        .from('user_profiles')
-        .select('role')
-        .eq('id', user.id)
-        .maybeSingle();
+      try {
+        const { data, error } = await supabase
+          .from('user_profiles')
+          .select('role')
+          .eq('id', user.id)
+          .maybeSingle();
 
-      if (error) {
-        console.error('Error fetching user profile:', error);
-        throw error;
+        if (error) {
+          console.error('Error fetching user profile:', error);
+          throw error;
+        }
+
+        return data;
+      } catch (err) {
+        console.error('Network or other error:', err);
+        throw err;
       }
-
-      return data;
     },
     enabled: !!user,
     retry: 3,
     retryDelay: (attemptIndex) => Math.min(1000 * (2 ** attemptIndex), 30000),
     staleTime: 300000, // 5 minutes
-    gcTime: 3600000, // 1 hour (formerly cacheTime)
+    gcTime: 3600000, // 1 hour
   });
 
   useEffect(() => {
@@ -45,8 +50,16 @@ export function ProtectedRoute({ children, adminOnly = false }: { children: Reac
       console.error('Profile fetch error:', error);
       toast({
         title: "Connection Error",
-        description: "Unable to verify your permissions. Please check your internet connection and try again.",
+        description: "Unable to verify your permissions. Please try refreshing the page.",
         variant: "destructive",
+        action: (
+          <button 
+            onClick={() => refetch()} 
+            className="bg-white text-red-600 px-3 py-2 rounded-md text-sm font-medium"
+          >
+            Retry
+          </button>
+        ),
       });
       return;
     }
@@ -59,7 +72,7 @@ export function ProtectedRoute({ children, adminOnly = false }: { children: Reac
       });
       navigate("/dashboard");
     }
-  }, [user, loading, navigate, adminOnly, userProfile, profileLoading, error, toast]);
+  }, [user, loading, navigate, adminOnly, userProfile, profileLoading, error, toast, refetch]);
 
   if (loading || (adminOnly && profileLoading)) {
     return (

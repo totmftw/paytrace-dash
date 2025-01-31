@@ -33,8 +33,11 @@ export const ColumnConfigProvider = ({ children }: { children: React.ReactNode }
         .eq('id', user.id)
         .single();
 
-      if (data?.preferences && typeof data.preferences === 'object' && 'columns' in data.preferences) {
-        setVisibleColumns(data.preferences.columns as string[]);
+      if (data?.preferences && typeof data.preferences === 'object') {
+        const prefs = data.preferences as { columns?: string[] };
+        if (prefs.columns) {
+          setVisibleColumns(prefs.columns);
+        }
       }
     };
     fetchColumns();

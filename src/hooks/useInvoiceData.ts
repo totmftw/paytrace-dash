@@ -12,12 +12,22 @@ export const useInvoiceData = (year: string) => {
       
       const { data, error } = await supabase
         .from('invoiceTable')
-        .select('*')
+        .select(`
+          *,
+          customerMaster (
+            custBusinessname
+          ),
+          paymentTransactions (
+            paymentId,
+            amount,
+            paymentDate
+          )
+        `)
         .gte('invDate', startDate)
         .lte('invDate', endDate);
 
       if (error) throw error;
-      return data as Invoice[];
+      return data as unknown as Invoice[];
     }
   });
 };

@@ -1,38 +1,8 @@
 // src/pages/Login.tsx
 import { useState } from 'react'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { supabase } from '../integrations/supabase/client'
-import { useNavigate } from 'react-router-dom'
-import { useLocation, useNavigate } from 'react-router-dom'
 
-export default function Login() {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const from = location.state?.from?.pathname || '/dashboard'
-
-  // ... (previous state declarations)
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
-
-    try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: credentials.email,
-        password: credentials.password,
-      })
-
-      if (error) throw error
-
-      if (data.user) {
-        navigate(from, { replace: true })
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred during login')
-    } finally {
-      setLoading(false)
-    }
-  }
 interface LoginCredentials {
   email: string
   password: string
@@ -40,6 +10,9 @@ interface LoginCredentials {
 
 export default function Login() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const from = location.state?.from?.pathname || '/dashboard'
+  
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [credentials, setCredentials] = useState<LoginCredentials>({
@@ -61,7 +34,8 @@ export default function Login() {
       if (error) throw error
 
       if (data.user) {
-        navigate('/dashboard')
+        // Redirect to the original intended route or dashboard
+        navigate(from, { replace: true })
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred during login')

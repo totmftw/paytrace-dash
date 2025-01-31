@@ -1,4 +1,3 @@
-// src/AppRoutes.tsx
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AppLayout } from "@/components/AppLayout";
@@ -11,39 +10,36 @@ import Dashboard from "@/pages/Dashboard";
 import Customers from "@/pages/Customers";
 import Products from "@/pages/Products";
 import WhatsappReminders from "@/pages/WhatsappReminders";
-import TransactionsPage from "@/pages/Transactions"; // Updated import
-
-import UserManagement from "@/pages/UserProfiles"; // Ensure this import is correct
+import TransactionsPage from "@/pages/Transactions";
+import UserManagement from "@/pages/UserProfiles";
 
 const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/login" element={<Login />} />
-      <Route
-        path="/"
-        element={
-          <ProtectedRoute>
-            <AppLayout />
-          </ProtectedRoute>
-        }
-      >
+      
+      {/* Protected routes wrapped in AppLayout */}
+      <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+        {/* Dashboard layout for main content */}
         <Route element={<DashboardLayout />}>
-          <Route path="dashboard" element={<Dashboard />} />
-          <Route path="customers" element={<Customers />} />
-          <Route path="products" element={<Products />} />
-          <Route path="whatsapp-reminders" element={<WhatsappReminders />} />
-          <Route path="transactions" element={<TransactionsPage />} /> {/* Updated route */}
-          <Route
-            path="user-management"
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/customers" element={<Customers />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="/whatsapp-reminders" element={<WhatsappReminders />} />
+          <Route path="/transactions" element={<TransactionsPage />} />
+          <Route 
+            path="/user-management" 
             element={
               <ProtectedRoute adminOnly>
                 <UserManagement />
               </ProtectedRoute>
-            }
+            } 
           />
         </Route>
       </Route>
+
+      {/* Catch-all redirect to dashboard */}
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );

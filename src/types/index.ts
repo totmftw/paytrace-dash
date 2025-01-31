@@ -33,13 +33,6 @@ export interface Invoice {
   paymentTransactions: PaymentTransaction[];
 }
 
-export interface Customer {
-  id: number;
-  custBusinessname: string;
-  custCreditperiod: number;
-  custWhatsapp: number;
-}
-
 export interface PDFExportProps {
   fileName?: string;
   data?: any;
@@ -48,4 +41,11 @@ export interface PDFExportProps {
 
 export interface SalesVsPaymentsChartProps {
   selectedYear: string;
+}
+
+export interface Customer {
+  id: number;
+  custBusinessname: string;
+  custCreditperiod: number;
+  custWhatsapp: number;
 }

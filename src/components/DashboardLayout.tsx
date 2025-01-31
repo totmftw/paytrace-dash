@@ -27,8 +27,9 @@ export default function DashboardLayout() {
         return { layout: [] };
       }
 
+      const parsedLayout = data?.layout ? JSON.parse(data.layout as string) : [];
       return { 
-        layout: Array.isArray(data?.layout) ? data.layout as Layout[] : [] 
+        layout: parsedLayout as Layout[]
       };
     },
     enabled: !!user,

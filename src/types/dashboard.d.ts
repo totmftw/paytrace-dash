@@ -14,6 +14,12 @@ export interface DashboardProps {
   year: string;
 }
 
+export interface MetricsCardProps {
+  title: string;
+  value: number;
+  icon?: ReactNode;
+}
+
 export interface CustomerMaster {
   custBusinessname: string;
   custCreditperiod: number;

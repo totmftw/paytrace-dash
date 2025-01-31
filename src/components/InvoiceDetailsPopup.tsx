@@ -1,8 +1,9 @@
-import React from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Invoice } from '@/types/types';
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { formatCurrency } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import React from "react";
+import type { Invoice } from "@/types/dashboard";
 
 interface InvoiceDetailsPopupProps {
   invoiceId: number;
@@ -10,16 +11,24 @@ interface InvoiceDetailsPopupProps {
   onClose: () => void;
 }
 
-export function InvoiceDetailsPopup({ invoiceId, isOpen, onClose }: InvoiceDetailsPopupProps) {
+export function InvoiceDetailsPopup({
+  invoiceId,
+  isOpen,
+  onClose,
+}: InvoiceDetailsPopupProps) {
   const { data, isLoading } = useQuery({
-    queryKey: ['invoice', invoiceId],
+    queryKey: ["invoice", invoiceId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('invoiceTable')
+        .from("invoiceTable")
         .select(`
           *,
           customerMaster!invoiceTable_invCustid_fkey (
-            custBusinessname
+            custBusinessname,
+            custCreditperiod,
+            custWhatsapp,
+            custGST,
+            custPhone
           ),
           paymentTransactions (
             paymentId,
@@ -27,7 +36,7 @@ export function InvoiceDetailsPopup({ invoiceId, isOpen, onClose }: InvoiceDetai
             paymentDate
           )
         `)
-        .eq('invId', invoiceId)
+        .eq("invId", invoiceId)
         .single();
 
       if (error) throw error;
@@ -39,43 +48,64 @@ export function InvoiceDetailsPopup({ invoiceId, isOpen, onClose }: InvoiceDetai
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Invoice Details</DialogTitle>
-        </DialogHeader>
+        <DialogTitle>Invoice Details</DialogTitle>
         {isLoading ? (
           <div className="text-center p-4">Loading...</div>
         ) : (
           <div>
-            <h3 className="text-lg font-bold">Invoice #{data?.invNumber}</h3>
-            <dl className="grid grid-cols-2 gap-4">
-              <div>
+            <h3 className="text-lg font-bold">
+              Invoice # {data?.invNumber}
+            </h3>
+            <dl className="grid grid-cols-2 gap-x-4 gap-y-2">
+              <div className="col-span-2 md:col-span-1">
+                <dt className="text-sm text-gray-600">Date</dt>
+                <dd className="text-gray-900">
+                  {data?.invDate ? new Date(data.invDate).toLocaleDateString() : '-'}
+                </dd>
+              </div>
+              <div className="col-span-2 md:col-span-1">
                 <dt className="text-sm text-gray-600">Customer</dt>
-                <dd className="text-gray-900">{data?.customerMaster?.custBusinessname}</dd>
+                <dd className="text-gray-900">
+                  {data?.customerMaster?.custBusinessname || '-'}
+                </dd>
               </div>
-              <div>
-                <dt className="text-sm text-gray-600">Total Amount</dt>
-                <dd className="text-gray-900">₹{data?.invTotal.toLocaleString()}</dd>
+              <div className="col-span-2 md:col-span-1">
+                <dt className="text-sm text-gray-600">Total</dt>
+                <dd className="text-gray-900">
+                  {data?.invTotal ? formatCurrency(data.invTotal) : '-'}
+                </dd>
               </div>
-              <div>
-                <dt className="text-sm text-gray-600">Invoice Date</dt>
-                <dd className="text-gray-900">{new Date(data?.invDate || '').toLocaleDateString()}</dd>
-              </div>
-              <div>
+              <div className="col-span-2 md:col-span-1">
                 <dt className="text-sm text-gray-600">Due Date</dt>
-                <dd className="text-gray-900">{new Date(data?.invDuedate || '').toLocaleDateString()}</dd>
+                <dd className="text-gray-900">
+                  {data?.invDuedate ? new Date(data.invDuedate).toLocaleDateString() : '-'}
+                </dd>
               </div>
             </dl>
-            <div className="mt-4">
-              <h4 className="font-medium mb-2">Payment History</h4>
+            <h4 className="text-sm font-bold mt-4">Payments Made</h4>
+            <ul>
               {data?.paymentTransactions?.map((payment) => (
-                <div key={payment.paymentId} className="flex justify-between py-2 border-t">
-                  <span>{new Date(payment.paymentDate).toLocaleDateString()}</span>
-                  <span>₹{payment.amount.toLocaleString()}</span>
-                </div>
+                <li
+                  key={payment.paymentId}
+                  className="text-gray-700 text-sm flex items-center py-1"
+                >
+                  ₹{payment.amount.toLocaleString("en-IN")}{" "}
+                  <span className="text-gray-500 ml-2">
+                    {new Date(payment.paymentDate).toLocaleDateString()}
+                  </span>
+                </li>
               ))}
-            </div>
+            </ul>
           </div>
         )}
+        <div className="mt-4 flex justify-end">
+          <button
+            onClick={onClose}
+            className="bg-white rounded-md px-4 py-2 shadow text-gray-700 hover:bg-gray-100 transition"
+          >
+            Close
+          </button>
+        </div>
       </DialogContent>
     </Dialog>
   );

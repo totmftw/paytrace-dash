@@ -7,7 +7,7 @@ type DownloadTemplateButtonProps = {
   tableName: 'invoiceTable' | 'paymentTransactions';
 };
 
-export default function DownloadTemplateButton({ tableName }: DownloadTemplateButtonProps) {
+export function DownloadTemplateButton({ tableName }: DownloadTemplateButtonProps) {
   const { toast } = useToast();
 
   const generateTemplate = async () => {

@@ -1,5 +1,6 @@
 // src/contexts/FinancialYearContext.tsx
 import { createContext, useContext, useState, ReactNode } from 'react';
+import { useAuth } from './AuthContext';
 
 interface FinancialYearContextType {
   selectedYear: string;
@@ -10,6 +11,7 @@ interface FinancialYearContextType {
 const FinancialYearContext = createContext<FinancialYearContextType | undefined>(undefined);
 
 export const FinancialYearProvider = ({ children }: { children: ReactNode }) => {
+  const { user } = useAuth();
   const [selectedYear, setSelectedYear] = useState(() => {
     const today = new Date();
     const currentMonth = today.getMonth();
@@ -19,8 +21,8 @@ export const FinancialYearProvider = ({ children }: { children: ReactNode }) => 
 
   const getFinancialYearDates = () => {
     const year = parseInt(selectedYear);
-    const startDate = new Date(year, 3, 1); // April 1st
-    const endDate = new Date(year + 1, 2, 31); // March 31st
+    const startDate = new Date(year, 3, 1);
+    const endDate = new Date(year + 1, 2, 31);
     return { startDate, endDate };
   };
 

@@ -50,6 +50,16 @@ export interface PaymentData {
   remarks?: string;
 }
 
+export interface LedgerEntry {
+  transaction_date: string;
+  description: string;
+  invoice_number?: string;
+  debit_amount: number;
+  credit_amount: number;
+  balance: number;
+  transaction_type: string;
+}
+
 export type TableName = 'invoiceTable' | 'customerMaster' | 'paymentTransactions';
 
 export interface ColumnConfigContextType {

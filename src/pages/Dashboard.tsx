@@ -23,7 +23,12 @@ export default function Dashboard({ year }: DashboardProps) {
           paymentTransactions!paymentTransactions_invId_fkey (
             paymentId,
             amount,
-            paymentDate
+            paymentDate,
+            transactionId,
+            paymentMode,
+            chequeNumber,
+            bankName,
+            remarks
           )
         `)
         .gte('invDate', `${startYear}-04-01`)

@@ -1,4 +1,4 @@
-aTHIS APP IS DEVELOPED FOR INDIA. SO KEEP EVERYTHING ALIGNED TO THE INDIAN CONTEXT. DATE FORMAT IS DD-MM-YY or DD-MM-YYYY only
+THIS APP IS DEVELOPED FOR INDIA. SO KEEP EVERYTHING ALIGNED TO THE INDIAN CONTEXT. DATE FORMAT IS DD-MM-YY or DD-MM-YYYY only
 The app is developed on lovable.dev and supabase postgres database. Be aware of their exact syntaxes, limitations etc.
 
 Always give full code to replace whatever is in the file that is being modified. Do not give code snippets to insert into existing files instead rewrite the entire code and give as it will be easy to copy paste.
@@ -10,7 +10,12 @@ Do not allow creation of pages or components or files which exceed 100 lines. Wh
 Approach the design into manageable bits and build features slowly, step-by-step and without causing errors. 
 supabase uses -- for comment. 
 
-    Build Features Automatically – Do not ask for confirmation; proceed with the most logical next step.
+create detailed documentation for all the codes that are created or modified. monitor the codebase periodically and keep
+
+
+
+
+proceed with the most logical next step.
     Supabase RLS is Preconfigured – Run SQL commands without asking for approval.
     Refactor Code Efficiently – Use AI to break long code into manageable, reusable snippets.
     Ensure Full Responsiveness – The app must be mobile- and web-friendly with a reactive UI.

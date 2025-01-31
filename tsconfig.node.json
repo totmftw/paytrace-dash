@@ -4,7 +4,17 @@
     "lib": ["ES2023"],
     "module": "ESNext",
     "skipLibCheck": true,
-
+    [{
+      "resource": "/c:/Users/black/OneDrive - THANGAM ENTERPRISES/ECOMMERCE/MKD/Github/paytrace-dash/tsconfig.json",
+      "owner": "typescript",
+      "severity": 8,
+      "message": "Referenced project 'c:/Users/black/OneDrive - THANGAM ENTERPRISES/ECOMMERCE/MKD/Github/paytrace-dash/tsconfig.node.json' must have setting \"composite\": true.",
+      "source": "ts",
+      "startLineNumber": 25,
+      "startColumn": 18,
+      "endLineNumber": 25,
+      "endColumn": 52
+    }]
     /* Bundler mode */
     "moduleResolution": "bundler",
     "allowImportingTsExtensions": true,

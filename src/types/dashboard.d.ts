@@ -14,6 +14,7 @@ export interface MetricsCardProps {
   value: number | string;
   icon?: ReactNode;
   isMonetary?: boolean;
+  onClick?: () => void;
 }
 
 export interface DashboardWidget extends Layout {

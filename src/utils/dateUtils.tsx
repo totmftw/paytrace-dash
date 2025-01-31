@@ -19,7 +19,7 @@ export default function DashboardLayout() {
       const { data, error } = await supabase
         .from("dashboard_layouts")
         .select("layout")
-        .eq("user_id", user.id)
+        .eq("created_by", user.id)
         .maybeSingle();
       
       if (error) {
@@ -27,24 +27,19 @@ export default function DashboardLayout() {
         return { layout: [] };
       }
 
-      let parsedLayout: Layout[];
-      if (data?.layout) {
-        if (typeof data.layout === 'string') {
-          parsedLayout = JSON.parse(data.layout);
-        } else if (Array.isArray(data.layout)) {
-          parsedLayout = data.layout.map(item => ({
-            i: String(item.i),
-            x: Number(item.x),
-            y: Number(item.y),
-            w: Number(item.w),
-            h: Number(item.h)
-          }));
-        } else {
-          parsedLayout = [];
-        }
-      } else {
-        parsedLayout = [];
-      }
+      const parsedLayout = data?.layout ? 
+        (typeof data.layout === 'string' ? 
+          JSON.parse(data.layout) as Layout[] : 
+          Array.isArray(data.layout) ? 
+            data.layout.map(item => ({
+              i: String(item.i || ''),
+              x: Number(item.x || 0),
+              y: Number(item.y || 0),
+              w: Number(item.w || 1),
+              h: Number(item.h || 1)
+            })) : 
+            []
+        ) : [];
 
       return { layout: parsedLayout };
     },
@@ -58,8 +53,9 @@ export default function DashboardLayout() {
       const { error } = await supabase
         .from("dashboard_layouts")
         .upsert({
-          user_id: user.id,
-          layout: newLayout,
+          created_by: user.id,
+          layout: JSON.stringify(newLayout),
+          is_active: true,
         });
 
       if (error) {

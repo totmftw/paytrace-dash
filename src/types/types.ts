@@ -2,6 +2,11 @@ export interface PaymentTransaction {
   paymentId: number;
   amount: number;
   paymentDate: string;
+  transactionId?: string;
+  paymentMode?: string;
+  chequeNumber?: string;
+  bankName?: string;
+  remarks?: string;
 }
 
 export interface CustomerMaster {
@@ -20,23 +25,31 @@ export interface Invoice {
   invGst: number;
   invBalanceAmount: number;
   invPaymentStatus: string;
+  invMessage1: string;
+  invMessage2?: string;
+  invMessage3?: string;
+  invAddamount?: number;
+  invSubamount?: number;
+  invMarkcleared?: boolean;
   fy: string;
   customerMaster: CustomerMaster;
   paymentTransactions: PaymentTransaction[];
 }
 
-export type TableName = 
-  | "custom_permissions"
-  | "customer_ledger"
-  | "customerMaster"
-  | "dashboard_config"
-  | "dashboard_layouts"
-  | "dashboard_metrics"
-  | "expenses"
-  | "feature_permissions"
-  | "invoiceTable"
-  | "paymentTransactions"
-  | "productManagement"
-  | "role_permissions"
-  | "user_profiles"
-  | "whatsapp_config";
+export interface PaymentData {
+  amount: number;
+  paymentDate: string;
+  paymentMode: string;
+  transactionId: string;
+  chequeNumber?: string;
+  bankName?: string;
+  remarks?: string;
+}
+
+export interface LedgerEntry {
+  date: string;
+  description: string;
+  debit: number;
+  credit: number;
+  balance: number;
+}

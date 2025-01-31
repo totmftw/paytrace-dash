@@ -1,5 +1,5 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Invoice } from '@/types/dashboard';
+import { Invoice } from '@/types/types';
 import { formatCurrency } from '@/lib/utils';
 
 interface InvoiceTableProps {
@@ -24,10 +24,6 @@ export function InvoiceTable({ data, isLoading, visibleColumns }: InvoiceTablePr
     
     if (column === 'customerMaster') {
       return invoice.customerMaster?.custBusinessname || '';
-    }
-    
-    if (Array.isArray(value)) {
-      return value.length.toString();
     }
     
     if (typeof value === 'object' && value !== null) {

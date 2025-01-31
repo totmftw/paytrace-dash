@@ -1,19 +1,29 @@
-import { Button } from '@/components/ui/button';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 import * as XLSX from 'xlsx';
-import { useState } from 'react';
-import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
+import { format } from "date-fns";
 
-interface UploadInvoiceButtonProps {
-  tableName: string;
+interface InvoiceData {
+  fy: string;
+  invGst: number;
+  invNumber: string;
+  invTotal: number;
+  invValue: number;
+  invDate?: string;
+  invDuedate?: string;
+  invCustid?: number;
+  invAddamount?: number;
+  invSubamount?: number;
+  invBalanceAmount?: number;
+  invMarkcleared?: boolean;
+  invMessage1?: string;
 }
 
-export function UploadInvoiceButton({ tableName }: UploadInvoiceButtonProps) {
-  const { toast } = useToast();
+export function UploadInvoiceButton() {
   const [isUploading, setIsUploading] = useState(false);
-  const [duplicateData, setDuplicateData] = useState<any[]>([]);
-  const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
+  const { toast } = useToast();
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -23,91 +33,93 @@ export function UploadInvoiceButton({ tableName }: UploadInvoiceButtonProps) {
     try {
       const reader = new FileReader();
       reader.onload = async (e) => {
-        const data = e.target?.result;
-        const workbook = XLSX.read(data, { type: 'binary' });
-        const sheetName = workbook.SheetNames[0];
-        const sheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(sheet);
+        try {
+          const data = e.target?.result;
+          const workbook = XLSX.read(data, { type: 'binary' });
+          const sheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[sheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet);
 
-        if (tableName === 'invoiceTable' || tableName === 'paymentTransactions') {
-          const { data: existingData, error } = await supabase
-            .from(tableName)
-            .select(tableName !== 'invoiceTable' ? 'transactionId' : 'invNumber');
+          const { data: existingData, error: checkError } = await supabase
+            .from("invoiceTable")
+            .select("invNumber");
 
-          if (error) {
-            toast({
-              title: 'Error',
-              description: 'Failed to check for duplicates',
-              variant: 'destructive',
-            });
-            setIsUploading(false);
-            return;
-          }
+          if (checkError) throw checkError;
 
-          const existingItems = existingData?.map((item) => 
-            tableName === 'invoiceTable' ? item.invNumber : item.transactionId
-          ) || [];
-
-          const duplicates = jsonData.filter((row: any) => 
-            existingItems.includes(tableName === 'invoiceTable' ? row.invNumber : row.transactionId)
-          );
-          const newItems = jsonData.filter((row: any) => 
-            !existingItems.includes(tableName === 'invoiceTable' ? row.invNumber : row.transactionId)
+          const existingInvoices = existingData.map(inv => inv.invNumber);
+          const newInvoices = (jsonData as InvoiceData[]).filter(
+            row => !existingInvoices.includes(row.invNumber)
           );
 
-          if (duplicates.length > 0) {
-            setDuplicateData(duplicates);
-            setIsDuplicateModalOpen(true);
-          }
+          if (newInvoices.length > 0) {
+            const formattedData = newInvoices.map((row: InvoiceData) => ({
+              fy: row.fy || format(new Date(), 'yyyy'),
+              invGst: Number(row.invGst) || 0,
+              invNumber: String(row.invNumber),
+              invTotal: Number(row.invTotal) || 0,
+              invValue: Number(row.invValue) || 0,
+              invDate: row.invDate ? format(new Date(row.invDate), 'yyyy-MM-dd') : undefined,
+              invDuedate: row.invDuedate ? format(new Date(row.invDuedate), 'yyyy-MM-dd') : undefined,
+              invCustid: Number(row.invCustid) || undefined,
+              invAddamount: Number(row.invAddamount) || undefined,
+              invSubamount: Number(row.invSubamount) || undefined,
+              invBalanceAmount: Number(row.invBalanceAmount) || undefined,
+              invMarkcleared: Boolean(row.invMarkcleared) || undefined,
+              invMessage1: row.invMessage1 || undefined,
+            }));
 
-          if (newItems.length > 0) {
-            const { error } = await supabase.from(tableName).insert(newItems);
-            if (error) throw error;
+            const { error: insertError } = await supabase
+              .from("invoiceTable")
+              .insert(formattedData);
+
+            if (insertError) throw insertError;
+
             toast({
-              title: 'Success',
-              description: `Successfully uploaded ${newItems.length} new records`,
+              title: "Success",
+              description: `Successfully uploaded ${formattedData.length} invoices`,
             });
           }
+        } catch (error: any) {
+          console.error("Upload error:", error);
+          toast({
+            variant: "destructive",
+            title: "Error",
+            description: error.message || "Failed to upload invoices",
+          });
         }
       };
+
       reader.readAsBinaryString(file);
-    } catch (error) {
+    } catch (error: any) {
+      console.error("File reading error:", error);
       toast({
-        title: 'Error',
-        description: 'Failed to upload file',
-        variant: 'destructive',
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to read the Excel file",
       });
     } finally {
       setIsUploading(false);
+      if (event.target) {
+        event.target.value = '';
+      }
     }
   };
 
   return (
-    <>
-      <Button variant="ghost" asChild disabled={isUploading}>
-        <label>
-          Upload Excel
-          <input
-            type="file"
-            accept=".xlsx,.xls"
-            onChange={handleFileUpload}
-            className="hidden"
-          />
-        </label>
-      </Button>
-
-      <Dialog open={isDuplicateModalOpen} onOpenChange={setIsDuplicateModalOpen}>
-        <DialogContent>
-          <DialogTitle>Duplicate Records Found</DialogTitle>
-          <div>
-            {duplicateData.map((row, index) => (
-              <div key={index} className="border-b py-2">
-                <p>{`Record ${index + 1}: ${JSON.stringify(row)}`}</p>
-              </div>
-            ))}
-          </div>
-        </DialogContent>
-      </Dialog>
-    </>
+    <Button
+      variant="outline"
+      disabled={isUploading}
+      asChild
+    >
+      <label className="cursor-pointer">
+        {isUploading ? "Uploading..." : "Upload Invoices"}
+        <input
+          type="file"
+          accept=".xlsx,.xls"
+          onChange={handleFileUpload}
+          className="hidden"
+        />
+      </label>
+    </Button>
   );
 }

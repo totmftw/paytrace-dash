@@ -48,3 +48,11 @@ export interface Customer {
   custWhatsapp: number;
   custCreditperiod: number;
 }
+
+export interface InvoiceTableProps {
+  selectedYear: string;
+}
+
+export interface SalesVsPaymentsChartProps {
+  selectedYear: string;
+}

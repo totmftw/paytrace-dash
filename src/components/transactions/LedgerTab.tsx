@@ -1,23 +1,20 @@
-import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card } from "@/components/ui/card";
-import { DataTable } from "@/components/ui/datatable";
+import { DataTable } from "@/components/ui/DataTable";
 import { PDFExport } from "@/components/buttons/PDFExport";
+import { Card } from "@/components/ui/card";
 import type { Customer } from "@/types";
 
-export default function LedgerTab({ year }: { year: string }) {
-  const [selectedCustomer, setSelectedCustomer] = useState<Customer | null>(null);
-
+export default function LedgerTab() {
   const { data: customers } = useQuery({
     queryKey: ["customers"],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("customerMaster")
-        .select("id, custBusinessname, custWhatsapp, custCreditperiod");
+        .select("*");
 
       if (error) throw error;
-      return data as Customer[];
+      return data;
     },
   });
 

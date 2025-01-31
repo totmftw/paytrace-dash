@@ -5,18 +5,17 @@ import { MetricsCard } from "@/components/MetricsCard";
 import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 import { BanknoteIcon, FileTextIcon } from "lucide-react";
-import { useState } from "react";
+import { DashboardProps } from "@/types/dashboard";
 
-export default function Dashboard() {
+export default function Dashboard({ year }: DashboardProps) {
   const { selectedYear } = useFinancialYear();
-  const [totalSalesPopupOpen, setTotalSalesPopupOpen] = useState(false);
 
   const { data: invoices } = useQuery({
     queryKey: ["invoices", selectedYear],
     queryFn: async () => {
       const [startYear, _] = selectedYear.split("-");
-      const start = `${startYear}-04-01`;
-      const end = `${Number(startYear) + 1}-03-31`;
+      const startDate = `${startYear}-04-01`;
+      const endDate = `${Number(startYear) + 1}-03-31`;
 
       const { data, error } = await supabase
         .from("invoiceTable")
@@ -35,8 +34,8 @@ export default function Dashboard() {
             paymentDate
           )
         `)
-        .gte("invDate", start)
-        .lte("invDate", end);
+        .gte("invDate", startDate)
+        .lte("invDate", endDate);
 
       if (error) throw error;
       return data;
@@ -56,18 +55,18 @@ export default function Dashboard() {
         <MetricsCard
           title="Total Sales"
           value={totalSales}
-          iconComponent={<BanknoteIcon className="h-6 w-6" />}
+          icon={<BanknoteIcon className="h-6 w-6" />}
         />
         <MetricsCard
           title="Total Orders"
           value={totalOrders}
-          iconComponent={<FileTextIcon className="h-6 w-6" />}
+          icon={<FileTextIcon className="h-6 w-6" />}
         />
       </div>
       <DetailedDataTable
         title="Total Sales"
         data={invoices || []}
-        onClose={() => setTotalSalesPopupOpen(false)}
+        onClose={() => {}}
       />
     </div>
   );

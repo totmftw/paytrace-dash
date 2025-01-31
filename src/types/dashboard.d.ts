@@ -22,12 +22,6 @@ export interface CustomerMaster {
   custPhone: number;
 }
 
-export interface PaymentTransaction {
-  paymentId: number;
-  amount: number;
-  paymentDate: string;
-}
-
 export interface Invoice {
   invId: number;
   invNumber: string;
@@ -38,4 +32,10 @@ export interface Invoice {
   invPaymentStatus: string;
   customerMaster: CustomerMaster;
   paymentTransactions: PaymentTransaction[];
+}
+
+export interface PaymentTransaction {
+  paymentId: number;
+  amount: number;
+  paymentDate: string;
 }

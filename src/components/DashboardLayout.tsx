@@ -27,7 +27,9 @@ export default function DashboardLayout() {
         return { layout: [] };
       }
 
-      return { layout: (data?.layout as Layout[]) || [] };
+      return { 
+        layout: Array.isArray(data?.layout) ? data.layout as Layout[] : [] 
+      };
     },
     enabled: !!user,
   });
@@ -59,12 +61,6 @@ export default function DashboardLayout() {
       });
     },
   });
-
-  useEffect(() => {
-    if (layoutData && isITAdmin) {
-      // Update the layout with the retrieved data
-    }
-  }, [layoutData, isITAdmin]);
 
   return (
     <div className="h-full overflow-y-auto overflow-x-hidden bg-[#E8F3E8]">

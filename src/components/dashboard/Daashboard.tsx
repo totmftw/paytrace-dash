@@ -1,12 +1,109 @@
 // src/components/dashboard/Dashboard.tsx
 import { useState, useEffect } from 'react';
 import { Responsive, WidthProvider } from 'react-grid-layout';
+import { Box, Button, Snackbar, Alert } from '@mui/material';
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/lib/supabase';
+import { FinancialYearSelector } from './FinancialYearSelector';
+import { DashboardMetric } from './DashboardMetric';
+import { DashboardLayout, Metrics } from '@/types/dashboard';
+import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
+
+const ResponsiveGridLayout = WidthProvider(Responsive);
+
+export function Dashboard() {
+  const { user } = useAuth();
+  const [selectedYear, setSelectedYear] = useState<string>('');
+  const [isConfiguring, setIsConfiguring] = useState(false);
+  const [layout, setLayout] = useState<DashboardLayout[]>([]);
+  const [metrics, setMetrics] = useState<Metrics>({
+    pending: 0,
+    outstanding: 0,
+    sales: 0,
+    orders: 0
+  });
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success' as 'success' | 'error'
+  });
+
+  useEffect(() => {
+    loadLayout();
+    if (selectedYear) {
+      fetchMetrics();
+    }
+  }, [selectedYear]);
+
+  const loadLayout = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('dashboard_layouts')
+        .select('*')
+        .single();
+
+      if (error) throw error;
+      if (data) {
+        setLayout(data.layout);
+      }
+    } catch (error) {
+      console.error('Error loading layout:', error);
+      showSnackbar('Failed to load dashboard layout', 'error');
+    }
+  };
+
+  // ... rest of the implementation
+}
+// src/components/dashboard/Dashboard.tsx
+import { useState, useEffect } from 'react';
+import { Responsive, WidthProvider } from 'react-grid-layout';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/lib/supabase';
 import { FinancialYearSelector } from './FinancialYearSelector';
 import { DashboardMetric } from './DashboardMetric';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/toast';
+// src/components/dashboard/Dashboard.tsx
+import { Responsive, WidthProvider } from 'react-grid-layout';
+// ⚠️ Need to add CSS imports:
+import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
+
+// ⚠️ Missing AuthContext type
+interface AuthContextType {
+  user: {
+    role: string;
+  } | null;
+}
+
+// ⚠️ Need to properly type the layout state
+const [layout, setLayout] = useState<DashboardLayout[]>([]);
+
+// ⚠️ Missing proper typing for metrics
+interface Metrics {
+  pending: number;
+  outstanding: number;
+  sales: number;
+  orders: number;
+}
+// src/components/dashboard/Dashboard.tsx
+const loadLayout = async () => {
+  try {
+    const { data, error } = await supabase
+      .from('dashboard_layouts')
+      .select('*')
+      .single();
+
+    if (error) throw error;
+    if (data) {
+      setLayout(data.layout);
+    }
+  } catch (error) {
+    console.error('Error loading layout:', error);
+    showSnackbar('Failed to load dashboard layout', 'error');
+  }
+};
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 

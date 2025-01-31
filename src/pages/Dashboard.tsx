@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth, useFinancialYear } from '@/contexts';
+import { useAuth } from '@/contexts/AuthContext';
+import { useFinancialYear } from '@/contexts/FinancialYearContext';
 import GridLayout from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import { MetricsCard } from '@/components/dashboard/metrics/MetricsCard';
-import DetailedDataTable from '@/components/dashboard/DetailedDataTable';
 import InvoiceTable from '@/components/dashboard/InvoiceTable';
 import SalesVsPaymentsChart from '@/components/dashboard/SalesVsPaymentsChart';
 import { useToast } from '@/hooks/use-toast';
@@ -44,11 +44,11 @@ export default function Dashboard() {
     enabled: !!user,
   });
 
-  const [currentLayout, setCurrentLayout] = useState<GIS.Layout[]>(layoutData || defaultLayout);
+  const [currentLayout, setCurrentLayout] = useState(layoutData || defaultLayout);
   const [isLayoutEditable, setIsLayoutEditable] = useState(false);
 
   const updateLayoutMutation = useMutation({
-    mutationFn: async (newLayout: GIS.Layout[]) => {
+    mutationFn: async (newLayout: any) => {
       if (!user) throw new Error('No user');
       
       const { error } = await supabase
@@ -75,7 +75,7 @@ export default function Dashboard() {
     },
   });
 
-  const handleLayoutChange = (layout: GIS.Layout[]) => {
+  const handleLayoutChange = (layout: any) => {
     setCurrentLayout(layout);
   };
 
@@ -113,29 +113,26 @@ export default function Dashboard() {
         isResizable={isLayoutEditable}
         onLayoutChange={handleLayoutChange}
       >
-        {/* Metrics Widgets */}
         <MetricsCard
           title="Total Sales"
-          value={dashboardData?.totalSales}
-          onClick={handleTotalSalesClick}
+          value={0}
+          onClick={() => {}}
         />
         <MetricsCard
           title="Pending Payments"
-          value={dashboardData?.pendingPayments}
-          onClick={handlePendingPaymentsClick}
+          value={0}
+          onClick={() => {}}
         />
         <MetricsCard
           title="Outstanding Payments"
-          value={dashboardData?.outstandingPayments}
-          onClick={handleOutstandingPaymentsClick}
+          value={0}
+          onClick={() => {}}
         />
         <MetricsCard
           title="Total Invoices"
-          value={dashboardData?.totalInvoices}
-          onClick={handleTotalInvoicesClick}
+          value={0}
+          onClick={() => {}}
         />
-
-        {/* Table and Chart */}
         <InvoiceTable selectedYear={selectedYear} />
         <SalesVsPaymentsChart selectedYear={selectedYear} />
       </GridLayout>

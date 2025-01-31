@@ -37,7 +37,7 @@ export default function DashboardLayout() {
               y: Number(item.y || 0),
               w: Number(item.w || 1),
               h: Number(item.h || 1)
-            })) : 
+            } as Layout)) : 
             []
         ) : [];
 

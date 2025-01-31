@@ -5,27 +5,18 @@ import { useAuth } from '@/hooks/use-auth';
 import GridLayout from 'react-grid-layout';
 import { Card } from '@/components/ui/card';
 import { InvoiceTable } from '@/components/dashboard/InvoiceTable';
-import { MetricsCards } from '@/components/dashboard/metrics/MetricsCard';
+import { MetricsCard } from '@/components/dashboard/metrics/MetricsCard';
 import { CustomerList } from '@/components/dashboard/CustomerList';
 import { PaymentHistory } from '@/components/dashboard/PaymentHistory';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
-
-interface DashboardWidget {
-  i: string;
-  id: string;
-  content: React.ReactNode;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
+import { DashboardWidget } from '@/types/dashboard';
 
 const defaultWidgets: DashboardWidget[] = [
   {
     i: 'metrics',
     id: 'metrics',
-    content: <MetricsCards />,
+    content: <MetricsCard title="Overview" value={0} />,
     x: 0,
     y: 0,
     w: 12,
@@ -93,7 +84,7 @@ export default function Dashboard() {
   });
 
   const currentLayout = layoutData?.layout ? 
-    JSON.parse(layoutData.layout) as DashboardWidget[] : 
+    JSON.parse(layoutData.layout as string) as DashboardWidget[] : 
     defaultWidgets;
 
   const handleLayoutChange = (layout: GridLayout.Layout[]) => {

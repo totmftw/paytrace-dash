@@ -26,14 +26,19 @@ export function InvoiceTable() {
           paymentTransactions!paymentTransactions_invId_fkey (
             paymentId,
             amount,
-            paymentDate
+            paymentDate,
+            transactionId,
+            paymentMode,
+            chequeNumber,
+            bankName,
+            remarks
           )
         `)
         .gte('invDate', `${selectedYear.split('-')[0]}-04-01`)
         .lte('invDate', `${selectedYear.split('-')[1]}-03-31`);
 
       if (error) throw error;
-      return data as unknown as Invoice[];
+      return data as Invoice[];
     },
   });
 
@@ -49,7 +54,7 @@ export function InvoiceTable() {
           }}
           className="text-blue-600 hover:text-blue-800"
         >
-          {row.original.invNumber}
+          {row.getValue('invNumber')}
         </button>
       ),
     },

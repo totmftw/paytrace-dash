@@ -4,7 +4,6 @@ import { TransactionInvoiceTable } from "./TransactionInvoiceTable";
 import { AddInvoiceButton } from "../buttons/AddInvoiceButton";
 import { DownloadTemplateButton } from "../buttons/DownloadTemplateButton";
 import { UploadInvoiceButton } from "../buttons/UploadInvoiceButton";
-import { ColumnConfigProvider } from "@/contexts/columnConfigContext";
 import type { Invoice } from "@/types";
 
 export default function InvoiceTab({ year }: { year: string }) {

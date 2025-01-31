@@ -25,13 +25,13 @@ export default function TransactionsCore() {
         </div>
       </div>
 
-      <ColumnConfigProvider>
-        <Tabs defaultValue="invoices" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="invoices">Invoices</TabsTrigger>
-            <TabsTrigger value="payments">Payments</TabsTrigger>
-            <TabsTrigger value="ledger">Ledger</TabsTrigger>
-          </TabsList>
+      <Tabs defaultValue="invoices" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="invoices">Invoices</TabsTrigger>
+          <TabsTrigger value="payments">Payments</TabsTrigger>
+          <TabsTrigger value="ledger">Ledger</TabsTrigger>
+        </TabsList>
+        <ColumnConfigProvider>
           <TabsContent value="invoices">
             <InvoiceTab year={selectedYear} />
           </TabsContent>
@@ -41,8 +41,8 @@ export default function TransactionsCore() {
           <TabsContent value="ledger">
             <LedgerTab />
           </TabsContent>
-        </Tabs>
-      </ColumnConfigProvider>
+        </ColumnConfigProvider>
+      </Tabs>
     </div>
   );
 }

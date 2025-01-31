@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState } from "react";
 
 export interface FinancialYearContextType {
   selectedYear: string;
@@ -6,12 +6,12 @@ export interface FinancialYearContextType {
   getFYDates: () => { start: Date; end: Date };
 }
 
-const FinancialYearContext = createContext<FinancialYearContextType | undefined>(undefined);
+export const FinancialYearContext = createContext<FinancialYearContextType | undefined>(undefined);
 
 export function useFinancialYear() {
   const context = useContext(FinancialYearContext);
   if (!context) {
-    throw new Error('useFinancialYear must be used within a FinancialYearProvider');
+    throw new Error("useFinancialYear must be used within a FinancialYearProvider");
   }
   return context;
 }
@@ -27,9 +27,9 @@ export function FinancialYearProvider({ children }: { children: React.ReactNode 
   });
 
   const getFYDates = () => {
-    const [startYear] = selectedYear.split('-').map(Number);
-    const start = new Date(startYear, 3, 1); // April 1st
-    const end = new Date(startYear + 1, 2, 31); // March 31st next year
+    const [startYear] = selectedYear.split('-');
+    const start = new Date(parseInt(startYear), 3, 1); // April 1st
+    const end = new Date(parseInt(startYear) + 1, 2, 31); // March 31st
     return { start, end };
   };
 

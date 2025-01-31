@@ -1,26 +1,31 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 
-export const FinancialYearSelector = () => {
+export function FinancialYearSelector() {
   const { selectedYear, setSelectedYear } = useFinancialYear();
 
-  const currentYear = new Date().getFullYear();
-  const availableYears = Array.from({ length: 5 }, (_, i) => 
-    `${currentYear - 2 + i}-${currentYear - 1 + i + 1}`
-  );
+  const generateYearOptions = () => {
+    const currentYear = new Date().getFullYear();
+    const years: string[] = [];
+    for (let i = -2; i <= 2; i++) {
+      const year = currentYear + i;
+      years.push(`${year}-${year + 1}`);
+    }
+    return years;
+  };
 
   return (
     <Select value={selectedYear} onValueChange={setSelectedYear}>
-      <SelectTrigger>
-        <SelectValue placeholder="Select Financial Year" />
+      <SelectTrigger className="w-[180px]">
+        <SelectValue placeholder="Select Year" />
       </SelectTrigger>
       <SelectContent>
-        {availableYears.map(year => (
+        {generateYearOptions().map((year) => (
           <SelectItem key={year} value={year}>
-            {year}
+            FY {year}
           </SelectItem>
         ))}
       </SelectContent>
     </Select>
   );
-};
+}

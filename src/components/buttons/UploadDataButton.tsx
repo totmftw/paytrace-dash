@@ -1,13 +1,13 @@
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import * as XLSX from "xlsx";
+import * as XLSX from 'xlsx';
 import { supabase } from "@/integrations/supabase/client";
 
 interface UploadDataButtonProps {
   tableName: "invoiceTable" | "paymentTransactions";
 }
 
-export default function UploadDataButton({ tableName }: UploadDataButtonProps) {
+export function UploadDataButton({ tableName }: UploadDataButtonProps) {
   const { toast } = useToast();
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -29,7 +29,7 @@ export default function UploadDataButton({ tableName }: UploadDataButtonProps) {
 
         if (checkError) throw checkError;
 
-        // Check for duplicates
+        // Check for duplicates based on table type
         const duplicates = jsonData.filter((newRow: any) => 
           existingData?.some((existingRow: any) => 
             (tableName === "invoiceTable" && existingRow.invNumber === newRow.invNumber) ||
@@ -46,9 +46,23 @@ export default function UploadDataButton({ tableName }: UploadDataButtonProps) {
           return;
         }
 
+        // Transform data based on table type
+        const transformedData = jsonData.map((row: any) => {
+          if (tableName === "invoiceTable") {
+            return {
+              ...row,
+              fy: new Date().getFullYear().toString(),
+              invGst: row.invGst || 0,
+              invValue: row.invValue || 0,
+              invTotal: row.invTotal || 0
+            };
+          }
+          return row;
+        });
+
         const { error: uploadError } = await supabase
           .from(tableName)
-          .insert(jsonData);
+          .insert(transformedData);
 
         if (uploadError) throw uploadError;
 

@@ -1,8 +1,4 @@
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import InvoiceTab from "./InvoiceTab";
@@ -22,7 +18,6 @@ export default function TransactionsCore() {
             View and manage all transactions
           </p>
         </div>
-        <FinancialYearSelector />
       </div>
 
       <Tabs defaultValue="invoices" className="space-y-4">
@@ -32,13 +27,13 @@ export default function TransactionsCore() {
           <TabsTrigger value="ledger">Ledger</TabsTrigger>
         </TabsList>
         <TabsContent value="invoices">
-          <InvoiceTab />
+          <InvoiceTab year={selectedYear} />
         </TabsContent>
         <TabsContent value="payments">
-          <PaymentTab />
+          <PaymentTab year={selectedYear} />
         </TabsContent>
         <TabsContent value="ledger">
-          <LedgerTab />
+          <LedgerTab year={selectedYear} />
         </TabsContent>
       </Tabs>
     </div>

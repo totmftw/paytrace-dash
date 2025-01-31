@@ -4,6 +4,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import * as XLSX from 'xlsx';
 import { useFinancialYear } from '@/contexts/FinancialYearContext';
+import { Database } from '@/integrations/supabase/types';
 
 interface UploadInvoiceButtonProps {
   tableName: 'invoiceTable' | 'paymentTransactions';
@@ -19,10 +20,6 @@ type InvoiceData = {
   invCustid?: number;
   invMessage1?: string;
   fy: string;
-};
-
-type ExistingInvoice = {
-  invNumber: string;
 };
 
 export default function UploadInvoiceButton({ tableName }: UploadInvoiceButtonProps) {
@@ -47,7 +44,7 @@ export default function UploadInvoiceButton({ tableName }: UploadInvoiceButtonPr
         if (Array.isArray(jsonData) && jsonData.length > 0) {
           // Check for duplicates
           const { data: existingInvoices, error } = await supabase
-            .from<ExistingInvoice>(tableName)
+            .from(tableName)
             .select('invNumber')
             .in('invNumber', jsonData.map(item => item.invNumber));
 

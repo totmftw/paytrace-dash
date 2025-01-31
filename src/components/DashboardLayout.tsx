@@ -27,10 +27,11 @@ export default function DashboardLayout() {
         return { layout: [] };
       }
 
-      const parsedLayout = data?.layout ? JSON.parse(data.layout as string) : [];
-      return { 
-        layout: parsedLayout as Layout[]
-      };
+      const parsedLayout = data?.layout ? 
+        (typeof data.layout === 'string' ? JSON.parse(data.layout) : data.layout) as Layout[] : 
+        [];
+
+      return { layout: parsedLayout };
     },
     enabled: !!user,
   });

@@ -56,11 +56,13 @@ export default function Dashboard({ year }: DashboardProps) {
           title="Total Sales"
           value={totalSales}
           icon={<BanknoteIcon className="h-6 w-6" />}
+          isMonetary={true}
         />
         <MetricsCard
           title="Total Orders"
           value={totalOrders}
           icon={<FileTextIcon className="h-6 w-6" />}
+          isMonetary={false}
         />
       </div>
       <DetailedDataTable

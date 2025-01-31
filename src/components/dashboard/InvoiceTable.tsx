@@ -31,7 +31,8 @@ export function InvoiceTable() {
           customerMaster!invoiceTable_invCustid_fkey (
             custBusinessname
           ),
-          paymentTransactions (
+          paymentTransactions!paymentTransactions_invId_fkey (
+            paymentId,
             amount,
             paymentDate
           )
@@ -40,7 +41,7 @@ export function InvoiceTable() {
         .lte("invDate", `${endDate}-03-31`);
 
       if (error) throw error;
-      return data as Invoice[];
+      return data as unknown as Invoice[];
     },
   });
 

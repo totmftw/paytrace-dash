@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { ColumnDef, useReactTable, getCoreRowModel } from '@tanstack/react-table';
+import { ColumnDef, useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useFinancialYear } from '@/contexts/FinancialYearContext';
 import { InvoiceDetailsPopup } from './InvoiceDetailsPopup';
@@ -38,7 +38,7 @@ export function InvoiceTable() {
         .lte('invDate', `${selectedYear.split('-')[1]}-03-31`);
 
       if (error) throw error;
-      return data as Invoice[];
+      return data as unknown as Invoice[];
     },
   });
 
@@ -102,7 +102,7 @@ export function InvoiceTable() {
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
                 <TableHead key={header.id}>
-                  {header.column.columnDef.header}
+                  {flexRender(header.column.columnDef.header, header.getContext())}
                 </TableHead>
               ))}
             </TableRow>
@@ -113,9 +113,7 @@ export function InvoiceTable() {
             <TableRow key={row.id}>
               {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id}>
-                  {cell.column.columnDef.cell ? 
-                    cell.column.columnDef.cell(cell.getContext()) : 
-                    String(cell.getValue())}
+                  {flexRender(cell.column.columnDef.cell, cell.getContext())}
                 </TableCell>
               ))}
             </TableRow>

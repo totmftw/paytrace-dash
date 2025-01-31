@@ -20,6 +20,12 @@ export default function LedgerTab({ year }: { year: string }) {
     }
   });
 
+  const pdfData = customers?.map(customer => ({
+    name: customer.custBusinessname,
+    whatsapp: customer.custWhatsapp,
+    creditPeriod: customer.custCreditperiod
+  })) || [];
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -29,7 +35,7 @@ export default function LedgerTab({ year }: { year: string }) {
           customers={customers}
           isLoading={isLoadingCustomers}
         />
-        <PDFExport onExport={() => {}} fileName="ledger.pdf" />
+        <PDFExport fileName="ledger.pdf" data={pdfData} />
       </div>
       <DataTable
         columns={[

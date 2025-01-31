@@ -1,7 +1,7 @@
 import React from 'react';
 import { useFinancialYear } from '@/contexts/FinancialYearContext';
-import { InvoiceTable } from '@/components/dashboard/InvoiceTable';
-import { SalesVsPaymentsChart } from '@/components/dashboard/SalesVsPaymentsChart';
+import { InvoiceTable } from '@/components/InvoiceTable';
+import { SalesVsPaymentsChart } from '@/components/SalesVsPaymentsChart';
 import { FinancialYearSelector } from '@/components/FinancialYearSelector';
 
 export default function Dashboard() {

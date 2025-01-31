@@ -1,16 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Invoice } from "@/types";
+import type { Invoice, SalesVsPaymentsChartProps } from "@/types";
 
-interface ChartData {
-  month: string;
-  sales: number;
-  payments: number;
-}
-
-export function SalesVsPaymentsChart({ selectedYear }: { selectedYear: string }) {
+export function SalesVsPaymentsChart({ selectedYear }: SalesVsPaymentsChartProps) {
   const { data: invoices } = useQuery({
     queryKey: ["invoices", selectedYear],
     queryFn: async () => {
@@ -19,8 +13,10 @@ export function SalesVsPaymentsChart({ selectedYear }: { selectedYear: string })
         .from("invoiceTable")
         .select(`
           *,
-          customerMaster!invoiceTable_invCustid_fkey (
-            custBusinessname
+          customerMaster:customerMaster!invoiceTable_invCustid_fkey (
+            custBusinessname,
+            custCreditperiod,
+            custWhatsapp
           ),
           paymentTransactions!paymentTransactions_invId_fkey (
             amount,
@@ -31,13 +27,13 @@ export function SalesVsPaymentsChart({ selectedYear }: { selectedYear: string })
         .lte("invDate", `${endYear}-03-31`);
 
       if (error) throw error;
-      return data as Invoice[];
+      return data as unknown as Invoice[];
     },
   });
 
-  const chartData: ChartData[] = invoices
+  const chartData = invoices
     ? Array.from({ length: 12 }, (_, i) => {
-        const month = new Date(2000, i, 1).toLocaleString('default', { month: 'short' });
+        const month = new Date(2000, i).toLocaleString('default', { month: 'short' });
         const monthInvoices = invoices.filter(inv => 
           new Date(inv.invDate).getMonth() === i
         );

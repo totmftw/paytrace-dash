@@ -3,13 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { ColumnDef, useReactTable, getCoreRowModel, flexRender } from '@tanstack/react-table';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { useFinancialYear } from '@/contexts/FinancialYearContext';
 import { InvoiceDetailsPopup } from './InvoiceDetailsPopup';
-import { Invoice } from '@/types';
-
-interface InvoiceTableProps {
-  selectedYear: string;
-}
+import type { Invoice, InvoiceTableProps } from '@/types';
 
 export function InvoiceTable({ selectedYear }: InvoiceTableProps) {
   const [selectedInvoice, setSelectedInvoice] = useState<number | null>(null);
@@ -18,13 +13,15 @@ export function InvoiceTable({ selectedYear }: InvoiceTableProps) {
   const { data: invoices } = useQuery({
     queryKey: ['invoices', selectedYear],
     queryFn: async () => {
+      const [startYear, endYear] = selectedYear.split('-');
       const { data, error } = await supabase
         .from('invoiceTable')
         .select(`
           *,
-          customerMaster!invoiceTable_invCustid_fkey (
+          customerMaster:customerMaster!invoiceTable_invCustid_fkey (
             custBusinessname,
-            custCreditperiod
+            custCreditperiod,
+            custWhatsapp
           ),
           paymentTransactions!paymentTransactions_invId_fkey (
             paymentId,
@@ -32,11 +29,11 @@ export function InvoiceTable({ selectedYear }: InvoiceTableProps) {
             paymentDate
           )
         `)
-        .gte('invDate', `${selectedYear.split('-')[0]}-04-01`)
-        .lte('invDate', `${selectedYear.split('-')[1]}-03-31`);
+        .gte('invDate', `${startYear}-04-01`)
+        .lte('invDate', `${endYear}-03-31`);
 
       if (error) throw error;
-      return data as Invoice[];
+      return data as unknown as Invoice[];
     },
   });
 

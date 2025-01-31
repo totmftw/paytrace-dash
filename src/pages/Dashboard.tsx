@@ -44,6 +44,14 @@ const defaultWidgets = [
   }
 ];
 
+interface LayoutItem {
+  i: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -101,7 +109,8 @@ export default function Dashboard() {
   const currentWidgets = layoutData?.layout ? 
     defaultWidgets.map(widget => ({
       ...widget,
-      ...layoutData.layout.find((l: any) => l.i === widget.id)
+      ...(Array.isArray(layoutData.layout) ? 
+        layoutData.layout.find((l: LayoutItem) => l.i === widget.id) : {})
     })) : 
     defaultWidgets;
 

@@ -15,12 +15,13 @@ export const FinancialYearSelector = () => {
     const fetchYears = async () => {
       try {
         const { data, error } = await supabase
-          .from<FinancialYear>("financial_years")
-          .select("financial_year")
-          .order("financial_year", { ascending: false });
+          .from("financial_year_ranges")
+          .select("financial_year");
 
         if (error) throw error;
-        setAvailableYears(data.map((year) => year.financial_year));
+        if (data) {
+          setAvailableYears(data.map((year) => year.financial_year || ''));
+        }
       } catch (error) {
         console.error("Error fetching financial years:", error);
       }

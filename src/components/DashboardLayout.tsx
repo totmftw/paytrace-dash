@@ -5,6 +5,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { Json } from "@/integrations/supabase/types";
 
 interface Layout {
   i: string;
@@ -14,10 +15,21 @@ interface Layout {
   h: number;
 }
 
-interface DashboardLayout {
+interface DashboardLayoutData {
+  id: string;
   created_by: string;
   layout: Layout[];
   is_active: boolean;
+  created_at?: string;
+  updated_at?: string;
+}
+
+interface SerializedLayout {
+  i: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
 }
 
 export default function DashboardLayout({ editable = false }: { editable?: boolean }) {
@@ -40,7 +52,22 @@ export default function DashboardLayout({ editable = false }: { editable?: boole
         console.error("Error fetching layout:", error);
         return null;
       }
-      return data as DashboardLayout | null;
+
+      if (data) {
+        // Convert the JSON layout data to Layout type
+        const layout = data.layout as SerializedLayout[];
+        return {
+          ...data,
+          layout: layout.map(item => ({
+            i: item.i,
+            x: item.x,
+            y: item.y,
+            w: item.w,
+            h: item.h
+          }))
+        } as DashboardLayoutData;
+      }
+      return null;
     },
     enabled: !!user,
   });
@@ -48,13 +75,23 @@ export default function DashboardLayout({ editable = false }: { editable?: boole
   const updateLayoutMutation = useMutation({
     mutationFn: async (newLayout: Layout[]) => {
       if (!user) throw new Error("No user");
+      
+      // Convert Layout[] to a serializable format
+      const serializedLayout = newLayout.map(item => ({
+        i: item.i,
+        x: item.x,
+        y: item.y,
+        w: item.w,
+        h: item.h
+      }));
+
       const { error } = await supabase
         .from("dashboard_layouts")
         .upsert({
           created_by: user.id,
-          layout: newLayout,
+          layout: serializedLayout,
           is_active: true
-        } as DashboardLayout);
+        });
 
       if (error) {
         toast({

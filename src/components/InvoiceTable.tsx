@@ -11,7 +11,7 @@ interface InvoiceTableProps {
 export function InvoiceTable({ data, isLoading, visibleColumns }: InvoiceTableProps) {
   if (isLoading) return <div>Loading...</div>;
 
-  const formatCellValue = (invoice: Invoice, column: string) => {
+  const formatCellValue = (invoice: Invoice, column: string): string => {
     switch (column) {
       case 'customerMaster':
         return invoice.customerMaster?.custBusinessname || '';
@@ -19,14 +19,14 @@ export function InvoiceTable({ data, isLoading, visibleColumns }: InvoiceTablePr
       case 'invValue':
       case 'invBalanceAmount':
         const value = invoice[column as keyof Invoice];
-        return typeof value === 'number' ? formatCurrency(value) : value;
+        return typeof value === 'number' ? formatCurrency(value) : String(value);
       case 'invDate':
       case 'invDuedate':
         const date = invoice[column as keyof Invoice];
-        return typeof date === 'string' ? new Date(date).toLocaleDateString() : date;
+        return typeof date === 'string' ? new Date(date).toLocaleDateString() : String(date);
       default:
         const defaultValue = invoice[column as keyof Invoice];
-        return defaultValue?.toString() || '';
+        return String(defaultValue || '');
     }
   };
 

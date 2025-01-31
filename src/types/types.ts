@@ -1,12 +1,15 @@
+import type { Json } from '@/integrations/supabase/types';
+
 export interface PaymentTransaction {
   paymentId: number;
   amount: number;
   paymentDate: string;
-  transactionId?: string;
-  paymentMode?: string;
+  transactionId: string;
+  paymentMode: string;
   chequeNumber?: string;
   bankName?: string;
   remarks?: string;
+  invId: number;
 }
 
 export interface CustomerMaster {
@@ -36,13 +39,25 @@ export interface Invoice {
   paymentTransactions: PaymentTransaction[];
 }
 
-export interface LedgerEntry {
-  transaction_date: string;
-  transaction_type: string;
-  debit_amount: number;
-  credit_amount: number;
-  balance: number;
-  description: string;
+export interface PaymentData {
+  invId: number;
+  amount: number;
+  paymentDate: string;
+  paymentMode: string;
+  transactionId: string;
+  chequeNumber?: string;
+  bankName?: string;
+  remarks?: string;
 }
 
 export type TableName = 'invoiceTable' | 'customerMaster' | 'paymentTransactions';
+
+export interface ColumnConfigContextType {
+  visibleColumns: string[];
+  setVisibleColumns: (columns: string[]) => void;
+  setColumnOrder: (order: string[]) => Promise<void>;
+}
+
+export interface UserPreferences {
+  columns?: string[];
+}

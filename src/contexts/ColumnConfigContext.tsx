@@ -1,19 +1,9 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import type { Json } from '@/integrations/supabase/types';
+import type { ColumnConfigContextType, UserPreferences } from '@/types/types';
 
-interface ColumnConfigContextType {
-  visibleColumns: string[];
-  setVisibleColumns: (columns: string[]) => void;
-  setColumnOrder: (order: string[]) => Promise<void>;
-}
-
-interface UserPreferences {
-  columns?: string[];
-}
-
-export const ColumnConfigContext = createContext<ColumnConfigContextType>({
+const ColumnConfigContext = createContext<ColumnConfigContextType>({
   visibleColumns: [],
   setVisibleColumns: () => {},
   setColumnOrder: async () => {},

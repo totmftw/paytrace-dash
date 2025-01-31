@@ -1,8 +1,9 @@
 import { Button } from '@/components/ui/button';
-import { jsPDF } from 'jspdf';
+import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { formatCurrency } from "@/lib/utils";
 
-type PDFExportProps = {
+interface PDFExportProps {
   data: {
     date: string;
     description: string;
@@ -15,37 +16,9 @@ type PDFExportProps = {
     GST: string;
     phone: string;
   };
-};
-// src/components/buttons/PDFExport.ts
-import jsPDF from "jspdf";
-import "jspdf-autotable";
-import { formatCurrency } from "@/lib/utils";
+}
 
-export const PDFExport = ({ data }: { data: any[] }) => {
-  const handleExport = () => {
-    const doc = new jsPDF();
-    doc.autoTable({
-      styles: { overflow: "linebreak" },
-      columnStyles: { amount: { halign: "right" } },
-      theme: "striped",
-      body: data.map(row => ({
-        date: new Date(row.date).toLocaleDateString(),
-        description: row.description,
-        reference: row.type === "credit" ? row.transactionId : row.invoiceNumber,
-        amount: formatCurrency(row.amount),
-        balance: formatCurrency(row.balance),
-      })),
-    });
-    doc.save("ledger.pdf");
-  };
-
-  return (
-    <Button variant="outline" onClick={handleExport}>
-      Export Ledger PDF
-    </Button>
-  );
-};
-export default function PDFExport({ data, customer }: PDFExportProps) {
+export function PDFExport({ data, customer }: PDFExportProps) {
   const handleExport = () => {
     const doc = new jsPDF();
 
@@ -61,12 +34,17 @@ export default function PDFExport({ data, customer }: PDFExportProps) {
     }
 
     const columns = ['Date', 'Description', 'Amount', 'Balance'];
-    const rows = data.map((item) => [item.date, item.description, item.amount, item.balance]);
+    const rows = data.map((item) => [
+      item.date,
+      item.description,
+      formatCurrency(item.amount),
+      formatCurrency(item.balance)
+    ]);
 
-    doc.autoTable({
+    (doc as any).autoTable({
       head: [columns],
       body: rows,
-      startY: 35,
+      startY: customer ? 35 : 20,
     });
 
     doc.save('ledger_report.pdf');

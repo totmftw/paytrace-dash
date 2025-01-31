@@ -1,10 +1,13 @@
-// src/components/financialYear/FinancialYearSelector.tsx
-import { Select } from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 
 export const FinancialYearSelector = () => {
-  const [isOpen, setIsOpen] = useState(false);
-  const { selectedYear, availableYears, setSelectedYear } = useFinancialYear();
+  const { selectedYear, setSelectedYear } = useFinancialYear();
+
+  const currentYear = new Date().getFullYear();
+  const availableYears = Array.from({ length: 5 }, (_, i) => 
+    `${currentYear - 2 + i}-${currentYear - 1 + i}`
+  );
 
   return (
     <Select value={selectedYear} onValueChange={setSelectedYear}>

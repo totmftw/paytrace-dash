@@ -55,8 +55,7 @@ export function AppSidebar({ isCollapsed, toggleSidebar, setColumnConfigOpen }: 
     ...getBaseNavigation(),
     ...(isAdmin ? [
       { name: "Products", href: "/products", icon: Package },
-      { name: "Invoices", href: "/invoices", icon: FileText },
-      { name: "Payments", href: "/payments", icon: CreditCard },
+   
     ] : [])
   ];
 

@@ -1,20 +1,25 @@
-import { supabase } from "@/integrations/supabase/client";
+// src/apis/invoiceApi.ts
+import { supabase } from '@/integrations/supabase/client';
 
-interface InvoiceMetricParams {
-  startDate: string;
-  endDate: string;
-}
-
-export const fetchInvoiceMetrics = async ({
-  startDate,
-  endDate,
-}: InvoiceMetricParams) => {
+export const fetchInvoiceData = async (startDate: string, endDate: string) => {
   const { data, error } = await supabase
-    .from("invoiceTable")
-    .select("*")
-    .gte("invDate", startDate)
-    .lte("invDate", endDate);
+    .from('invoiceTable')
+    .select(
+      `
+        *,
+        customerMaster!invoiceTable_invCustid_fkey (
+          custBusinessname
+        ),
+        paymentTransactions!paymentTransactions_invId_fkey (
+          paymentId,
+          amount,
+          paymentDate
+        )
+      `
+    )
+    .gte('invDate', startDate)
+    .lte('invDate', endDate);
 
   if (error) throw error;
-  return data;
+  return data as Invoice[];
 };

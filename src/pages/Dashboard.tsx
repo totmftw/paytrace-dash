@@ -1,119 +1,143 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth, useFinancialYear } from '@/contexts';
 import GridLayout from 'react-grid-layout';
-import { Card } from '@/components/ui/card';
-import { InvoiceTable } from '@/components/dashboard/InvoiceTable';
-import { MetricsCard } from '@/components/dashboard/metrics/MetricsCard';
-import { CustomerList } from '@/components/dashboard/CustomerList';
-import { PaymentHistory } from '@/components/dashboard/PaymentHistory';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
-import { DashboardWidget } from '@/types/dashboard';
+import { MetricsCard } from '@/components/dashboard/metrics/MetricsCard';
+import DetailedDataTable from '@/components/dashboard/DetailedDataTable';
+import InvoiceTable from '@/components/dashboard/InvoiceTable';
+import SalesVsPaymentsChart from '@/components/dashboard/SalesVsPaymentsChart';
+import { useToast } from '@/hooks/use-toast';
+import { FinancialYearSelector } from '@/components/FinancialYearSelector';
+import { Button } from '@/components/ui/button';
 
-const defaultWidgets: DashboardWidget[] = [
-  {
-    i: 'metrics',
-    id: 'metrics',
-    content: <MetricsCard title="Overview" value={0} />,
-    x: 0,
-    y: 0,
-    w: 12,
-    h: 2,
-  },
-  {
-    i: 'invoices',
-    id: 'invoices',
-    content: <InvoiceTable />,
-    x: 0,
-    y: 2,
-    w: 8,
-    h: 4,
-  },
-  {
-    i: 'customers',
-    id: 'customers',
-    content: <CustomerList />,
-    x: 8,
-    y: 2,
-    w: 4,
-    h: 4,
-  },
-  {
-    i: 'payments',
-    id: 'payments',
-    content: <PaymentHistory />,
-    x: 0,
-    y: 6,
-    w: 12,
-    h: 3,
-  },
+const defaultLayout = [
+  { i: 'totalSales', x: 0, y: 0, w: 4, h: 5 },
+  { i: 'pendingPayments', x: 4, y: 0, w: 4, h: 5 },
+  { i: 'outstandingPayments', x: 8, y: 0, w: 4, h: 5 },
+  { i: 'totalInvoices', x: 0, y: 5, w: 4, h: 5 },
+  { i: 'invoiceTable', x: 4, y: 5, w: 8, h: 10 },
+  { i: 'salesChart', x: 0, y: 10, w: 12, h: 10 },
 ];
 
 export default function Dashboard() {
   const { user } = useAuth();
-  
+  const { selectedYear } = useFinancialYear();
+  const { toast } = useToast();
+  const isITAdmin = user?.role === 'it_admin';
+
   const { data: layoutData } = useQuery({
-    queryKey: ['dashboard-layout'],
+    queryKey: ['dashboard-layout', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('dashboard_layouts')
-        .select('*')
+        .select('layout')
+        .eq('created_by', user?.id)
         .eq('is_active', true)
         .maybeSingle();
-
+      
       if (error) throw error;
-      return data;
+      return data?.layout ? JSON.parse(data.layout as string) : defaultLayout;
     },
+    enabled: !!user,
   });
 
+  const [currentLayout, setCurrentLayout] = useState<GIS.Layout[]>(layoutData || defaultLayout);
+  const [isLayoutEditable, setIsLayoutEditable] = useState(false);
+
   const updateLayoutMutation = useMutation({
-    mutationFn: async (newLayout: DashboardWidget[]) => {
+    mutationFn: async (newLayout: GIS.Layout[]) => {
       if (!user) throw new Error('No user');
+      
       const { error } = await supabase
         .from('dashboard_layouts')
         .upsert({
           created_by: user.id,
           layout: JSON.stringify(newLayout),
-          is_active: true,
+          is_active: true
         });
 
-      if (error) throw error;
+      if (error) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Failed to save layout'
+        });
+        throw error;
+      }
+
+      toast({
+        title: 'Success',
+        description: 'Layout saved successfully'
+      });
     },
   });
 
-  const currentLayout = layoutData?.layout ? 
-    JSON.parse(layoutData.layout as string) as DashboardWidget[] : 
-    defaultWidgets;
+  const handleLayoutChange = (layout: GIS.Layout[]) => {
+    setCurrentLayout(layout);
+  };
 
-  const handleLayoutChange = (layout: GridLayout.Layout[]) => {
-    const updatedWidgets = currentLayout.map((widget, index) => ({
-      ...widget,
-      ...layout[index],
-    }));
-    updateLayoutMutation.mutate(updatedWidgets);
+  const handleApply = async () => {
+    await updateLayoutMutation.mutateAsync(currentLayout);
+    setIsLayoutEditable(false);
   };
 
   return (
     <div className="container mx-auto p-4">
+      <div className="mb-4 flex items-center gap-4">
+        <FinancialYearSelector />
+        {isITAdmin && (
+          <Button
+            variant={isLayoutEditable ? 'destructive' : 'outline'}
+            onClick={() => setIsLayoutEditable(!isLayoutEditable)}
+          >
+            {isLayoutEditable ? 'Cancel Editing' : 'Configure Layout'}
+          </Button>
+        )}
+      </div>
+      {isLayoutEditable && isITAdmin && (
+        <Button onClick={handleApply}>
+          Apply Changes
+        </Button>
+      )}
       <GridLayout
         className="layout"
         layout={currentLayout}
         cols={12}
-        rowHeight={100}
+        rowHeight={30}
         width={1200}
+        margin={[10, 10]}
+        isDraggable={isLayoutEditable}
+        isResizable={isLayoutEditable}
         onLayoutChange={handleLayoutChange}
-        isDraggable
-        isResizable
       >
-        {currentLayout.map((widget) => (
-          <div key={widget.id}>
-            <Card className="h-full">
-              {widget.content}
-            </Card>
-          </div>
-        ))}
+        {/* Metrics Widgets */}
+        <MetricsCard
+          title="Total Sales"
+          value={dashboardData?.totalSales}
+          onClick={handleTotalSalesClick}
+        />
+        <MetricsCard
+          title="Pending Payments"
+          value={dashboardData?.pendingPayments}
+          onClick={handlePendingPaymentsClick}
+        />
+        <MetricsCard
+          title="Outstanding Payments"
+          value={dashboardData?.outstandingPayments}
+          onClick={handleOutstandingPaymentsClick}
+        />
+        <MetricsCard
+          title="Total Invoices"
+          value={dashboardData?.totalInvoices}
+          onClick={handleTotalInvoicesClick}
+        />
+
+        {/* Table and Chart */}
+        <InvoiceTable selectedYear={selectedYear} />
+        <SalesVsPaymentsChart selectedYear={selectedYear} />
       </GridLayout>
     </div>
   );

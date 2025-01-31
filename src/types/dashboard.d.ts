@@ -8,7 +8,36 @@ export interface PaymentTransaction {
   bankName?: string;
   remarks?: string;
 }
+export interface Invoice {
+  invId: number;
+  invNumber: string;
+  invDate: string;
+  invDuedate: string;
+  invTotal: number;
+  invPaymentStatus: string;
+  customerMaster: {
+    custBusinessname: string;
+    custCreditperiod: number;
+  };
+  paymentTransactions: {
+    paymentId: number;
+    amount: number;
+    paymentDate: string;
+    transactionId: string;
+    paymentMode: string;
+    chequeNumber: string;
+    bankName: string;
+    remarks: string;
+  }[];
+}
 
+export interface MetricsSummary {
+  totalSales: number;
+  pendingPayments: number;
+  outstandingPayments: number;
+  totalInvoices: number;
+  invoices: Invoice[];
+}
 export interface Invoice {
   invId: number;
   invCustid: number;

@@ -1,30 +1,28 @@
-import { BrowserRouter } from "react-router-dom";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AuthProvider } from "@/contexts/AuthContext";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import { Toaster } from "@/components/ui/toaster";
-import { SidebarProvider } from "@/components/ui/sidebar";
-import AppRoutes from "./AppRoutes";
-
-const queryClient = new QueryClient();
+// src/App.tsx
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { AuthProvider } from './contexts/AuthContext'
+import { ProtectedRoute } from './components/ProtectedRoute'
+import Login from './pages/Login'
 
 function App() {
   return (
     <BrowserRouter>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider>
-          <AuthProvider>
-            <SidebarProvider>
-              <div className="min-h-screen flex w-full">
-                <AppRoutes />
-                <Toaster />
-              </div>
-            </SidebarProvider>
-          </AuthProvider>
-        </ThemeProvider>
-      </QueryClientProvider>
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
+          <Route element={<ProtectedLayout />}>
+            {/* All your app routes go here */}
+            <Route path="/dashboard" element={<div>Dashboard</div>} />
+            <Route path="/transactions" element={<div>Transactions</div>} />
+            <Route path="/invoices" element={<div>Invoices</div>} />
+            {/* Add more routes as needed */}
+          </Route>
+          {/* Catch all route - redirect to dashboard if authenticated, login if not */}
+          <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
-  );
+  )
 }
 
-export default App;
+export default App

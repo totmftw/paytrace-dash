@@ -4,6 +4,7 @@ import { TransactionInvoiceTable } from "./TransactionInvoiceTable";
 import { AddInvoiceButton } from "../buttons/AddInvoiceButton";
 import { DownloadTemplateButton } from "../buttons/DownloadTemplateButton";
 import { UploadInvoiceButton } from "../buttons/UploadInvoiceButton";
+import { ColumnConfigProvider } from "@/contexts/columnConfigContext";
 import type { Invoice } from "@/types";
 
 export default function InvoiceTab({ year }: { year: string }) {
@@ -55,12 +56,14 @@ export default function InvoiceTab({ year }: { year: string }) {
         <UploadInvoiceButton />
       </div>
       
-      <TransactionInvoiceTable 
-        data={invoices || []}
-        isLoading={isLoading}
-        onCustomerClick={handleCustomerClick}
-        onInvoiceClick={handleInvoiceClick}
-      />
+      <ColumnConfigProvider>
+        <TransactionInvoiceTable 
+          data={invoices || []}
+          isLoading={isLoading}
+          onCustomerClick={handleCustomerClick}
+          onInvoiceClick={handleInvoiceClick}
+        />
+      </ColumnConfigProvider>
     </div>
   );
 }

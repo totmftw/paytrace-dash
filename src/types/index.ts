@@ -33,37 +33,12 @@ export interface Invoice {
   paymentTransactions: PaymentTransaction[];
 }
 
-export interface Customer {
-  id: number;
-  custBusinessname: string;
-  custWhatsapp: number;
-  custCreditperiod: number;
-}
-
-export interface Options {
-  startDate: string;
-  endDate: string;
-  selectQuery?: string;
+export interface SalesVsPaymentsChartProps {
+  selectedYear: string;
 }
 
 export interface PDFExportProps {
-  onExport?: () => void;
   fileName?: string;
-}
-
-export interface DataTableProps<T> {
-  columns: {
-    accessorKey: string;
-    header: string;
-    cell?: (row: T) => React.ReactNode;
-  }[];
-  data: T[];
-  isLoading?: boolean;
-}
-
-export interface CustomerSelectorProps {
-  selectedCustomerId: number | null;
-  onSelect: (id: number | null) => void;
-  customers?: Customer[];
-  isLoading?: boolean;
+  onExport?: () => void;
+  data?: any;
 }

@@ -1,29 +1,28 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 
 export function FinancialYearFilter() {
-  const { setSelectedYear } = useFinancialYear();
+  const { selectedYear, setSelectedYear } = useFinancialYear();
 
-  const { data: years } = useQuery({
-    queryKey: ["financial-years"],
-    queryFn: async () => {
-      const { data, error } = await supabase.from("dashboard_layouts").select("DISTINCT fy");
-      if (error) throw error;
-      return data.map((item) => item.fy);
-    },
-  });
+  const generateYearOptions = () => {
+    const currentYear = new Date().getFullYear();
+    const years = [];
+    for (let i = -2; i <= 2; i++) {
+      const year = currentYear + i;
+      years.push(`${year}-${year + 1}`);
+    }
+    return years;
+  };
 
   return (
-    <Select onValueChange={setSelectedYear}>
-      <SelectTrigger className="w-[200px]">
-        <SelectValue placeholder="Select financial year" />
+    <Select value={selectedYear} onValueChange={setSelectedYear}>
+      <SelectTrigger className="w-[180px]">
+        <SelectValue placeholder="Select Year" />
       </SelectTrigger>
       <SelectContent>
-        {years?.map((year) => (
+        {generateYearOptions().map((year) => (
           <SelectItem key={year} value={year}>
-            {year}
+            FY {year}
           </SelectItem>
         ))}
       </SelectContent>

@@ -1,4 +1,3 @@
-import { useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -10,7 +9,7 @@ import { CustomerStats } from "@/components/dashboard/CustomerStats";
 import { PaymentTracking } from "@/components/dashboard/PaymentTracking";
 import { Json } from "@/integrations/supabase/types";
 import { LayoutProvider } from "@/hooks/useLayouts";
-import { FinancialYearFilter } from "./FinancialYearFilter";
+import { FinancialYearFilter } from "@/components/dashboard/FinancialYearFilter";
 import { Overview } from "@/components/dashboard/Overview";
 
 const defaultWidgets = [

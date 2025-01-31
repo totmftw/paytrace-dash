@@ -6,16 +6,26 @@ export interface DashboardWidget extends Layout {
   content: ReactNode;
 }
 
-export interface PaymentTransaction {
-  paymentId: number;
-  amount: number;
-  paymentDate: string;
+export interface LayoutData {
+  layout: Layout[];
+}
+
+export interface DashboardProps {
+  year: string;
 }
 
 export interface CustomerMaster {
   custBusinessname: string;
-  custCreditperiod?: number;
-  custWhatsapp?: number;
+  custCreditperiod: number;
+  custWhatsapp: number;
+  custGST: string;
+  custPhone: number;
+}
+
+export interface PaymentTransaction {
+  paymentId: number;
+  amount: number;
+  paymentDate: string;
 }
 
 export interface Invoice {
@@ -24,18 +34,8 @@ export interface Invoice {
   invDate: string;
   invDuedate: string;
   invTotal: number;
-  invValue: number;
-  invGst: number;
   invBalanceAmount: number;
   invPaymentStatus: string;
-  fy: string;
   customerMaster: CustomerMaster;
   paymentTransactions: PaymentTransaction[];
-}
-
-export interface MetricsSummary {
-  totalSales: number;
-  pendingPayments: number;
-  outstandingPayments: number;
-  totalInvoices: number;
 }

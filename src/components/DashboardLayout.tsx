@@ -1,21 +1,11 @@
 import { useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { Layout } from "react-grid-layout";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-
-interface Layout {
-  i: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
-
-interface LayoutData {
-  layout: Layout[];
-}
+import { LayoutData } from "@/types/dashboard";
 
 export default function DashboardLayout() {
   const { user } = useAuth();
@@ -37,7 +27,7 @@ export default function DashboardLayout() {
         return { layout: [] };
       }
 
-      return { layout: data?.layout as Layout[] || [] };
+      return { layout: (data?.layout as Layout[]) || [] };
     },
     enabled: !!user,
   });
@@ -50,7 +40,7 @@ export default function DashboardLayout() {
         .from("dashboard_layouts")
         .upsert({
           created_by: user.id,
-          layout: newLayout,
+          layout: JSON.stringify(newLayout),
           is_active: true,
         });
 

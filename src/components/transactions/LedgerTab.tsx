@@ -3,7 +3,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { DataTable } from "@/components/ui/datatable";
 import { PDFExport } from "@/components/buttons/PDFExport";
 import { Card } from "@/components/ui/card";
-import { ColumnConfigProvider } from "@/contexts/columnConfigContext";
 import type { Customer } from "@/types";
 
 export default function LedgerTab() {
@@ -34,21 +33,19 @@ export default function LedgerTab() {
       <PDFExport onClick={handleExport} fileName="customer-ledger.pdf">
         Export Customer Ledger
       </PDFExport>
-      <ColumnConfigProvider>
-        <DataTable
-          data={customers || []}
-          columns={[
-            {
-              key: "custBusinessname",
-              header: "Business Name"
-            },
-            {
-              key: "custWhatsapp",
-              header: "WhatsApp"
-            }
-          ]}
-        />
-      </ColumnConfigProvider>
+      <DataTable
+        data={customers || []}
+        columns={[
+          {
+            key: "custBusinessname",
+            header: "Business Name"
+          },
+          {
+            key: "custWhatsapp",
+            header: "WhatsApp"
+          }
+        ]}
+      />
     </Card>
   );
 }

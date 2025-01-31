@@ -1,12 +1,12 @@
 import { createContext, useContext, useState } from "react";
 
-export interface FinancialYearContextType {
+interface FinancialYearContextType {
   selectedYear: string;
   setSelectedYear: (year: string) => void;
   getFYDates: () => { start: Date; end: Date };
 }
 
-export const FinancialYearContext = createContext<FinancialYearContextType | undefined>(undefined);
+const FinancialYearContext = createContext<FinancialYearContextType | undefined>(undefined);
 
 export function useFinancialYear() {
   const context = useContext(FinancialYearContext);
@@ -20,7 +20,7 @@ export function FinancialYearProvider({ children }: { children: React.ReactNode 
   const [selectedYear, setSelectedYear] = useState<string>(() => {
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth() + 1;
+    const currentMonth = currentDate.getMonth() + 1; // JavaScript months are 0-based
     return currentMonth >= 4 
       ? `${currentYear}-${currentYear + 1}`
       : `${currentYear - 1}-${currentYear}`;
@@ -33,8 +33,14 @@ export function FinancialYearProvider({ children }: { children: React.ReactNode 
     return { start, end };
   };
 
+  const value = {
+    selectedYear,
+    setSelectedYear,
+    getFYDates
+  };
+
   return (
-    <FinancialYearContext.Provider value={{ selectedYear, setSelectedYear, getFYDates }}>
+    <FinancialYearContext.Provider value={value}>
       {children}
     </FinancialYearContext.Provider>
   );

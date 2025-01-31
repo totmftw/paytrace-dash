@@ -21,6 +21,10 @@ type InvoiceData = {
   fy: string;
 };
 
+type ExistingInvoice = {
+  invNumber: string;
+};
+
 export default function UploadInvoiceButton({ tableName }: UploadInvoiceButtonProps) {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
@@ -43,7 +47,7 @@ export default function UploadInvoiceButton({ tableName }: UploadInvoiceButtonPr
         if (Array.isArray(jsonData) && jsonData.length > 0) {
           // Check for duplicates
           const { data: existingInvoices, error } = await supabase
-            .from(tableName)
+            .from<ExistingInvoice>(tableName)
             .select('invNumber')
             .in('invNumber', jsonData.map(item => item.invNumber));
 

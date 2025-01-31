@@ -6,6 +6,7 @@ import { SalesOverview } from "@/components/dashboard/SalesOverview";
 import { CustomerStats } from "@/components/dashboard/CustomerStats";
 import { PaymentTracking } from "@/components/dashboard/PaymentTracking";
 import { DashboardGridLayout } from "@/components/DashboardGridLayout";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function Dashboard() {
   const { toast } = useToast();

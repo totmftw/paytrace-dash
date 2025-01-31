@@ -1,14 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import type { Invoice, SalesVsPaymentsChartProps } from "@/types";
 
 export function SalesVsPaymentsChart({ selectedYear }: SalesVsPaymentsChartProps) {
+  const [startYear, endYear] = selectedYear.split('-');
+  const fyStartDate = `${startYear}-04-01`;
+  const fyEndDate = `${endYear}-03-31`;
+
   const { data: invoices } = useQuery({
-    queryKey: ["invoices", selectedYear],
+    queryKey: ["sales-vs-payments", selectedYear],
     queryFn: async () => {
-      const [startYear, endYear] = selectedYear.split('-');
       const { data, error } = await supabase
         .from("invoiceTable")
         .select(`
@@ -23,8 +26,8 @@ export function SalesVsPaymentsChart({ selectedYear }: SalesVsPaymentsChartProps
             paymentDate
           )
         `)
-        .gte("invDate", `${startYear}-04-01`)
-        .lte("invDate", `${endYear}-03-31`);
+        .gte("invDate", fyStartDate)
+        .lte("invDate", fyEndDate);
 
       if (error) throw error;
       return data as unknown as Invoice[];
@@ -51,15 +54,18 @@ export function SalesVsPaymentsChart({ selectedYear }: SalesVsPaymentsChartProps
         <CardTitle>Sales vs Payments</CardTitle>
       </CardHeader>
       <CardContent>
-        <BarChart width={800} height={400} data={chartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="month" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="sales" fill="#8884d8" name="Sales" />
-          <Bar dataKey="payments" fill="#82ca9d" name="Payments" />
-        </BarChart>
+        <div className="h-[400px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="month" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="sales" fill="#8884d8" name="Sales" />
+              <Bar dataKey="payments" fill="#82ca9d" name="Payments" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
       </CardContent>
     </Card>
   );

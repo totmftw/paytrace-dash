@@ -27,7 +27,10 @@ export interface Invoice {
   invAddamount?: number;
   invSubamount?: number;
   invMarkcleared?: boolean;
-  invMessage1?: string;
+  invMessage1: string;
+  invMessage2?: string;
+  invMessage3?: string;
+  invPaymentStatus?: string;
   fy: string;
   customerMaster: CustomerMaster;
   paymentTransactions: PaymentTransaction[];
@@ -45,4 +48,11 @@ export interface SalesVsPaymentsChartProps {
 
 export interface InvoiceTableProps {
   selectedYear: string;
+}
+
+export interface Customer {
+  id: number;
+  custBusinessname: string;
+  custWhatsapp: number;
+  custCreditperiod: number;
 }

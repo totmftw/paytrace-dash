@@ -1,58 +1,65 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { DataTable } from "@/components/ui/DataTable";
-import { AddPaymentButton } from "../buttons/AddPaymentButton";
+import { TransactionInvoiceTable } from "./TransactionInvoiceTable";
+import { AddInvoiceButton } from "../buttons/AddInvoiceButton";
 import { DownloadTemplateButton } from "../buttons/DownloadTemplateButton";
-import { UploadDataButton } from "../buttons/UploadDataButton";
+import { UploadInvoiceButton } from "../buttons/UploadInvoiceButton";
+import type { Invoice } from "@/types";
 
 export default function PaymentTab({ year }: { year: string }) {
-  const { data: payments, isLoading } = useQuery({
-    queryKey: ["payments", year],
+  const { data: invoices, isLoading } = useQuery({
+    queryKey: ["invoices", year],
     queryFn: async () => {
+      const [startYear] = year.split('-');
       const { data, error } = await supabase
-        .from("paymentTransactions")
-        .select('*')
-        .gte("paymentDate", `${year}-04-01`)
-        .lte("paymentDate", `${parseInt(year) + 1}-03-31`);
+        .from("invoiceTable")
+        .select(`
+          *,
+          customerMaster!invoiceTable_invCustid_fkey (
+            custBusinessname,
+            custCreditperiod,
+            custWhatsapp
+          ),
+          paymentTransactions (
+            paymentId,
+            amount,
+            paymentDate,
+            transactionId,
+            paymentMode,
+            chequeNumber,
+            bankName,
+            remarks
+          )
+        `)
+        .gte("invDate", `${startYear}-04-01`)
+        .lte("invDate", `${parseInt(startYear) + 1}-03-31`);
 
       if (error) throw error;
-      return data || [];
-    }
+      return data as Invoice[];
+    },
   });
 
-  const columns = [
-    {
-      key: "paymentDate",
-      header: "Date",
-      cell: (item: any) => new Date(item.paymentDate).toLocaleDateString()
-    },
-    {
-      key: "transactionId",
-      header: "Transaction ID"
-    },
-    {
-      key: "paymentMode",
-      header: "Payment Mode"
-    },
-    {
-      key: "amount",
-      header: "Amount",
-      cell: (item: any) => item.amount.toFixed(2)
-    }
-  ];
+  const handleCustomerClick = (customer: any) => {
+    console.log('Customer clicked:', customer);
+  };
+
+  const handleInvoiceClick = (invoice: Invoice) => {
+    console.log('Invoice clicked:', invoice);
+  };
 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4">
-        <AddPaymentButton />
-        <DownloadTemplateButton tableName="paymentTransactions" />
-        <UploadDataButton tableName="paymentTransactions" />
+        <AddInvoiceButton />
+        <DownloadTemplateButton tableName="invoiceTable" />
+        <UploadInvoiceButton />
       </div>
       
-      <DataTable
-        columns={columns}
-        data={payments || []}
+      <TransactionInvoiceTable 
+        data={invoices || []}
         isLoading={isLoading}
+        onCustomerClick={handleCustomerClick}
+        onInvoiceClick={handleInvoiceClick}
       />
     </div>
   );

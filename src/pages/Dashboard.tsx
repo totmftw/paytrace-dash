@@ -4,7 +4,7 @@ import { MetricsCard } from "@/components/MetricsCard";
 import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 import { BanknoteIcon, FileTextIcon, AlertCircleIcon, CheckCircleIcon } from "lucide-react";
-import { DashboardProps, Invoice } from "@/types/dashboard";
+import type { DashboardProps, Invoice } from "@/types/dashboard";
 import { SalesVsPaymentsChart } from "@/components/SalesVsPaymentsChart";
 import { PaymentTracking } from "@/components/dashboard/PaymentTracking";
 import { InvoiceTable } from "@/components/InvoiceTable";

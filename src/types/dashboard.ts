@@ -1,6 +1,5 @@
 import { Layout } from 'react-grid-layout';
 import { ReactNode } from 'react';
-import { LucideIcon } from 'lucide-react';
 
 export interface DashboardWidget extends Layout {
   id: string;
@@ -9,8 +8,14 @@ export interface DashboardWidget extends Layout {
 
 export interface PaymentTransaction {
   paymentId: number;
+  invId: number;
   amount: number;
   paymentDate: string;
+  transactionId: string;
+  paymentMode: string;
+  chequeNumber?: string;
+  bankName?: string;
+  remarks?: string;
 }
 
 export interface CustomerMaster {
@@ -23,18 +28,22 @@ export interface CustomerMaster {
 
 export interface Invoice {
   invId: number;
+  invCustid?: number;
   invNumber: string;
   invDate: string;
   invDuedate: string;
+  invValue: number;
+  invGst: number;
   invTotal: number;
   invBalanceAmount: number;
   invPaymentStatus: string;
-  fy: string;
   invAddamount?: number;
-  invAlert?: string;
-  invGst: number;
+  invSubamount?: number;
   invMarkcleared?: boolean;
   invMessage1: string;
+  invMessage2?: string;
+  invMessage3?: string;
+  fy: string;
   customerMaster: CustomerMaster;
   paymentTransactions: PaymentTransaction[];
 }
@@ -46,7 +55,6 @@ export interface MetricsSummary {
   totalInvoices: number;
 }
 
-// Move types from dashboard.d.ts here
 export interface LayoutData {
   layout: Layout[];
 }
@@ -69,13 +77,4 @@ export interface MetricsCardProps {
 
 export interface DashboardProps {
   year?: string;
-}
-
-export interface DashboardWidget {
-  id: string;
-  content: ReactNode;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
 }

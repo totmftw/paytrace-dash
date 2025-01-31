@@ -6,15 +6,18 @@ import { useFinancialYear } from "@/contexts/FinancialYearContext";
 
 export function SalesOverview() {
   const { selectedYear } = useFinancialYear();
+  const { start, end } = getFYDates(selectedYear);
 
   const { data } = useQuery({
     queryKey: ["sales-overview", selectedYear],
     queryFn: async () => {
-      const { data: invoices } = await supabase
+      const { data: invoices, error } = await supabase
         .from("invoiceTable")
         .select("invTotal, invDate")
-        .gte("invDate", `${selectedYear}-04-01`)
-        .lte("invDate", `${+selectedYear + 1}-03-31`);
+        .gte("invDate", start.toISOString())
+        .lte("invDate", end.toISOString());
+
+      if (error) throw error;
 
       const monthlySales = Array(12).fill(0);
       invoices?.forEach((invoice) => {
@@ -28,6 +31,13 @@ export function SalesOverview() {
       }));
     },
   });
+
+  function getFYDates(year: string) {
+    const [startYear] = year.split('-').map(Number);
+    const start = new Date(startYear, 3, 1); // April 1st
+    const end = new Date(startYear + 1, 2, 31); // March 31st next year
+    return { start, end };
+  }
 
   return (
     <Card>

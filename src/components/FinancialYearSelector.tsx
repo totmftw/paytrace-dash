@@ -3,32 +3,31 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect, useState } from "react";
 
-interface FinancialYear {
-  financial_year: string;
-}
-
 export const FinancialYearSelector = () => {
   const { selectedYear, setSelectedYear } = useFinancialYear();
   const [availableYears, setAvailableYears] = useState<string[]>([]);
 
+  const { data: fyData, isLoading } = useQuery({
+    queryKey: ["financial-year-list"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("financial_year_ranges")
+        .select("financial_year")
+        .order("financial_year", { ascending: true });
+
+      if (error) throw error;
+      return data;
+    },
+  });
+
   useEffect(() => {
-    const fetchYears = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("financial_year_ranges")
-          .select("financial_year");
+    if (fyData && fyData.length > 0) {
+      const years = fyData.map((year) => year.financial_year || "");
+      setAvailableYears(years);
+    }
+  }, [fyData]);
 
-        if (error) throw error;
-        if (data) {
-          setAvailableYears(data.map((year) => year.financial_year || ''));
-        }
-      } catch (error) {
-        console.error("Error fetching financial years:", error);
-      }
-    };
-
-    fetchYears();
-  }, []);
+  if (isLoading) return null;
 
   return (
     <div className="flex items-center gap-2 bg-gray-200 px-4 py-2 rounded-lg">

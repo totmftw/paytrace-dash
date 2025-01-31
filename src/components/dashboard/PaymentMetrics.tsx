@@ -2,7 +2,7 @@ import { useFinancialYear } from "@/contexts/FinancialYearContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/lib/utils";
-import { DetailedDataTable } from "@/components/DetailedDataTable";
+import { DetailedDataTable } from "./DetailedDataTable";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
 
@@ -15,42 +15,42 @@ export function PaymentMetrics() {
     queryKey: ["payment-metrics", selectedYear],
     queryFn: async () => {
       const { start, end } = getFYDates(selectedYear);
-      
+
       const { data: invoices } = await supabase
         .from("invoiceTable")
         .select(`
           *,
-          customerMaster (
-            custBusinessname
+          customerMaster:customerMaster!invoiceTable_invCustid_fkey (
+            custBusinessname,
+            custCreditperiod,
+            custWhatsapp
+          ),
+          paymentTransactions:paymentTransactions (
+            amount,
+            paymentId
           )
         `)
         .gte("invDate", start.toISOString())
         .lte("invDate", end.toISOString());
 
-      const { data: payments } = await supabase
-        .from("paymentTransactions")
-        .select("*");
+      const today = new Date();
+      const totalSales = invoices?.reduce((sum, inv) => sum + inv.invTotal, 0) || 0;
+      const totalOrders = invoices?.length || 0;
 
-      const now = new Date();
-      
+      // Calculate pending and outstanding payments
       const pendingPayments = invoices?.filter(inv => 
-        new Date(inv.invDuedate) > now
+        new Date(inv.invDuedate) > today
       ) || [];
-      
+
       const outstandingPayments = invoices?.filter(inv => 
-        new Date(inv.invDuedate) < now
+        new Date(inv.invDuedate) < today
       ) || [];
 
       const totalPendingAmount = pendingPayments.reduce((sum, inv) => 
-        sum + (inv.invTotal - (payments?.filter(p => p.invId === inv.invId)
-          .reduce((psum, p) => psum + p.amount, 0) || 0)), 0);
+        sum + (inv.invTotal - inv.paymentTransactions.reduce((psum, p) => psum + p.amount, 0)), 0);
 
       const totalOutstandingAmount = outstandingPayments.reduce((sum, inv) => 
-        sum + (inv.invTotal - (payments?.filter(p => p.invId === inv.invId)
-          .reduce((psum, p) => psum + p.amount, 0) || 0)), 0);
-
-      const totalSales = invoices?.reduce((sum, inv) => sum + inv.invTotal, 0) || 0;
-      const totalOrders = invoices?.length || 0;
+        sum + (inv.invTotal - inv.paymentTransactions.reduce((psum, p) => psum + p.amount, 0)), 0);
 
       return {
         pendingPayments,
@@ -77,6 +77,10 @@ export function PaymentMetrics() {
       case "sales":
         setSelectedData(metrics?.allInvoices || []);
         setDialogTitle("Total Sales");
+        break;
+      case "orders":
+        setSelectedData(metrics?.allInvoices || []);
+        setDialogTitle("Total Orders");
         break;
     }
   };
@@ -126,7 +130,10 @@ export function PaymentMetrics() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card 
+          className="cursor-pointer hover:shadow-lg transition-shadow"
+          onClick={() => handleMetricClick("orders")}
+        >
           <CardHeader>
             <CardTitle>Total Orders</CardTitle>
           </CardHeader>

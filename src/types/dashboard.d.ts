@@ -1,5 +1,5 @@
-import { Layout } from 'react-grid-layout';
 import { ReactNode } from 'react';
+import { Layout } from 'react-grid-layout';
 import { LucideIcon } from 'lucide-react';
 
 export interface LayoutData {
@@ -26,9 +26,13 @@ export interface DashboardProps {
   year?: string;
 }
 
-export interface DashboardWidget extends Layout {
+export interface DashboardWidget {
   id: string;
   content: ReactNode;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
 }
 
 export interface PaymentTransaction {
@@ -40,6 +44,9 @@ export interface PaymentTransaction {
 export interface CustomerMaster {
   custBusinessname: string;
   custCreditperiod?: number;
+  custWhatsapp?: number;
+  custGST?: string;
+  custPhone?: number;
 }
 
 export interface Invoice {

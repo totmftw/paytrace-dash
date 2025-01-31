@@ -1,3 +1,7 @@
+import { useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
@@ -5,13 +9,17 @@ import { PaymentMetrics } from "@/components/dashboard/PaymentMetrics";
 import { SalesOverview } from "@/components/dashboard/SalesOverview";
 import { CustomerStats } from "@/components/dashboard/CustomerStats";
 import { PaymentTracking } from "@/components/dashboard/PaymentTracking";
+import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 import { DashboardGridLayout } from "@/components/DashboardGridLayout";
-import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { useLayouts } from "@/hooks/useLayouts";
 
 export default function Dashboard() {
   const { toast } = useToast();
   const { user } = useAuth();
   const { selectedYear } = useFinancialYear();
+  const isITAdmin = user?.role === "it_admin";
+  const { saveLayout, resetLayout, undo, redo } = useLayouts();
 
   const widgets = [
     {
@@ -45,22 +53,96 @@ export default function Dashboard() {
       w: 4,
       h: 4,
       content: <PaymentTracking />,
-    }
+    },
+    {
+      id: "recent-sales",
+      x: 8,
+      y: 4,
+      w: 4,
+      h: 4,
+      content: <RecentSales />,
+    },
+    {
+      id: "sales-vs-payments",
+      x: 0,
+      y: 8,
+      w: 12,
+      h: 5,
+      content: <SalesVsPaymentsChart />,
+    },
   ];
 
-  const handleApplyLayout = async () => {
-    try {
-      const serializedLayout = widgets.map(({ content, ...rest }) => rest);
+  useEffect(() => {
+    const saveLayout = async () => {
+      if (!user) return;
+
       const { error } = await supabase
         .from("dashboard_layouts")
         .upsert({
-          layout: serializedLayout,
+          created_by: user.id,
+          layout: widgets.map(widget => ({
+            i: widget.id,
+            x: widget.x,
+            y: widget.y,
+            w: widget.w,
+            h: widget.h
+          })),
+          is_active: true,
+        });
+
+      if (error) {
+        throw error;
+      }
+    };
+
+    saveLayout();
+  }, [widgets, user]);
+
+  return (
+    <div className="space-y-8 p-8">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold">Dashboard</h1>
+        <div className="flex items-center gap-4">
+          <FinancialYearSelector />
+          {isITAdmin && (
+            <div className="flex gap-2">
+              <Button onClick={() => saveLayout(widgets)}>Save Layout</Button>
+              <Button onClick={resetLayout}>Reset Layout</Button>
+              <Button onClick={undo}>Undo</Button>
+              <Button onClick={redo}>Redo</Button>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <DashboardGridLayout 
+        widgets={widgets}
+      />
+    </div>
+  );
+}
+
+  const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false);
+  const [popupData, setPopupData] = useState<any[]>([]);
+  const [popupTitle, setPopupTitle] = useState<string>("");
+
+  const handleDetail = async (type: string, data?: any) => {
+    setIsPopupOpen(true);
+    if (data) setPopupData(data);
+    setPopupTitle(type);
+  };
+
+  const handleApplyLayout = async (newLayout: any) => {
+    try {
+      const { error } = await supabase
+        .from("dashboard_layouts")
+        .upsert({
+          layout: newLayout,
           created_by: user?.id,
           is_active: true,
         });
 
       if (error) throw error;
-
       toast({
         title: "Success",
         description: "Dashboard layout has been updated.",
@@ -76,9 +158,26 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8 p-8">
-      <DashboardGridLayout 
-        widgets={widgets}
+      {isITAdmin && (
+        <div className="flex items-center justify-between mb-4">
+          <Button variant={isEditing ? "destructive" : "outline"} onClick={() => setIsEditing(!isEditing)}>
+            {isEditing ? "Cancel" : "Configure Layout"}
+          </Button>
+          {isEditing && (
+            <Button onClick={() => handleApplyLayout(gridLayout)}>
+              Apply Changes
+            </Button>
+          )}
+        </div>
+      )}
+      <DashboardGridLayout
+        widgets={gridLayout || defaultWidgets}
         onApply={handleApplyLayout}
+      />
+      <DetailedDataTable
+        title={popupTitle}
+        data={popupData}
+        onClose={() => setIsPopupOpen(false)}
       />
     </div>
   );

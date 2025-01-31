@@ -23,6 +23,10 @@ export const PaymentTracking = () => {
           customerMaster!invoiceTable_invCustid_fkey (
             custBusinessname,
             custCreditperiod
+          ),
+          paymentTransactions (
+            amount,
+            paymentId
           )
         `)
         .gte("invDate", startDate)
@@ -32,7 +36,8 @@ export const PaymentTracking = () => {
       if (error) throw error;
 
       const today = new Date();
-      return data?.map(invoice => {
+      return invoices?.map(invoice => {
+        const totalPaid = invoice.paymentTransactions.reduce((sum, p) => sum + p.amount, 0);
         const dueDate = new Date(invoice.invDuedate);
         const daysToDue = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
         
@@ -45,6 +50,7 @@ export const PaymentTracking = () => {
 
         return {
           ...invoice,
+          totalPaid,
           daysToDue,
           status
         };

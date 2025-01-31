@@ -23,19 +23,17 @@ const AppRoutes = () => {
       <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
         {/* Dashboard layout for main content */}
         <Route element={<DashboardLayout />}>
-        // Remove /invoices and /payments routes
-<Route path="/dashboard" element={<Dashboard />} />
-<Route path="/customers" element={<Customers />} />
-<Route path="/whatsapp-reminders" element={<WhatsappReminders />} />
-<Route path="/transactions" element={<TransactionsPage />} />
-<Route 
-  path="/user-management" 
-  element={
-    <ProtectedRoute adminOnly>
-      <UserManagement />
-    </ProtectedRoute>
-  } 
-/>
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/customers" element={<Customers />} />
+          <Route path="/whatsapp-reminders" element={<WhatsappReminders />} />
+          <Route path="/transactions" element={<TransactionsPage />} />
+          <Route 
+            path="/user-management" 
+            element={
+              <ProtectedRoute adminOnly>
+                <UserManagement />
+              </ProtectedRoute>
+            } 
           />
         </Route>
       </Route>

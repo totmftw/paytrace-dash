@@ -7,8 +7,8 @@ import GridLayout from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 import { MetricsCard } from '@/components/dashboard/metrics/MetricsCard';
-import InvoiceTable from '@/components/dashboard/InvoiceTable';
-import SalesVsPaymentsChart from '@/components/dashboard/SalesVsPaymentsChart';
+import { InvoiceTable } from '@/components/dashboard/InvoiceTable';
+import { SalesVsPaymentsChart } from '@/components/dashboard/SalesVsPaymentsChart';
 import { useToast } from '@/hooks/use-toast';
 import { FinancialYearSelector } from '@/components/FinancialYearSelector';
 import { Button } from '@/components/ui/button';
@@ -39,7 +39,7 @@ export default function Dashboard() {
         .maybeSingle();
       
       if (error) throw error;
-      return data?.layout ? JSON.parse(data.layout as string) : defaultLayout;
+      return data?.layout ? JSON.parse(data.layout) : defaultLayout;
     },
     enabled: !!user,
   });

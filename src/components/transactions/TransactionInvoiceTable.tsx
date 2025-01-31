@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { PDFExport } from "@/components/buttons/PDFExport";
-import { useColumnConfig } from "@/contexts/columnConfigContext";
+import { useColumnConfig } from "@/contexts/ColumnConfigContext";
 import { Invoice } from "@/types/types";
 import { formatCurrency } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -220,3 +220,4 @@ export function TransactionInvoiceTable({
     </div>
   );
 }
+

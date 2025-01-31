@@ -1,26 +1,25 @@
-import { LedgerEntry } from "@/types/types";
-import { formatCurrency as formatCurrencyUtil } from "@/lib/utils";
+import { LedgerEntry } from '@/types/types';
 
-export const calculateRunningBalance = (entries: LedgerEntry[]): LedgerEntry[] => {
-  let balance = 0;
-  return entries.map(entry => {
-    if (entry.transaction_type === 'invoice') {
-      balance += entry.debit_amount;
-    } else if (entry.transaction_type === 'payment') {
-      balance -= entry.credit_amount;
+export const calculateTotalDebit = (entries: LedgerEntry[]): number => {
+  return entries.reduce((total, entry) => {
+    if (entry.transaction_type === 'DEBIT') {
+      return total + entry.debit_amount;
     }
-    return { ...entry, balance };
-  });
+    return total;
+  }, 0);
 };
 
-export const formatLedgerDate = (date: string) => {
-  return new Date(date).toLocaleDateString();
+export const calculateTotalCredit = (entries: LedgerEntry[]): number => {
+  return entries.reduce((total, entry) => {
+    if (entry.transaction_type === 'CREDIT') {
+      return total + entry.credit_amount;
+    }
+    return total;
+  }, 0);
 };
 
-export const sortLedgerEntries = (entries: LedgerEntry[]) => {
-  return entries.sort((a, b) => 
+export const sortEntriesByDate = (entries: LedgerEntry[]): LedgerEntry[] => {
+  return [...entries].sort((a, b) => 
     new Date(a.transaction_date).getTime() - new Date(b.transaction_date).getTime()
   );
 };
-
-export const formatCurrency = formatCurrencyUtil;

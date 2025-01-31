@@ -1,5 +1,5 @@
 import React from "react";
-import { ColumnConfigProvider, useColumnConfig } from "@/contexts/columnConfigContext";
+import { ColumnConfigProvider, useColumnConfig } from "@/contexts/ColumnConfigContext";
 import { Button } from "@/components/ui/button";
 import Sortable from 'sortablejs';
 

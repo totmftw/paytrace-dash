@@ -15,19 +15,16 @@ export function AddPaymentButton() {
   const handlePayment = async (paymentData: PaymentData) => {
     const { error } = await supabase
       .from("paymentTransactions")
-      .insert({
-        ...paymentData,
-        paymentDate: format(new Date(paymentData.paymentDate), 'yyyy-MM-dd')
-      });
+      .insert(paymentData);
 
     if (error) throw error;
   };
 
   return (
     <Button onClick={() => handlePayment({
-      invId: 0, // This should be set with actual invoice ID
+      invId: 0,
       amount: 0,
-      paymentDate: new Date().toISOString(),
+      paymentDate: format(new Date(), 'yyyy-MM-dd'),
       paymentMode: 'cash',
       transactionId: 'temp-id'
     })}>

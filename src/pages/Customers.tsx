@@ -1,31 +1,44 @@
-import { useInvoiceData } from "@/hooks/useInvoiceData";
-import { AddInvoiceButton } from "@/components/buttons/AddInvoiceButton";
-import { DownloadTemplateButton } from "@/components/buttons/DownloadTemplateButton";
-import { UploadInvoiceButton } from "@/components/buttons/UploadInvoiceButton";
-import { TransactionInvoiceTable } from "@/components/transactions/TransactionInvoiceTable";
-import { useFinancialYear } from "@/hooks/useFinancialYear";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { CustomerTable } from "@/components/customers/CustomerTable";
+import type { Invoice } from "@/types/types";
 
 export default function Customers() {
-  const { currentYear } = useFinancialYear();
-  const { data: invoices, isLoading, isError } = useInvoiceData(currentYear);
-
-  if (isError) return <div>Error fetching data</div>;
+  const { data: invoices, isLoading } = useQuery({
+    queryKey: ["invoices"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("invoiceTable")
+        .select(`
+          *,
+          customerMaster!invoiceTable_invCustid_fkey (
+            custBusinessname,
+            custCreditperiod,
+            custWhatsapp,
+            custGST,
+            custPhone,
+            custAddress
+          ),
+          paymentTransactions (
+            paymentId,
+            invId,
+            amount,
+            paymentDate,
+            transactionId,
+            paymentMode,
+            chequeNumber,
+            bankName,
+            remarks
+          )
+        `);
+      if (error) throw error;
+      return data as Invoice[];
+    },
+  });
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <AddInvoiceButton />
-        <div className="flex items-center gap-4">
-          <DownloadTemplateButton tableName="invoiceTable" />
-          <UploadInvoiceButton />
-        </div>
-      </div>
-      <TransactionInvoiceTable 
-        data={invoices || []} 
-        isLoading={isLoading}
-        onCustomerClick={() => {}}
-        onInvoiceClick={() => {}}
-      />
+    <div className="container mx-auto py-10">
+      <CustomerTable data={invoices || []} isLoading={isLoading} />
     </div>
   );
 }

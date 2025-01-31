@@ -3,7 +3,7 @@ import { AddInvoiceButton } from "../buttons/AddInvoiceButton";
 import { DownloadTemplateButton } from "../buttons/DownloadTemplateButton";
 import { UploadInvoiceButton } from "../buttons/UploadInvoiceButton";
 import { TransactionInvoiceTable } from "./TransactionInvoiceTable";
-import type { Invoice } from "@/types";
+import type { Invoice } from "@/types/types";
 
 export default function InvoiceTab({ year }: { year: string }) {
   const { data: invoices, isLoading, isError } = useInvoiceData(year);
@@ -20,7 +20,7 @@ export default function InvoiceTab({ year }: { year: string }) {
         </div>
       </div>
       <TransactionInvoiceTable 
-        data={invoices || []} 
+        data={invoices as Invoice[] || []} 
         isLoading={isLoading}
         onCustomerClick={() => {}}
         onInvoiceClick={() => {}}

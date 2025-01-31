@@ -1,22 +1,61 @@
-import { useFinancialYear } from "@/contexts/FinancialYearContext";
-import { useColumnConfig } from "@/contexts/ColumnConfigContext";
-import { SalesVsPaymentsChart } from "@/components/SalesVsPaymentsChart";
-import { InvoiceTable } from "@/components/InvoiceTable";
-import { useInvoiceData } from "@/hooks/useInvoiceData";
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import type { Invoice } from '@/types/types';
 
-export default function Dashboard() {
-  const { selectedYear } = useFinancialYear();
-  const { visibleColumns } = useColumnConfig();
-  const { data: invoices, isLoading } = useInvoiceData(selectedYear);
+interface DashboardProps {
+  year: string;
+}
+
+export default function Dashboard({ year }: DashboardProps) {
+  const { data: invoices } = useQuery({
+    queryKey: ['invoices', year],
+    queryFn: async () => {
+      const [startYear, endYear] = year.split('-');
+      const { data, error } = await supabase
+        .from('invoiceTable')
+        .select(`
+          *,
+          customerMaster!invoiceTable_invCustid_fkey (
+            custBusinessname,
+            custCreditperiod,
+            custWhatsapp,
+            custGST,
+            custPhone,
+            custAddress
+          ),
+          paymentTransactions (
+            paymentId,
+            invId,
+            amount,
+            paymentDate,
+            transactionId,
+            paymentMode,
+            chequeNumber,
+            bankName,
+            remarks
+          )
+        `)
+        .gte('invDate', `${startYear}-04-01`)
+        .lte('invDate', `${endYear}-03-31`);
+
+      if (error) throw error;
+      return data as Invoice[];
+    },
+  });
 
   return (
-    <div className="space-y-4 p-8">
-      <SalesVsPaymentsChart selectedYear={selectedYear} />
-      <InvoiceTable 
-        data={invoices || []} 
-        isLoading={isLoading}
-        visibleColumns={visibleColumns}
-      />
+    <div>
+      <h2 className="text-2xl font-bold">Dashboard</h2>
+      <div>
+        {invoices?.map((invoice) => (
+          <div key={invoice.invId}>
+            <h3>Invoice Number: {invoice.invNumber}</h3>
+            <p>Customer: {invoice.customerMaster.custBusinessname}</p>
+            <p>Total: {invoice.invTotal}</p>
+            <p>Status: {invoice.invPaymentStatus}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

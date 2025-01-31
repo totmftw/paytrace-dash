@@ -2,11 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import type { Invoice } from "@/types";
-
-interface SalesVsPaymentsChartProps {
-  selectedYear: string;
-}
+import type { Invoice, SalesVsPaymentsChartProps } from "@/types";
 
 export function SalesVsPaymentsChart({ selectedYear }: SalesVsPaymentsChartProps) {
   const [startYear, endYear] = selectedYear.split('-');

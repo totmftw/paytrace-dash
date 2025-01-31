@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { DataTable } from "@/components/ui/DataTable";
+import { DataTable } from "@/components/ui/datatable";
 import { PDFExport } from "@/components/buttons/PDFExport";
 import { Card } from "@/components/ui/card";
 import type { Customer } from "@/types";

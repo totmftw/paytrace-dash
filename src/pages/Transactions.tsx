@@ -5,6 +5,28 @@ import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 import InvoiceTab from "@/components/transactions/InvoiceTab";
 import PaymentTab from "@/components/transactions/PaymentTab";
 import LedgerTab from "@/components/transactions/LedgerTab";
+// src/pages/Transactions.tsx
+import { useState } from 'react';
+import { useFinancialYear } from '@/hooks/useFinancialYear';
+import { useInvoiceData } from '@/hooks/useInvoiceData';
+
+const TransactionsPage = () => {
+  const { currentYear } = useFinancialYear();
+  const { invoices, loading, error } = useInvoiceData(currentYear);
+  const [activeTab, setActiveTab] = useState('invoices');
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-6">Transactions</h1>
+      {/* Transactions content will go here */}
+    </div>
+  );
+};
+
+export default TransactionsPage;
 
 interface TabProps {
   year: string;

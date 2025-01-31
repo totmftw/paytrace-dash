@@ -8,6 +8,26 @@ import type { DashboardProps, Invoice } from "@/types/dashboard";
 import { SalesVsPaymentsChart } from "@/components/SalesVsPaymentsChart";
 import { PaymentTracking } from "@/components/dashboard/PaymentTracking";
 import { InvoiceTable } from "@/components/InvoiceTable";
+// src/pages/Dashboard.tsx
+import { useFinancialYear } from '@/hooks/useFinancialYear';
+import { useInvoiceData } from '@/hooks/useInvoiceData';
+
+const Dashboard = () => {
+  const { currentYear } = useFinancialYear();
+  const { invoices, loading, error } = useInvoiceData(currentYear);
+
+  if (loading) return <div>Loading...</div>;
+  if (error) return <div>Error: {error.message}</div>;
+
+  return (
+    <div className="p-6">
+      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
+      {/* Dashboard content will go here */}
+    </div>
+  );
+};
+
+export default Dashboard;
 
 export default function Dashboard({ year }: DashboardProps) {
   const { selectedYear } = useFinancialYear();

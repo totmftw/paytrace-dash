@@ -1,35 +1,36 @@
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
-import type { Invoice } from '@/types/dashboard';
+// src/hooks/useInvoiceData.ts
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabaseClient';
+import { Invoice } from '@/types/types';
 
 export const useInvoiceData = (year: string) => {
-  return useQuery({
-    queryKey: ['invoices', year],
-    queryFn: async () => {
-      const [startYear, endYear] = year.split('-');
-      const startDate = `${startYear}-04-01`;
-      const endDate = `${endYear}-03-31`;
-      
-      const { data, error } = await supabase
-        .from('invoiceTable')
-        .select(`
-          *,
-          customerMaster!invoiceTable_invCustid_fkey (
-            custBusinessname,
-            custWhatsapp,
-            custCreditperiod
-          ),
-          paymentTransactions!paymentTransactions_invId_fkey (
-            paymentId,
-            amount,
-            paymentDate
-          )
-        `)
-        .gte('invDate', startDate)
-        .lte('invDate', endDate);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
-      if (error) throw error;
-      return data as unknown as Invoice[];
-    }
-  });
+  useEffect(() => {
+    const fetchInvoices = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('invoices')
+          .select(`
+            *,
+            customerMaster:customers(*),
+            paymentTransactions:payment_transactions(*)
+          `)
+          .eq('fy', year);
+
+        if (error) throw error;
+        setInvoices(data || []);
+      } catch (err) {
+        setError(err as Error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInvoices();
+  }, [year]);
+
+  return { invoices, loading, error };
 };

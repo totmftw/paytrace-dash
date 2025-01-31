@@ -8,6 +8,7 @@ import { PaymentMetrics } from "@/components/dashboard/PaymentMetrics";
 import { SalesOverview } from "@/components/dashboard/SalesOverview";
 import { CustomerStats } from "@/components/dashboard/CustomerStats";
 import { PaymentTracking } from "@/components/dashboard/PaymentTracking";
+import { Json } from "@/integrations/supabase/types";
 
 const defaultWidgets = [
   {
@@ -107,11 +108,16 @@ export default function Dashboard() {
   });
 
   const currentWidgets = layoutData?.layout ? 
-    defaultWidgets.map(widget => ({
-      ...widget,
-      ...(Array.isArray(layoutData.layout) ? 
-        layoutData.layout.find((l: LayoutItem) => l.i === widget.id) : {})
-    })) : 
+    defaultWidgets.map(widget => {
+      const layoutItem = Array.isArray(layoutData.layout) ? 
+        (layoutData.layout as LayoutItem[]).find(l => l.i === widget.id) : 
+        undefined;
+      
+      return {
+        ...widget,
+        ...(layoutItem || {})
+      };
+    }) : 
     defaultWidgets;
 
   return (

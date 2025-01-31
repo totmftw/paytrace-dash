@@ -115,8 +115,12 @@ export default function Dashboard() {
           typeof l === 'object' && 
           l !== null && 
           'i' in l && 
+          'x' in l &&
+          'y' in l &&
+          'w' in l &&
+          'h' in l &&
           l.i === widget.id
-        ) as LayoutItem | undefined : 
+        ) as unknown as LayoutItem | undefined : 
         undefined;
       
       return {

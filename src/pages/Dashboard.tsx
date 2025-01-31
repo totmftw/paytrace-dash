@@ -4,12 +4,14 @@ import { DetailedDataTable } from "@/components/DetailedDataTable";
 import { MetricsCard } from "@/components/MetricsCard";
 import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { CashIcon, ClockIcon, ShoppingBagIcon, FileTextIcon } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { BanknoteIcon, ClockIcon, ShoppingBagIcon, FileTextIcon } from "lucide-react";
+import { useState } from "react";
 
 export default function Dashboard() {
   const { selectedYear } = useFinancialYear();
+  const [pendingPopupOpen, setPendingPopupOpen] = useState(false);
+  const [outstandingPopupOpen, setOutstandingPopupOpen] = useState(false);
+  const [totalSalesPopupOpen, setTotalSalesPopupOpen] = useState(false);
 
   const { data: invoices } = useQuery({
     queryKey: ["invoices", selectedYear],
@@ -38,7 +40,7 @@ export default function Dashboard() {
 
       if (error) throw error;
       return data;
-    },
+    }
   });
 
   const totalSales = invoices?.reduce((sum, invoice) => sum + invoice.invTotal, 0) ?? 0;
@@ -54,17 +56,18 @@ export default function Dashboard() {
         <MetricsCard
           title="Total Sales"
           value={totalSales}
-          icon={<ShoppingBagIcon className="h-6 w-6" />}
+          iconComponent={<BanknoteIcon className="h-6 w-6" />}
         />
         <MetricsCard
           title="Total Orders"
           value={totalOrders}
-          icon={<FileTextIcon className="h-6 w-6" />}
+          iconComponent={<FileTextIcon className="h-6 w-6" />}
         />
       </div>
       <DetailedDataTable
         title="Total Sales"
-        data={invoices}
+        data={invoices || []}
+        onClose={() => setTotalSalesPopupOpen(false)}
       />
     </div>
   );

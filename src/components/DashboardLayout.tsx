@@ -5,20 +5,24 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 
-type Layout = {
+interface Layout {
   i: string;
   x: number;
   y: number;
   w: number;
   h: number;
-};
+}
+
+interface LayoutData {
+  layout: Layout[];
+}
 
 export default function DashboardLayout() {
   const { user } = useAuth();
   const { toast } = useToast();
   const isITAdmin = user?.role === "it_admin";
 
-  const { data: layoutData } = useQuery<Layout[]>({
+  const { data: layoutData } = useQuery<LayoutData>({
     queryKey: ["dashboard-layout", user?.id],
     queryFn: async () => {
       if (!user) throw new Error("No user");
@@ -30,10 +34,10 @@ export default function DashboardLayout() {
       
       if (error) {
         console.error("Error fetching layout:", error);
-        return [];
+        return { layout: [] };
       }
 
-      return data?.layout || [];
+      return { layout: data?.layout || [] };
     },
     enabled: !!user,
   });
@@ -68,14 +72,12 @@ export default function DashboardLayout() {
   useEffect(() => {
     if (layoutData && isITAdmin) {
       // Update the layout with the retrieved data
-      // (You would need to set the layout in your state here)
     }
   }, [layoutData, isITAdmin]);
 
   return (
     <div className="h-full overflow-y-auto overflow-x-hidden bg-[#E8F3E8]">
       <div className="container mx-auto p-6">
-        {/* Render the child route component */}
         <Outlet />
       </div>
     </div>

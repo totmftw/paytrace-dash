@@ -4,6 +4,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/toaster";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { FinancialYearProvider } from "@/contexts/FinancialYearContext";
 import AppRoutes from "./AppRoutes";
 
 const queryClient = new QueryClient();
@@ -14,12 +15,14 @@ function App() {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider>
           <AuthProvider>
-            <SidebarProvider>
-              <div className="min-h-screen flex w-full">
-                <AppRoutes />
-                <Toaster />
-              </div>
-            </SidebarProvider>
+            <FinancialYearProvider>
+              <SidebarProvider>
+                <div className="min-h-screen flex w-full">
+                  <AppRoutes />
+                  <Toaster />
+                </div>
+              </SidebarProvider>
+            </FinancialYearProvider>
           </AuthProvider>
         </ThemeProvider>
       </QueryClientProvider>

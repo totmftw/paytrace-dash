@@ -54,8 +54,7 @@ export default function DashboardLayout({ editable = false }: { editable?: boole
       }
 
       if (data) {
-        // Convert the JSON layout data to Layout type
-        const layout = data.layout as SerializedLayout[];
+        const layout = data.layout as unknown as SerializedLayout[];
         return {
           ...data,
           layout: layout.map(item => ({
@@ -76,14 +75,13 @@ export default function DashboardLayout({ editable = false }: { editable?: boole
     mutationFn: async (newLayout: Layout[]) => {
       if (!user) throw new Error("No user");
       
-      // Convert Layout[] to a serializable format
       const serializedLayout = newLayout.map(item => ({
         i: item.i,
         x: item.x,
         y: item.y,
         w: item.w,
         h: item.h
-      }));
+      })) as unknown as Json;
 
       const { error } = await supabase
         .from("dashboard_layouts")

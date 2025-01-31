@@ -1,6 +1,5 @@
 import { Layout } from 'react-grid-layout';
 import { ReactNode } from 'react';
-import { LucideIcon } from 'lucide-react';
 
 export interface LayoutData {
   layout: Layout[];
@@ -33,6 +32,7 @@ export interface DashboardWidget {
   y: number;
   w: number;
   h: number;
+
 }
 
 export interface PaymentTransaction {

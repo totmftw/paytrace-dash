@@ -1,7 +1,7 @@
 export interface PaymentTransaction {
   paymentId: number;
   amount: number;
-  paymentDate?: string;
+  paymentDate: string;
   transactionId?: string;
   paymentMode?: string;
   chequeNumber?: string;
@@ -11,7 +11,7 @@ export interface PaymentTransaction {
 
 export interface CustomerMaster {
   custBusinessname: string;
-  custCreditperiod?: number;
+  custCreditperiod: number;
   custWhatsapp: number;
 }
 
@@ -37,7 +37,7 @@ export interface Customer {
   id: number;
   custBusinessname: string;
   custWhatsapp: number;
-  custCreditperiod?: number;
+  custCreditperiod: number;
 }
 
 export interface Options {

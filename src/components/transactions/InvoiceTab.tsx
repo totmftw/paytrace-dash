@@ -21,8 +21,14 @@ export default function InvoiceTab({ year }: { year: string }) {
             custWhatsapp
           ),
           paymentTransactions (
+            paymentId,
             amount,
-            paymentId
+            paymentDate,
+            transactionId,
+            paymentMode,
+            chequeNumber,
+            bankName,
+            remarks
           )
         `)
         .gte("invDate", `${startYear}-04-01`)
@@ -46,7 +52,7 @@ export default function InvoiceTab({ year }: { year: string }) {
       <div className="flex items-center gap-4">
         <AddInvoiceButton />
         <DownloadTemplateButton tableName="invoiceTable" />
-        <UploadInvoiceButton tableName="invoiceTable" />
+        <UploadInvoiceButton />
       </div>
       
       <TransactionInvoiceTable 

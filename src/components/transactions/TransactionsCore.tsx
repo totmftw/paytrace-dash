@@ -6,32 +6,28 @@ import InvoiceTab from "./InvoiceTab";
 import PaymentTab from "./PaymentTab";
 import LedgerTab from "./LedgerTab";
 
-interface TabProps {
-  year: string;
-}
-
 export default function TransactionsCore() {
   const navigate = useNavigate();
   const { selectedYear } = useFinancialYear();
 
   return (
-    <div className="space-y-6 bg-[#E8F3E8] min-h-screen p-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight text-[#1B4D3E]">Transactions</h2>
-          <p className="text-[#4A7862]">
-            View and manage all transactions
-          </p>
+    <ColumnConfigProvider>
+      <div className="space-y-6 bg-[#E8F3E8] min-h-screen p-6">
+        <div className="flex justify-between items-center">
+          <div>
+            <h2 className="text-3xl font-bold tracking-tight text-[#1B4D3E]">Transactions</h2>
+            <p className="text-[#4A7862]">
+              View and manage all transactions
+            </p>
+          </div>
         </div>
-      </div>
 
-      <Tabs defaultValue="invoices" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="invoices">Invoices</TabsTrigger>
-          <TabsTrigger value="payments">Payments</TabsTrigger>
-          <TabsTrigger value="ledger">Ledger</TabsTrigger>
-        </TabsList>
-        <ColumnConfigProvider>
+        <Tabs defaultValue="invoices" className="space-y-4">
+          <TabsList>
+            <TabsTrigger value="invoices">Invoices</TabsTrigger>
+            <TabsTrigger value="payments">Payments</TabsTrigger>
+            <TabsTrigger value="ledger">Ledger</TabsTrigger>
+          </TabsList>
           <TabsContent value="invoices">
             <InvoiceTab year={selectedYear} />
           </TabsContent>
@@ -41,8 +37,8 @@ export default function TransactionsCore() {
           <TabsContent value="ledger">
             <LedgerTab />
           </TabsContent>
-        </ColumnConfigProvider>
-      </Tabs>
-    </div>
+        </Tabs>
+      </div>
+    </ColumnConfigProvider>
   );
 }

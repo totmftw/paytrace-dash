@@ -1,13 +1,12 @@
-// src/pages/Transactions/InvoiceTab.tsx
 import { useInvoiceData } from '@/hooks/useInvoiceData';
-import { AddInvoiceButton } from '@/components/buttons/AddInvoiceButton';
-import { DownloadTemplateButton } from '@/components/buttons/DownloadTemplateButton';
-import { InvoiceTable } from '@/components/transactions/InvoiceTable';
-import { useColumnConfig } from '@/contexts/ColumnConfigContext';
+import { AddInvoiceButton } from "../buttons/AddInvoiceButton";
+import { DownloadTemplateButton } from "../buttons/DownloadTemplateButton";
+import { UploadInvoiceButton } from "../buttons/UploadInvoiceButton";
+import { TransactionInvoiceTable } from "./TransactionInvoiceTable";
+import type { Invoice } from "@/types";
 
 export default function InvoiceTab({ year }: { year: string }) {
   const { data: invoices, isLoading, isError } = useInvoiceData(year);
-  const { visibleColumns } = useColumnConfig();
 
   if (isError) return <div>Error fetching data</div>;
 
@@ -20,7 +19,12 @@ export default function InvoiceTab({ year }: { year: string }) {
           <UploadInvoiceButton />
         </div>
       </div>
-      <InvoiceTable data={invoices} isLoading={isLoading} visibleColumns={visibleColumns} />
+      <TransactionInvoiceTable 
+        data={invoices || []} 
+        isLoading={isLoading}
+        onCustomerClick={() => {}}
+        onInvoiceClick={() => {}}
+      />
     </div>
   );
 }

@@ -1,11 +1,15 @@
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
+import { useQuery } from "@tanstack/react-query";
 
 export function CustomerLedgerTable() {
   const { startDate, endDate } = useFinancialYear();
   
   // Fetch data based on the financial year
-  const { data, error, isLoading } = useQuery(['customerLedger', startDate, endDate], () => {
-    return fetch(`/api/customerLedger?start=${startDate}&end=${endDate}`).then(res => res.json());
+  const { data, error, isLoading } = useQuery({
+    queryKey: ['customerLedger', startDate, endDate],
+    queryFn: () => {
+      return fetch(`/api/customerLedger?start=${startDate}&end=${endDate}`).then(res => res.json());
+    }
   });
 
   if (isLoading) return <div>Loading...</div>;

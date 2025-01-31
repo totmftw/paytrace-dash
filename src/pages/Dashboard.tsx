@@ -98,9 +98,7 @@ export default function Dashboard() {
         )}
       </div>
       {isLayoutEditable && isITAdmin && (
-        <Button onClick={handleApply}>
-          Apply Changes
-        </Button>
+        <Button onClick={handleApply}>Apply Changes</Button>
       )}
       <GridLayout
         className="layout"
@@ -114,21 +112,25 @@ export default function Dashboard() {
         onLayoutChange={handleLayoutChange}
       >
         <MetricsCard
+          key="totalSales"
           title="Total Sales"
           value={0}
           onClick={() => {}}
         />
         <MetricsCard
+          key="pendingPayments"
           title="Pending Payments"
           value={0}
           onClick={() => {}}
         />
         <MetricsCard
+          key="outstandingPayments"
           title="Outstanding Payments"
           value={0}
           onClick={() => {}}
         />
         <MetricsCard
+          key="totalInvoices"
           title="Total Invoices"
           value={0}
           onClick={() => {}}

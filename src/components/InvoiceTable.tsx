@@ -5,60 +5,13 @@ import { ColumnDef, useReactTable, getCoreRowModel, flexRender } from '@tanstack
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useFinancialYear } from '@/contexts/FinancialYearContext';
 import { InvoiceDetailsPopup } from './InvoiceDetailsPopup';
-// src/components/InvoiceTable.tsx
-import { useDashboardData } from '@/hooks/useDashboardData';
-import { DataTable } from '@/components/ui/data-table';
-import DetailedDataTable from '@/components/DetailedDataTable';
-
 import { Invoice } from '@/types';
-
-interface InvoiceTableProps {
-  invoices: Invoice[];
-  onClick: (invoice: Invoice) => void;
-}
 
 interface InvoiceTableProps {
   selectedYear: string;
 }
 
-export const InvoiceTable = ({ selectedYear }: InvoiceTableProps) => {
-  const { data, isLoading } = useDashboardData({
-    selectedYear,
-    additionalColumns: 'invDuedate',
-  });
-
-  const handleRowClick = (invoice: Invoice) => {
-    // Open detailed popup
-    DetailedDataTable.open(invoice);
-  };
-
-  return (
-    <DataTable
-      columns={[
-        {
-          accessorKey: 'invNumber',
-          header: 'Invoice #',
-          cell: ({ row }) => (
-            <button
-              onClick={() => handleRowClick(row.original)}
-              className="text-blue-600 hover:text-blue-800"
-            >
-              {row.original.invNumber}
-            </button>
-          ),
-        },
-        // ...other columns
-      ]}
-      data={data?.invoices || []}
-      isLoading={isLoading}
-    />
-  );
-};
-
-  // ... existing code to render table
-}
-export function InvoiceTable() {
-  const { selectedYear } = useFinancialYear();
+export function InvoiceTable({ selectedYear }: InvoiceTableProps) {
   const [selectedInvoice, setSelectedInvoice] = useState<number | null>(null);
   const [isInvoiceDetailOpen, setIsInvoiceDetailOpen] = useState(false);
 

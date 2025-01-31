@@ -20,7 +20,13 @@ const AppRoutes = () => {
       <Route path="/login" element={<Login />} />
       
       {/* Protected routes wrapped in AppLayout */}
-      <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
+      <Route 
+        element={
+          <ProtectedRoute>
+            <AppLayout />
+          </ProtectedRoute>
+        }
+      >
         {/* Dashboard layout for main content */}
         <Route element={<DashboardLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />

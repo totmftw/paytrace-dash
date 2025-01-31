@@ -1,15 +1,16 @@
-// src/contexts/ColumnConfigContext.tsx
 import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 
 interface ColumnConfigContextType {
   visibleColumns: string[];
+  setVisibleColumns: (columns: string[]) => void;
   setColumnOrder: (order: string[]) => Promise<void>;
 }
 
 export const ColumnConfigContext = createContext<ColumnConfigContextType>({
   visibleColumns: [],
+  setVisibleColumns: () => {},
   setColumnOrder: async () => {},
 });
 
@@ -26,7 +27,7 @@ export const ColumnConfigProvider = ({ children }: { children: React.ReactNode }
         .eq('id', user.id)
         .single();
 
-      if (data?.preferences && data.preferences?.columns) {
+      if (data?.preferences?.columns) {
         setVisibleColumns(data.preferences.columns);
       }
     };
@@ -38,12 +39,14 @@ export const ColumnConfigProvider = ({ children }: { children: React.ReactNode }
     setVisibleColumns(newOrder);
     await supabase
       .from('user_profiles')
-      .update({ preferences: { columns: newOrder } })
+      .update({ 
+        preferences: { columns: newOrder } 
+      })
       .eq('id', user.id);
   };
 
   return (
-    <ColumnConfigContext.Provider value={{ visibleColumns, setColumnOrder }}>
+    <ColumnConfigContext.Provider value={{ visibleColumns, setVisibleColumns, setColumnOrder }}>
       {children}
     </ColumnConfigContext.Provider>
   );

@@ -23,12 +23,13 @@ export interface CustomerMaster {
 
 export interface Invoice {
   invId: number;
+  invCustid?: number;
   invNumber: string;
   invDate: string;
   invDuedate: string;
-  invTotal: number;
   invValue: number;
   invGst: number;
+  invTotal: number;
   invBalanceAmount: number;
   invPaymentStatus: string;
   invAddamount?: number;
@@ -64,13 +65,3 @@ export interface LedgerEntry {
 }
 
 export type TableName = 'invoiceTable' | 'customerMaster' | 'paymentTransactions';
-
-export interface UserPreferences {
-  columns?: string[];
-}
-
-export interface ColumnConfigContextType {
-  visibleColumns: string[];
-  setVisibleColumns: (columns: string[]) => void;
-  setColumnOrder: (order: string[]) => Promise<void>;
-}

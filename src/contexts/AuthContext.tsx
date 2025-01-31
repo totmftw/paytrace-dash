@@ -1,21 +1,18 @@
-// src/contexts/AuthContext.tsx
+// src/context/AuthContext.tsx
 import { createContext, useContext, useEffect, useState } from 'react'
-import { User, Session } from '@supabase/supabase-js'
+import { Session, User } from '@supabase/supabase-js'
 import { supabase } from '../integrations/supabase/client'
 
 interface AuthContextType {
   user: User | null
   session: Session | null
   loading: boolean
+  signIn: (email: string, password: string, rememberMe: boolean) => Promise<void>
   signOut: () => Promise<void>
+  resetPassword: (email: string) => Promise<void>
 }
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  session: null,
-  loading: true,
-  signOut: async () => {},
-})
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -23,7 +20,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Check active sessions
+    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setUser(session?.user ?? null)
@@ -40,17 +37,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe()
   }, [])
 
+  const signIn = async (email: string, password: string, rememberMe: boolean) => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+      options: {
+        persistSession: rememberMe
+      }
+    })
+    if (error) throw error
+  }
+
   const signOut = async () => {
-    await supabase.auth.signOut()
-    setUser(null)
-    setSession(null)
+    const { error } = await supabase.auth.signOut()
+    if (error) throw error
+  }
+
+  const resetPassword = async (email: string) => {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`
+    })
+    if (error) throw error
   }
 
   return (
-    <AuthContext.Provider value={{ user, session, loading, signOut }}>
+    <AuthContext.Provider value={{
+      user,
+      session,
+      loading,
+      signIn,
+      signOut,
+      resetPassword
+    }}>
       {children}
     </AuthContext.Provider>
   )
 }
 
-export const useAuth = () => useContext(AuthContext)
+export const useAuth = () => {
+  const context = useContext(AuthContext)
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider')
+  }
+  return context
+}

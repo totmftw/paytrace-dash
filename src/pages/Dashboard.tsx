@@ -18,9 +18,12 @@ export default function Dashboard({ year }: DashboardProps) {
           customerMaster!invoiceTable_invCustid_fkey (
             custBusinessname,
             custCreditperiod,
-            custWhatsapp
+            custWhatsapp,
+            custGST,
+            custPhone,
+            custAddress
           ),
-          paymentTransactions!paymentTransactions_invId_fkey (
+          paymentTransactions (
             paymentId,
             invId,
             amount,

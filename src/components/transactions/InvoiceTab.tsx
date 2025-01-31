@@ -20,7 +20,7 @@ export default function InvoiceTab({ year }: { year: string }) {
         </div>
       </div>
       <TransactionInvoiceTable 
-        data={invoices || []} 
+        data={invoices as Invoice[] || []} 
         isLoading={isLoading}
         onCustomerClick={() => {}}
         onInvoiceClick={() => {}}

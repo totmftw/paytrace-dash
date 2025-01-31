@@ -23,7 +23,15 @@ export interface Invoice {
   invId: number;
   invNumber: string;
   invDate: string;
+  invDuedate: string;
   invTotal: number;
+  invBalanceAmount: number;
+  invGst: number;
+  invValue: number;
+  invAddamount?: number;
+  invSubamount?: number;
+  invMarkcleared?: boolean;
+  invMessage1?: string;
   customerMaster: {
     custBusinessname: string;
     custCreditperiod: number;
@@ -34,3 +42,19 @@ export interface Invoice {
     paymentId: number;
   }[];
 }
+
+export type TableName = 
+  | "custom_permissions"
+  | "customer_ledger"
+  | "customerMaster"
+  | "dashboard_config"
+  | "dashboard_layouts"
+  | "dashboard_metrics"
+  | "expenses"
+  | "feature_permissions"
+  | "invoiceTable"
+  | "paymentTransactions"
+  | "productManagement"
+  | "role_permissions"
+  | "user_profiles"
+  | "whatsapp_config";

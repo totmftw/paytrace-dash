@@ -1,7 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { TableName } from "@/types/types";
 
-export const useUploadData = <T extends Record<string, any>>(tableName: keyof Database['public']['Tables']) => {
+export const useUploadData = <T extends Record<string, any>>(tableName: TableName) => {
   const { toast } = useToast();
 
   const upload = async (data: T[]) => {

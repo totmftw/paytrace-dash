@@ -2,10 +2,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { TableName } from "@/types/types";
 import * as XLSX from 'xlsx';
 
 interface ExcelUploadProps {
-  tableName: string;
+  tableName: TableName;
   onSuccess: () => void;
   validateRow?: (row: any) => boolean;
   transformRow?: (row: any) => any;

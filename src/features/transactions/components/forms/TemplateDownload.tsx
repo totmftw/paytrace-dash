@@ -1,9 +1,10 @@
 import { Button } from "@/components/ui/button";
+import { TableName } from "@/types/types";
 import * as XLSX from 'xlsx';
 import { supabase } from "@/integrations/supabase/client";
 
 interface TemplateDownloadProps {
-  tableName: string;
+  tableName: TableName;
   fileName: string;
 }
 

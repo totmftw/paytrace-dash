@@ -921,6 +921,22 @@ export type Database = {
               balance: number
             }[]
           }
+      get_customer_ledger_with_details: {
+        Args: {
+          p_customer_id: number
+          p_start_date: string
+          p_end_date: string
+        }
+        Returns: {
+          transaction_date: string
+          transaction_type: string
+          reference_number: string
+          debit_amount: number
+          credit_amount: number
+          balance: number
+          description: string
+        }[]
+      }
       get_financial_year: {
         Args: {
           the_date: string

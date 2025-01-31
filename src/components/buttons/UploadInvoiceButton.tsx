@@ -22,6 +22,8 @@ type InvoiceData = {
   fy: string;
 };
 
+type TableRecord = Database['public']['Tables'][UploadInvoiceButtonProps['tableName']]['Row'];
+
 export default function UploadInvoiceButton({ tableName }: UploadInvoiceButtonProps) {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
@@ -45,8 +47,7 @@ export default function UploadInvoiceButton({ tableName }: UploadInvoiceButtonPr
           // Check for duplicates
           const { data: existingInvoices, error } = await supabase
             .from(tableName)
-            .select('invNumber')
-            .in('invNumber', jsonData.map(item => item.invNumber));
+            .select('invNumber');
 
           if (error) throw error;
 

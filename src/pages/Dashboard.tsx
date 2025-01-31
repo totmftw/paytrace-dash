@@ -4,13 +4,11 @@ import { DetailedDataTable } from "@/components/DetailedDataTable";
 import { MetricsCard } from "@/components/MetricsCard";
 import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
-import { BanknoteIcon, ClockIcon, ShoppingBagIcon, FileTextIcon } from "lucide-react";
+import { BanknoteIcon, FileTextIcon } from "lucide-react";
 import { useState } from "react";
 
 export default function Dashboard() {
   const { selectedYear } = useFinancialYear();
-  const [pendingPopupOpen, setPendingPopupOpen] = useState(false);
-  const [outstandingPopupOpen, setOutstandingPopupOpen] = useState(false);
   const [totalSalesPopupOpen, setTotalSalesPopupOpen] = useState(false);
 
   const { data: invoices } = useQuery({
@@ -27,7 +25,9 @@ export default function Dashboard() {
           customerMaster!invoiceTable_invCustid_fkey (
             custBusinessname,
             custCreditperiod,
-            custWhatsapp
+            custWhatsapp,
+            custGST,
+            custPhone
           ),
           paymentTransactions (
             paymentId,

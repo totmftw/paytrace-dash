@@ -29,7 +29,7 @@ export default function DashboardLayout() {
       const { data, error } = await supabase
         .from("dashboard_layouts")
         .select("layout")
-        .eq("user_id", user.id)
+        .eq("created_by", user.id)
         .maybeSingle();
       
       if (error) {
@@ -37,7 +37,7 @@ export default function DashboardLayout() {
         return { layout: [] };
       }
 
-      return { layout: data?.layout || [] };
+      return { layout: data?.layout as Layout[] || [] };
     },
     enabled: !!user,
   });
@@ -49,8 +49,9 @@ export default function DashboardLayout() {
       const { error } = await supabase
         .from("dashboard_layouts")
         .upsert({
-          user_id: user.id,
+          created_by: user.id,
           layout: newLayout,
+          is_active: true,
         });
 
       if (error) {

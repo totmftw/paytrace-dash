@@ -22,8 +22,16 @@ export interface Invoice {
   invDuedate: string;
   invTotal: number;
   invBalanceAmount: number;
+  invPaymentStatus: string;
   customerMaster: {
     custBusinessname: string;
   };
-  paymentTransactions?: PaymentTransaction[];
+  paymentTransactions: PaymentTransaction[];
+}
+
+export interface MetricsSummary {
+  totalSales: number;
+  pendingPayments: number;
+  outstandingPayments: number;
+  totalInvoices: number;
 }

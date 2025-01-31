@@ -29,7 +29,7 @@ export default function DashboardLayout() {
 
       const parsedLayout = data?.layout ? 
         (typeof data.layout === 'string' ? 
-          JSON.parse(data.layout) as Layout[] : 
+          JSON.parse(data.layout) : 
           Array.isArray(data.layout) ? 
             data.layout.map(item => ({
               i: String(item.i || ''),

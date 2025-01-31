@@ -30,9 +30,6 @@ export interface PaymentTransaction {
 export interface CustomerMaster {
   custBusinessname: string;
   custCreditperiod?: number;
-  custWhatsapp?: number;
-  custGST?: string;
-  custPhone?: number;
 }
 
 export interface Invoice {

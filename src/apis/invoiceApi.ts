@@ -1,5 +1,5 @@
-// src/apis/invoiceApi.ts
 import { supabase } from '@/integrations/supabase/client';
+import type { Invoice } from '@/types';
 
 export const fetchInvoiceData = async (startDate: string, endDate: string) => {
   const { data, error } = await supabase
@@ -8,7 +8,8 @@ export const fetchInvoiceData = async (startDate: string, endDate: string) => {
       `
         *,
         customerMaster!invoiceTable_invCustid_fkey (
-          custBusinessname
+          custBusinessname,
+          custWhatsapp
         ),
         paymentTransactions!paymentTransactions_invId_fkey (
           paymentId,
@@ -22,4 +23,19 @@ export const fetchInvoiceData = async (startDate: string, endDate: string) => {
 
   if (error) throw error;
   return data as Invoice[];
+};
+
+export const fetchInvoiceMetrics = async (startDate: string, endDate: string) => {
+  const invoices = await fetchInvoiceData(startDate, endDate);
+  
+  const totalSales = invoices.reduce((sum, inv) => sum + inv.invTotal, 0);
+  const totalPayments = invoices.reduce((sum, inv) => 
+    sum + (inv.paymentTransactions?.reduce((pSum, p) => pSum + p.amount, 0) || 0), 
+  0);
+  
+  return {
+    totalSales,
+    pendingPayments: totalSales - totalPayments,
+    totalInvoices: invoices.length,
+  };
 };

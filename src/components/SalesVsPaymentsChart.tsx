@@ -1,71 +1,70 @@
-import { Card } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from "recharts";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import type { Invoice } from "@/types";
 
-interface SalesVsPaymentsChartProps {
-  selectedYear: string;
+interface ChartData {
+  month: string;
+  sales: number;
+  payments: number;
 }
 
-export function SalesVsPaymentsChart({ selectedYear }: SalesVsPaymentsChartProps) {
-  const [startDate, endDate] = selectedYear.split('-');
-  const fyStartDate = `${startDate}-04-01`;
-  const fyEndDate = `${endDate}-03-31`;
-
-  const { data: chartData } = useQuery({
-    queryKey: ["sales-vs-payments", selectedYear],
+export function SalesVsPaymentsChart({ selectedYear }: { selectedYear: string }) {
+  const { data: invoices } = useQuery({
+    queryKey: ["invoices", selectedYear],
     queryFn: async () => {
-      const { data: invoices, error: invError } = await supabase
+      const [startYear, endYear] = selectedYear.split('-');
+      const { data, error } = await supabase
         .from("invoiceTable")
         .select(`
-          invTotal,
-          invDate,
-          paymentTransactions (
+          *,
+          customerMaster!invoiceTable_invCustid_fkey (
+            custBusinessname
+          ),
+          paymentTransactions!paymentTransactions_invId_fkey (
             amount,
             paymentDate
           )
         `)
-        .gte("invDate", fyStartDate)
-        .lte("invDate", fyEndDate);
+        .gte("invDate", `${startYear}-04-01`)
+        .lte("invDate", `${endYear}-03-31`);
 
-      if (invError) throw invError;
-
-      const monthlyData = Array.from({ length: 12 }, (_, i) => ({
-        month: new Date(2000, i).toLocaleString('default', { month: 'short' }),
-        sales: 0,
-        payments: 0,
-      }));
-
-      invoices?.forEach((invoice) => {
-        const month = new Date(invoice.invDate).getMonth();
-        monthlyData[month].sales += invoice.invTotal;
-
-        const payments = invoice.paymentTransactions?.reduce(
-          (sum, payment) => sum + payment.amount,
-          0
-        ) || 0;
-        monthlyData[month].payments += payments;
-      });
-
-      return monthlyData;
+      if (error) throw error;
+      return data as Invoice[];
     },
   });
 
+  const chartData: ChartData[] = invoices
+    ? Array.from({ length: 12 }, (_, i) => {
+        const month = new Date(2000, i, 1).toLocaleString('default', { month: 'short' });
+        const monthInvoices = invoices.filter(inv => 
+          new Date(inv.invDate).getMonth() === i
+        );
+        const sales = monthInvoices.reduce((sum, inv) => sum + inv.invTotal, 0);
+        const payments = monthInvoices.reduce((sum, inv) => 
+          sum + (inv.paymentTransactions?.reduce((pSum, p) => pSum + p.amount, 0) || 0), 
+        0);
+        return { month, sales, payments };
+      })
+    : [];
+
   return (
     <Card>
-      <h3 className="text-lg font-semibold mb-4 px-4">Sales vs Payments</h3>
-      <div className="h-[300px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="sales" fill="#22c55e" name="Sales" />
-            <Bar dataKey="payments" fill="#3b82f6" name="Payments Received" />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
+      <CardHeader>
+        <CardTitle>Sales vs Payments</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <BarChart width={800} height={400} data={chartData}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="month" />
+          <YAxis />
+          <Tooltip />
+          <Legend />
+          <Bar dataKey="sales" fill="#8884d8" name="Sales" />
+          <Bar dataKey="payments" fill="#82ca9d" name="Payments" />
+        </BarChart>
+      </CardContent>
     </Card>
   );
 }

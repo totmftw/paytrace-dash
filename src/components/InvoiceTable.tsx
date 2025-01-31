@@ -1,6 +1,11 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import type { Invoice } from '@/types/types';
 import { formatCurrency } from '@/lib/utils';
+// src/components/InvoiceTable.tsx
+import { useFinancialYear } from "@/contexts/FinancialYearContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+// ... (rest of the implementation remains the same)
 
 interface InvoiceTableProps {
   data: Invoice[];

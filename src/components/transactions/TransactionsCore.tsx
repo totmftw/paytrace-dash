@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ColumnConfigProvider } from "@/contexts/ColumnConfigContext";
-import InvoiceTab from "./InvoiceTab";
+import InvoiceTab from "./InvoicesTab";
 import PaymentTab from "./PaymentTab";
 import LedgerTab from "./LedgerTab";
 

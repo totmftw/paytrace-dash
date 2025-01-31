@@ -4,6 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { Layout } from "react-grid-layout";
+// src/components/dashboard/LayoutConfig.tsx
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
+import { useUser } from '@/hooks/useUser';
+import { useFinancialYear } from "@/contexts/FinancialYearContext";
+// ... (rest of the implementation remains the same)
 
 export function LayoutConfig({ layout }: { layout: Layout[] }) {
   const { user } = useAuth();

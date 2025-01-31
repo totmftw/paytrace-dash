@@ -3,6 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+// src/components/SalesVsPaymentsChart.tsx
+import { useFinancialYear } from "@/contexts/FinancialYearContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+// ... (rest of the implementation remains the same)
 
 interface SalesVsPaymentsChartProps {
   selectedYear: string;

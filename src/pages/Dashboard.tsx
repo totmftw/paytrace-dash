@@ -8,24 +8,109 @@ import type { DashboardProps, Invoice } from "@/types/dashboard";
 import { SalesVsPaymentsChart } from "@/components/SalesVsPaymentsChart";
 import { PaymentTracking } from "@/components/dashboard/PaymentTracking";
 import { InvoiceTable } from "@/components/InvoiceTable";
-// src/pages/Dashboard.tsx
-import { useFinancialYear } from '@/hooks/useFinancialYear';
-import { useInvoiceData } from '@/hooks/useInvoiceData';
+// src/components/Dashboard.tsx
+import { useEffect, useState } from 'react';
+import { GridLayout, Responsive, WidthProvider } from 'react-grid-layout';
+import { useSupabaseClient } from '@supabase/auth-helpers-react';
+import { useFinancialYear } from '@/context/FinancialYearContext';
+import { useUser } from '@/hooks/useUser';
+import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
+
+const ResponsiveGridLayout = WidthProvider(Responsive);
 
 const Dashboard = () => {
-  const { currentYear } = useFinancialYear();
-  const { invoices, loading, error } = useInvoiceData(currentYear);
+  const { user, isAdmin } = useUser();
+  const supabase = useSupabaseClient();
+  const { selectedYear, setSelectedYear } = useFinancialYear();
+  const [layouts, setLayouts] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error.message}</div>;
+  // Fetch saved layout
+  useEffect(() => {
+    const fetchLayout = async () => {
+      const { data, error } = await supabase
+        .from('dashboard_layouts')
+        .select('layout')
+        .eq('is_active', true)
+        .single();
+      
+      if (data) setLayouts(JSON.parse(data.layout));
+    };
+    fetchLayout();
+  }, []);
+
+  const saveLayout = async (newLayout) => {
+    const { error } = await supabase
+      .from('dashboard_layouts')
+      .upsert({
+        layout: JSON.stringify(newLayout),
+        created_by: user.id,
+        is_active: true
+      });
+
+    if (!error) {
+      setIsEditing(false);
+      // Show success toast
+    }
+  };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
-      {/* Dashboard content will go here */}
+    <div className="p-4 bg-pastel-moss min-h-screen">
+      <div className="flex justify-between items-center mb-4">
+        <select
+          value={selectedYear}
+          onChange={(e) => setSelectedYear(e.target.value)}
+          className="p-2 border rounded bg-white"
+        >
+          {Array.from({ length: 5 }, (_, i) => {
+            const year = new Date().getFullYear() - 2 + i;
+            return (
+              <option key={year} value={year}>
+                {`FY ${year}-${year + 1}`}
+              </option>
+            );
+          })}
+        </select>
+
+        {isAdmin && (
+          <button
+            onClick={() => setIsEditing(!isEditing)}
+            className="bg-leaf-green text-forest-green px-4 py-2 rounded"
+          >
+            {isEditing ? 'Save Layout' : 'Configure Layout'}
+          </button>
+        )}
+      </div>
+
+      <ResponsiveGridLayout
+        className="layout"
+        layouts={layouts}
+        breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
+        cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
+        rowHeight={100}
+        isDraggable={isEditing}
+        isResizable={isEditing}
+        onLayoutChange={(layout) => {
+          if (isEditing) setLayouts({ ...layouts, lg: layout });
+        }}
+      >
+        <div key="metrics" data-grid={{ x: 0, y: 0, w: 12, h: 2 }}>
+          <MetricsGrid />
+        </div>
+        <div key="invoiceTable" data-grid={{ x: 0, y: 2, w: 8, h: 4 }}>
+          <InvoiceTable />
+        </div>
+        <div key="salesChart" data-grid={{ x: 8, y: 2, w: 4, h: 4 }}>
+          <SalesVsPaymentsChart />
+        </div>
+      </ResponsiveGridLayout>
     </div>
   );
 };
+
+export default Dashboard;
+
 
 export default Dashboard;
 

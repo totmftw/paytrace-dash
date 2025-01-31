@@ -98,7 +98,12 @@ export default function Dashboard() {
     },
   });
 
-  const currentWidgets = layoutData?.layout || defaultWidgets;
+  const currentWidgets = layoutData?.layout ? 
+    defaultWidgets.map(widget => ({
+      ...widget,
+      ...layoutData.layout.find((l: any) => l.i === widget.id)
+    })) : 
+    defaultWidgets;
 
   return (
     <div className="h-full overflow-y-auto overflow-x-hidden bg-[#E8F3E8]">

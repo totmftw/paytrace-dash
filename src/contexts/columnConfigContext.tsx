@@ -25,7 +25,13 @@ export function ColumnConfigProvider({ children }: { children: React.ReactNode }
   };
 
   return (
-    <ColumnConfigContext.Provider value={{ visibleColumns, setVisibleColumns, setColumnOrder }}>
+    <ColumnConfigContext.Provider 
+      value={{ 
+        visibleColumns, 
+        setVisibleColumns, 
+        setColumnOrder 
+      }}
+    >
       {children}
     </ColumnConfigContext.Provider>
   );

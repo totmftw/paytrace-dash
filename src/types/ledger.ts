@@ -1,5 +1,4 @@
 export interface LedgerEntry {
-  id: number;
   transaction_date: string;
   transaction_type: string;
   reference_number: string;

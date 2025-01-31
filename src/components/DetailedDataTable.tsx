@@ -20,16 +20,16 @@ export function DetailedDataTable({ title, data = [], onClose }: DetailedDataTab
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-24">Invoice #</TableHead>
-                <TableHead className="w-48">Customer</TableHead>
-                <TableHead className="w-24">Amount</TableHead>
-                <TableHead className="w-32">Invoice Date</TableHead>
-                <TableHead className="w-32">Due Date</TableHead>
-                <TableHead className="w-24">Status</TableHead>
+                <TableHead>Invoice #</TableHead>
+                <TableHead>Customer</TableHead>
+                <TableHead>Amount</TableHead>
+                <TableHead>Invoice Date</TableHead>
+                <TableHead>Due Date</TableHead>
+                <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data?.map((invoice) => (
+              {data.map((invoice) => (
                 <TableRow key={invoice.invId}>
                   <TableCell>{invoice.invNumber}</TableCell>
                   <TableCell>{invoice.customerMaster?.custBusinessname}</TableCell>

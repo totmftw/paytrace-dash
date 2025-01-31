@@ -11,42 +11,37 @@ interface InvoiceTableProps {
 export function InvoiceTable({ data, isLoading, visibleColumns }: InvoiceTableProps) {
   if (isLoading) return <div>Loading...</div>;
 
-  const formatCellValue = (invoice: Invoice, column: string): string => {
-    switch (column) {
-      case 'customerMaster':
-        return invoice.customerMaster?.custBusinessname || '';
-      case 'invTotal':
-      case 'invValue':
-      case 'invBalanceAmount':
-        const value = invoice[column as keyof Invoice];
-        return typeof value === 'number' ? formatCurrency(value) : String(value);
-      case 'invDate':
-      case 'invDuedate':
-        const date = invoice[column as keyof Invoice];
-        return typeof date === 'string' ? new Date(date).toLocaleDateString() : String(date);
-      default:
-        const defaultValue = invoice[column as keyof Invoice];
-        return String(defaultValue || '');
-    }
+  const columns = {
+    invNumber: "Invoice Number",
+    customerBusinessname: "Customer",
+    invTotal: "Total Amount",
+    invDate: "Invoice Date",
+    invDuedate: "Due Date",
+    status: "Status"
   };
 
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          {visibleColumns.map((column) => (
-            <TableHead key={column}>{column}</TableHead>
+          {Object.keys(columns).map((column) => (
+            <TableHead key={column}>{columns[column]}</TableHead>
           ))}
         </TableRow>
       </TableHeader>
       <TableBody>
         {data.map((invoice) => (
           <TableRow key={invoice.invId}>
-            {visibleColumns.map((column) => (
-              <TableCell key={column}>
-                {formatCellValue(invoice, column)}
-              </TableCell>
-            ))}
+            <TableCell>{invoice.invNumber}</TableCell>
+            <TableCell>{invoice.customerMaster?.custBusinessname}</TableCell>
+            <TableCell>{formatCurrency(invoice.invTotal)}</TableCell>
+            <TableCell>{new Date(invoice.invDate).toLocaleDateString()}</TableCell>
+            <TableCell>{new Date(invoice.invDuedate).toLocaleDateString()}</TableCell>
+            <TableCell>
+              {new Date(invoice.invDuedate) < new Date()
+                ? "Overdue"
+                : "Pending"}
+            </TableCell>
           </TableRow>
         ))}
       </TableBody>

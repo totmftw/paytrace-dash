@@ -15,3 +15,11 @@ export function formatCurrency(amount: number): string {
 export function formatDate(date: string) {
   return new Date(date).toLocaleDateString("en-IN");
 }
+
+export function getInitials(name: string) {
+  return name
+    .split(" ")
+    .map((n) => n.charAt(0))
+    .join("")
+    .toUpperCase();
+}

@@ -2,7 +2,7 @@ import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Invoice } from '@/types/dashboard';
+import { Invoice } from '@/types/types';
 
 interface InvoiceDetailsPopupProps {
   invoiceId: number;
@@ -46,9 +46,7 @@ export function InvoiceDetailsPopup({ invoiceId, isOpen, onClose }: InvoiceDetai
           <div className="text-center p-4">Loading...</div>
         ) : (
           <div>
-            <h3 className="text-lg font-bold">
-              Invoice # {data?.invNumber}
-            </h3>
+            <h3 className="text-lg font-bold">Invoice #{data?.invNumber}</h3>
             <dl className="grid grid-cols-2 gap-4">
               <div>
                 <dt className="text-sm text-gray-600">Customer</dt>

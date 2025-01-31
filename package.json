@@ -91,3 +91,11 @@
     "vite": "^5.4.1"
   }
 }
+{
+  "dependencies": {
+    "@mui/material": "^5.x.x",
+    "@mui/x-data-grid": "^6.x.x",
+    "react-grid-layout": "^1.3.4",
+    "@supabase/supabase-js": "^2.x.x"
+  }
+}

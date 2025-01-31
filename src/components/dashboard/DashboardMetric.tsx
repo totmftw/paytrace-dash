@@ -2,6 +2,13 @@
 import { useState } from 'react';
 import { Dialog } from '@/components/ui/dialog';
 import { DataTable } from '@/components/ui/data-table';
+// src/components/dashboard/DashboardMetric.tsx
+import { Dialog } from '@mui/material';  // Change from @/components/ui/dialog
+import { DataGrid } from '@mui/x-data-grid';  // Change from custom DataTable
+
+export function DashboardMetric({ title, value, type, data, onMetricClick }: DashboardMetricProps) {
+  // ... rest of implementation using MUI components
+}
 
 interface DashboardMetricProps {
   title: string;

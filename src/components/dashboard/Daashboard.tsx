@@ -97,3 +97,53 @@ export function Dashboard() {
     </div>
   );
 }
+// src/components/dashboard/Dashboard.tsx
+import { Box, Button } from '@mui/material';
+import { Snackbar, Alert } from '@mui/material';  // Replace toast with MUI Snackbar
+import GridLayout from 'react-grid-layout';  // Use direct import
+
+export function Dashboard() {
+  // ... existing implementation
+  
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
+
+  const showSnackbar = (message: string, severity: 'success' | 'error') => {
+    setSnackbar({
+      open: true,
+      message,
+      severity
+    });
+  };
+
+  const saveLayout = async () => {
+    const { error } = await supabase
+      .from('dashboard_layouts')
+      .upsert({ layout });
+
+    if (!error) {
+      showSnackbar('Layout saved successfully', 'success');
+      setIsConfiguring(false);
+    } else {
+      showSnackbar('Failed to save layout', 'error');
+    }
+  };
+
+  return (
+    <Box sx={{ p: 2 }}>
+      {/* ... rest of the JSX using MUI components */}
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={() => setSnackbar(prev => ({ ...prev, open: false }))}
+      >
+        <Alert severity={snackbar.severity}>
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </Box>
+  );
+}

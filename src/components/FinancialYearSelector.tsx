@@ -1,31 +1,22 @@
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useFinancialYear } from "@/contexts/FinancialYearContext";
+// src/components/FinancialYearSelector.tsx
+import { useFinancialYear } from "../contexts/FinancialYearContext";
 
-export function FinancialYearSelector() {
+export const FinancialYearSelector = () => {
   const { selectedYear, setSelectedYear } = useFinancialYear();
-
-  const generateYearOptions = () => {
-    const currentYear = new Date().getFullYear();
-    const years: string[] = [];
-    for (let i = -2; i <= 2; i++) {
-      const year = currentYear + i;
-      years.push(`${year}-${year + 1}`);
-    }
-    return years;
-  };
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 5 }, (_, i) => currentYear - 2 + i);
 
   return (
-    <Select value={selectedYear} onValueChange={(e) => setSelectedYear(e as string)}>
-      <SelectTrigger className="w-[180px]">
-        <SelectValue placeholder="Select Year" />
-      </SelectTrigger>
-      <SelectContent>
-        {generateYearOptions().map((year) => (
-          <SelectItem key={year} value={year}>
-            FY {year}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <select
+      value={selectedYear}
+      onChange={(e) => setSelectedYear(e.target.value)}
+      className="p-2 border rounded bg-white text-forest-green"
+    >
+      {years.map(year => (
+        <option key={year} value={year}>
+          FY {year}-{year + 1}
+        </option>
+      ))}
+    </select>
   );
-}
+};

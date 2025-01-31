@@ -1,8 +1,5 @@
-// src/context/FinancialYearContext.tsx
-import { createContext, useContext, useState } from 'react';
 // src/contexts/FinancialYearContext.tsx
-// (Keep existing implementation but update imports to match correct paths)
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, ReactNode } from 'react';
 
 interface FinancialYearContextType {
   selectedYear: string;
@@ -12,7 +9,7 @@ interface FinancialYearContextType {
 
 const FinancialYearContext = createContext<FinancialYearContextType | undefined>(undefined);
 
-export const FinancialYearProvider = ({ children }) => {
+export const FinancialYearProvider = ({ children }: { children: ReactNode }) => {
   const [selectedYear, setSelectedYear] = useState(() => {
     const today = new Date();
     const currentMonth = today.getMonth();
@@ -21,8 +18,9 @@ export const FinancialYearProvider = ({ children }) => {
   });
 
   const getFinancialYearDates = () => {
-    const startDate = new Date(`${selectedYear}-04-01`);
-    const endDate = new Date(`${parseInt(selectedYear) + 1}-03-31`);
+    const year = parseInt(selectedYear);
+    const startDate = new Date(year, 3, 1); // April 1st
+    const endDate = new Date(year + 1, 2, 31); // March 31st
     return { startDate, endDate };
   };
 
@@ -35,6 +33,8 @@ export const FinancialYearProvider = ({ children }) => {
 
 export const useFinancialYear = () => {
   const context = useContext(FinancialYearContext);
-  if (!context) throw new Error('useFinancialYear must be used within FinancialYearProvider');
+  if (!context) {
+    throw new Error('useFinancialYear must be used within FinancialYearProvider');
+  }
   return context;
 };

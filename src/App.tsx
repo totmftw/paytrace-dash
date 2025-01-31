@@ -1,25 +1,23 @@
+// src/App.tsx
 import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider } from '@/contexts/AuthContext';
-import { ColumnConfigProvider } from '@/contexts/ColumnConfigContext';
-import { FinancialYearProvider } from '@/contexts/FinancialYearContext';
-import AppRoutes from './AppRoutes';
-import './index.css';
+import { FinancialYearProvider } from './contexts/FinancialYearContext';
+import Dashboard from './pages/Dashboard';
 
 const queryClient = new QueryClient();
 
-export default function App() {
+function App() {
   return (
     <BrowserRouter>
       <QueryClientProvider client={queryClient}>
-        <AuthProvider>
-          <FinancialYearProvider>
-            <ColumnConfigProvider>
-              <AppRoutes />
-            </ColumnConfigProvider>
-          </FinancialYearProvider>
-        </AuthProvider>
+        <FinancialYearProvider>
+          <div className="min-h-screen bg-pastel-moss">
+            <Dashboard />
+          </div>
+        </FinancialYearProvider>
       </QueryClientProvider>
     </BrowserRouter>
   );
 }
+
+export default App;

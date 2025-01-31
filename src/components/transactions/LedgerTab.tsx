@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { DataTable } from "@/components/ui/datatable";
+import { DataTable } from "@/components/ui/DataTable";
 import { PDFExport } from "@/components/buttons/PDFExport";
 import { Card } from "@/components/ui/card";
 import type { Customer } from "@/types";
@@ -37,11 +37,11 @@ export default function LedgerTab() {
         data={customers || []}
         columns={[
           {
-            accessorKey: "custBusinessname",
+            key: "custBusinessname",
             header: "Business Name"
           },
           {
-            accessorKey: "custWhatsapp",
+            key: "custWhatsapp",
             header: "WhatsApp"
           }
         ]}

@@ -14,6 +14,9 @@ export interface CustomerMaster {
   custBusinessname: string;
   custCreditperiod: number;
   custWhatsapp: number;
+  custAddress?: string;
+  custGST: string;
+  custPhone: number;
 }
 
 export interface Invoice {
@@ -51,18 +54,20 @@ export interface PaymentData {
 
 export interface LedgerEntry {
   transaction_date: string;
-  description: string;
-  invoice_number?: string;
+  transaction_type: string;
+  reference_number: string;
   debit_amount: number;
   credit_amount: number;
   balance: number;
-  transaction_type: string;
+  description: string;
 }
 
 export type TableName = 'invoiceTable' | 'customerMaster' | 'paymentTransactions';
 
 export interface UserPreferences {
   columns?: string[];
+  theme?: string;
+  defaultView?: string;
 }
 
 export interface ColumnConfigContextType {
@@ -74,4 +79,23 @@ export interface ColumnConfigContextType {
 export interface CustomerTableProps {
   data: Invoice[];
   isLoading: boolean;
+}
+
+export interface SellerInfo {
+  businessName: string;
+  address: string;
+  city: string;
+}
+
+export interface TableColumnConfig {
+  id: string;
+  label: string;
+  isVisible: boolean;
+  order: number;
+}
+
+export interface TableConfig {
+  columns: TableColumnConfig[];
+  sortBy?: string;
+  sortDirection?: 'asc' | 'desc';
 }

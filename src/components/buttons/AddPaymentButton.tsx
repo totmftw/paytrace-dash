@@ -2,20 +2,15 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import type { PaymentData } from "@/types/types";
 
-interface PaymentData {
+interface SelectedInvoice {
   invId: number;
-  transactionId: string;
-  paymentDate: string;
-  amount: number;
-  paymentMode: "cash" | "cheque" | "online";
-  remarks: string;
-  chequeNumber?: string;
-  bankName?: string;
+  invNumber: string;
 }
 
 export function AddPaymentButton() {
-  const [selectedInvoices, setSelectedInvoices] = useState<{ id: string; number: string; }[]>([]);
+  const [selectedInvoices, setSelectedInvoices] = useState<SelectedInvoice[]>([]);
 
   const handlePayment = async (paymentData: PaymentData[]) => {
     const formattedPayments = paymentData.map(payment => ({
@@ -31,7 +26,7 @@ export function AddPaymentButton() {
   };
 
   return (
-    <Button onClick={() => handlePayment(selectedInvoices)}>
+    <Button onClick={() => handlePayment([])}>
       Add Payment
     </Button>
   );

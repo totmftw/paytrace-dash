@@ -32,6 +32,7 @@ export interface Invoice {
   invSubamount?: number;
   invMarkcleared?: boolean;
   invMessage1?: string;
+  fy: string;
   customerMaster: {
     custBusinessname: string;
     custCreditperiod: number;

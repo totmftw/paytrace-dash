@@ -4,6 +4,7 @@ import { TransactionInvoiceTable } from "./TransactionInvoiceTable";
 import { AddInvoiceButton } from "../buttons/AddInvoiceButton";
 import { DownloadTemplateButton } from "../buttons/DownloadTemplateButton";
 import { UploadInvoiceButton } from "../buttons/UploadInvoiceButton";
+import type { Invoice } from "@/types/types";
 
 export default function InvoiceTab({ year }: { year: string }) {
   const { data: invoices, isLoading } = useQuery({
@@ -11,12 +12,23 @@ export default function InvoiceTab({ year }: { year: string }) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("invoiceTable")
-        .select('*')
+        .select(`
+          *,
+          customerMaster!invoiceTable_invCustid_fkey (
+            custBusinessname,
+            custCreditperiod,
+            custWhatsapp
+          ),
+          paymentTransactions (
+            amount,
+            paymentId
+          )
+        `)
         .gte("invDate", `${year}-04-01`)
         .lte("invDate", `${parseInt(year) + 1}-03-31`);
 
       if (error) throw error;
-      return data || [];
+      return data as Invoice[];
     },
   });
 

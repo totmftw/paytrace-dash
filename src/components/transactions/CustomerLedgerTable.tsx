@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CustomerSelector } from "./CustomerSelector";
 import { DataTable } from "@/components/ui/data-table";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
-import { LedgerEntry } from "@/types/ledger";
+import type { LedgerEntry } from "@/types/types";
 
 interface CustomerLedgerTableProps {
   onCustomerClick?: (customer: any) => void;
@@ -16,7 +16,7 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
   const { selectedYear, getFYDates } = useFinancialYear();
   const { start, end } = getFYDates();
 
-  const { data: ledgerData = [], isLoading } = useQuery<LedgerEntry[]>({
+  const { data: ledgerData = [], isLoading } = useQuery({
     queryKey: ["customer-ledger", selectedCustomerId, selectedYear],
     queryFn: async () => {
       if (!selectedCustomerId) return [];
@@ -29,7 +29,7 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
         });
 
       if (error) throw error;
-      return data || [];
+      return data as LedgerEntry[];
     },
     enabled: !!selectedCustomerId,
   });
@@ -51,12 +51,12 @@ export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProp
     {
       key: "debit_amount",
       header: "Debit",
-      cell: (row: LedgerEntry) => row.debit.toFixed(2)
+      cell: (row: LedgerEntry) => row.debit_amount.toFixed(2)
     },
     {
       key: "credit_amount",
       header: "Credit",
-      cell: (row: LedgerEntry) => row.credit.toFixed(2)
+      cell: (row: LedgerEntry) => row.credit_amount.toFixed(2)
     },
     {
       key: "balance",

@@ -16,7 +16,7 @@ export function SalesVsPaymentsChart({ selectedYear }: SalesVsPaymentsChartProps
         .from("invoiceTable")
         .select(`
           *,
-          customerMaster!invoiceTable_invCustid_fkey (
+          customerMaster:customerMaster!invoiceTable_invCustid_fkey (
             custBusinessname,
             custCreditperiod,
             custWhatsapp

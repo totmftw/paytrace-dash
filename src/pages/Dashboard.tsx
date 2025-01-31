@@ -11,21 +11,8 @@ import { PaymentTracking } from "@/components/dashboard/PaymentTracking";
 import { Json } from "@/integrations/supabase/types";
 import { LayoutProvider } from "@/hooks/useLayouts";
 import { FinancialYearFilter } from "./FinancialYearFilter";
+import { Overview } from "@/components/dashboard/Overview";
 
-export default function Dashboard() {
-  return (
-    <LayoutProvider>
-      <div className="flex flex-col h-screen">
-        <header className="p-4">
-          <FinancialYearFilter />
-        </header>
-        <main className="flex-1 p-4">
-          <Overview />
-        </main>
-      </div>
-    </LayoutProvider>
-  );
-}
 const defaultWidgets = [
   {
     id: "payment-metrics",
@@ -147,13 +134,22 @@ export default function Dashboard() {
     defaultWidgets;
 
   return (
-    <div className="h-full overflow-y-auto overflow-x-hidden bg-[#E8F3E8]">
-      <div className="container mx-auto p-6">
-        <DashboardGridLayout 
-          widgets={currentWidgets} 
-          onApply={updateLayoutMutation.mutate}
-        />
+    <LayoutProvider>
+      <div className="flex flex-col h-screen">
+        <header className="p-4">
+          <FinancialYearFilter />
+        </header>
+        <main className="flex-1 p-4">
+          <div className="h-full overflow-y-auto overflow-x-hidden bg-[#E8F3E8]">
+            <div className="container mx-auto p-6">
+              <DashboardGridLayout 
+                widgets={currentWidgets} 
+                onApply={updateLayoutMutation.mutate}
+              />
+            </div>
+          </div>
+        </main>
       </div>
-    </div>
+    </LayoutProvider>
   );
 }

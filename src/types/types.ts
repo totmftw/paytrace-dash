@@ -36,17 +36,6 @@ export interface Invoice {
   paymentTransactions: PaymentTransaction[];
 }
 
-export interface PaymentData {
-  invId: number;
-  amount: number;
-  paymentDate: string;
-  paymentMode: string;
-  transactionId: string;
-  chequeNumber?: string;
-  bankName?: string;
-  remarks?: string;
-}
-
 export interface LedgerEntry {
   transaction_date: string;
   transaction_type: string;

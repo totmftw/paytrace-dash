@@ -1,5 +1,5 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Invoice } from '@/types/types';
+import type { Invoice } from '@/types/types';
 import { formatCurrency } from '@/lib/utils';
 
 interface InvoiceTableProps {
@@ -12,25 +12,22 @@ export function InvoiceTable({ data, isLoading, visibleColumns }: InvoiceTablePr
   if (isLoading) return <div>Loading...</div>;
 
   const formatCellValue = (invoice: Invoice, column: string) => {
-    const value = invoice[column as keyof Invoice];
-    
-    if (column.toLowerCase().includes('amount') || column.toLowerCase().includes('total')) {
-      return typeof value === 'number' ? formatCurrency(value) : value;
+    switch (column) {
+      case 'customerMaster':
+        return invoice.customerMaster?.custBusinessname || '';
+      case 'invTotal':
+      case 'invValue':
+      case 'invBalanceAmount':
+        const value = invoice[column as keyof Invoice];
+        return typeof value === 'number' ? formatCurrency(value) : value;
+      case 'invDate':
+      case 'invDuedate':
+        const date = invoice[column as keyof Invoice];
+        return typeof date === 'string' ? new Date(date).toLocaleDateString() : date;
+      default:
+        const defaultValue = invoice[column as keyof Invoice];
+        return defaultValue?.toString() || '';
     }
-    
-    if (column.includes('date') && typeof value === 'string') {
-      return new Date(value).toLocaleDateString();
-    }
-    
-    if (column === 'customerMaster') {
-      return invoice.customerMaster?.custBusinessname || '';
-    }
-    
-    if (typeof value === 'object' && value !== null) {
-      return JSON.stringify(value);
-    }
-    
-    return value?.toString() || '';
   };
 
   return (

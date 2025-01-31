@@ -1,27 +1,23 @@
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
-import { TableName } from "@/types/types";
+import { supabase } from '@/integrations/supabase/client';
+import type { TableName } from '@/types/types';
 
-export const useUploadData = <T extends Record<string, any>>(tableName: TableName) => {
-  const { toast } = useToast();
-
-  const upload = async (data: T[]) => {
+export const useUpload = () => {
+  const uploadData = async <T extends Record<string, any>>(
+    tableName: TableName,
+    data: T[]
+  ) => {
     try {
       const { error } = await supabase
         .from(tableName)
-        .insert(data);
+        .insert(data as any); // Type assertion needed due to dynamic table structure
 
       if (error) throw error;
-
-      toast({ title: "Success", description: "Data uploaded successfully" });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message || "Failed to upload data",
-      });
+      return { success: true };
+    } catch (error) {
+      console.error('Upload error:', error);
+      return { success: false, error };
     }
   };
 
-  return { upload };
+  return { uploadData };
 };

@@ -1,11 +1,16 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import type { Json } from '@/integrations/supabase/types';
 
 interface ColumnConfigContextType {
   visibleColumns: string[];
   setVisibleColumns: (columns: string[]) => void;
   setColumnOrder: (order: string[]) => Promise<void>;
+}
+
+interface UserPreferences {
+  columns?: string[];
 }
 
 export const ColumnConfigContext = createContext<ColumnConfigContextType>({
@@ -27,8 +32,9 @@ export const ColumnConfigProvider = ({ children }: { children: React.ReactNode }
         .eq('id', user.id)
         .single();
 
-      if (data?.preferences?.columns) {
-        setVisibleColumns(data.preferences.columns);
+      const preferences = data?.preferences as UserPreferences;
+      if (preferences?.columns) {
+        setVisibleColumns(preferences.columns);
       }
     };
     fetchColumns();

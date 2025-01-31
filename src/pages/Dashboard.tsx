@@ -1,7 +1,3 @@
-import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
@@ -15,7 +11,6 @@ export default function Dashboard() {
   const { toast } = useToast();
   const { user } = useAuth();
   const { selectedYear } = useFinancialYear();
-  const isITAdmin = user?.role === "it_admin";
 
   const widgets = [
     {
@@ -55,7 +50,6 @@ export default function Dashboard() {
   const handleApplyLayout = async () => {
     try {
       const serializedLayout = widgets.map(({ content, ...rest }) => rest);
-
       const { error } = await supabase
         .from("dashboard_layouts")
         .upsert({

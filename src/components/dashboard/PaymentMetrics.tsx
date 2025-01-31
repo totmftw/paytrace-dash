@@ -6,9 +6,26 @@ import { DetailedDataTable } from "@/components/DetailedDataTable";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
 
+interface Invoice {
+  invId: number;
+  invNumber: string;
+  invTotal: number;
+  invDuedate: string;
+  invDate: string;
+  customerMaster: {
+    custBusinessname: string;
+    custCreditperiod: number;
+    custWhatsapp: number;
+  };
+  paymentTransactions: Array<{
+    amount: number;
+    paymentId: number;
+  }>;
+}
+
 export function PaymentMetrics() {
   const { selectedYear } = useFinancialYear();
-  const [selectedData, setSelectedData] = useState([]);
+  const [selectedData, setSelectedData] = useState<Invoice[]>([]);
   const [dialogTitle, setDialogTitle] = useState("");
 
   const { data: metrics } = useQuery({
@@ -64,7 +81,7 @@ export function PaymentMetrics() {
         totalOutstandingAmount,
         totalSales,
         totalOrders,
-        allInvoices: invoices || [],
+        allInvoices: invoices || []
       };
     },
   });

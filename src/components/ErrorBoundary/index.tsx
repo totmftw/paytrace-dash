@@ -1,4 +1,4 @@
-// src/components/ErrorBoundary.tsx
+// src/components/ErrorBoundary/index.tsx
 import { Component, ErrorInfo, ReactNode } from 'react';
 
 interface Props {
@@ -31,6 +31,9 @@ class ErrorBoundary extends Component<Props, State> {
             <h1 className="text-2xl font-bold text-red-600 mb-4">
               Something went wrong
             </h1>
+            <pre className="text-sm text-red-500 mb-4">
+              {this.state.error?.message}
+            </pre>
             <button
               onClick={() => window.location.reload()}
               className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"

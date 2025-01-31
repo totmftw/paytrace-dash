@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { useFinancialYear } from "@/contexts/FinancialYearContext";
 import { fetchInvoiceMetrics } from "@/apis/invoiceApi";
+import { useFinancialYear } from "@/contexts/FinancialYearContext";
 
 export const useMetricDetail = () => {
   const { startDate, endDate } = useFinancialYear();

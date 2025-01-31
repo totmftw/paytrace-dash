@@ -8,26 +8,17 @@ interface FinancialYearContextType {
   endDate: Date;
 }
 
-const FinancialYearContext = createContext<FinancialYearContextType | undefined>(undefined);
+export const FinancialYearContext = createContext<FinancialYearContextType | undefined>(undefined);
 
-export function useFinancialYear() {
-  const context = useContext(FinancialYearContext);
-  if (!context) {
-    throw new Error("useFinancialYear must be used within a FinancialYearProvider");
-  }
-  return context;
-}
-
-export function FinancialYearProvider({ children }: React.PropsWithChildren) {
+export function FinancialYearProvider({ children }: { children: React.ReactNode }) {
   const [selectedYear, setSelectedYear] = useState(() => {
     const now = dayjs();
     const year = now.month() >= 3 ? now.year() : now.year() - 1;
     return `${year}-${year + 1}`;
   });
 
-  const [startYear, endYear] = selectedYear.split('-').map(Number);
-  const startDate = dayjs(`${startYear}-04-01`).toDate();
-  const endDate = dayjs(`${endYear}-03-31`).toDate();
+  const startDate = dayjs(`${selectedYear.split('-')[0]}-04-01`).toDate();
+  const endDate = dayjs(`${selectedYear.split('-')[1]}-03-31`).toDate();
 
   return (
     <FinancialYearContext.Provider 
@@ -41,4 +32,12 @@ export function FinancialYearProvider({ children }: React.PropsWithChildren) {
       {children}
     </FinancialYearContext.Provider>
   );
+}
+
+export function useFinancialYear() {
+  const context = useContext(FinancialYearContext);
+  if (!context) {
+    throw new Error("useFinancialYear must be used within a FinancialYearProvider");
+  }
+  return context;
 }

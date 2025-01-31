@@ -70,7 +70,7 @@ export default function Dashboard() {
         .from('dashboard_layouts')
         .select('*')
         .eq('is_active', true)
-        .single();
+        .maybeSingle();
 
       if (error) throw error;
       return data;

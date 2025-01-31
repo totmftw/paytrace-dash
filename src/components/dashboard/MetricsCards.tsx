@@ -1,44 +1,49 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
+import { useFinancialYear } from "@/contexts/FinancialYearContext";
+import { useDashboardData } from "@/hooks/useDashboardData";
 import { formatCurrency } from "@/lib/utils";
 
 export function MetricsCards() {
-  const { data: metrics } = useQuery({
-    queryKey: ["dashboard-metrics"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("dashboard_metrics")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(4);
+  const { selectedYear } = useFinancialYear();
+  const { data: metrics, isLoading } = useDashboardData(selectedYear);
 
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  const cards = [
-    { title: "Total Sales", value: metrics?.[0]?.metric_value || 0 },
-    { title: "Outstanding Payments", value: metrics?.[1]?.metric_value || 0 },
-    { title: "Pending Invoices", value: metrics?.[2]?.metric_value || 0 },
-    { title: "Active Customers", value: metrics?.[3]?.metric_value || 0 },
-  ];
+  if (isLoading) return <div>Loading...</div>;
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      {cards.map((card, index) => (
-        <Card key={index}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {formatCurrency(card.value)}
-            </div>
-          </CardContent>
-        </Card>
-      ))}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Total Sales</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{formatCurrency(metrics?.totalSales || 0)}</div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Pending Payments</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{formatCurrency(metrics?.pendingPayments || 0)}</div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Outstanding Payments</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{formatCurrency(metrics?.outstandingPayments || 0)}</div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardTitle className="text-sm font-medium">Total Invoices</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="text-2xl font-bold">{metrics?.totalInvoices || 0}</div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

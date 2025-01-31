@@ -12,6 +12,11 @@ export interface PaymentTransaction {
   paymentDate: string;
 }
 
+export interface CustomerMaster {
+  custBusinessname: string;
+  custCreditperiod?: number;
+}
+
 export interface Invoice {
   invId: number;
   invNumber: string;
@@ -26,10 +31,7 @@ export interface Invoice {
   invGst: number;
   invMarkcleared?: boolean;
   invMessage1: string;
-  customerMaster: {
-    custBusinessname: string;
-    custCreditperiod?: number;
-  };
+  customerMaster: CustomerMaster;
   paymentTransactions: PaymentTransaction[];
 }
 

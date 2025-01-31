@@ -12,9 +12,9 @@ export function PaymentHistory() {
         .from("paymentTransactions")
         .select(`
           *,
-          invoiceTable:invoiceTable(
+          invoiceTable!invoiceTable_invId_fkey (
             invNumber,
-            customerMaster:customerMaster(
+            customerMaster!invoiceTable_invCustid_fkey (
               custBusinessname
             )
           )

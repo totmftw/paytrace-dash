@@ -1,13 +1,22 @@
-// src/layouts/DashboardLayout.tsx
 import { useEffect } from "react";
 import GridLayout from "react-grid-layout";
 import { Outlet } from "react-router-dom";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
+
+interface Layout {
+  i: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
 
 export default function DashboardLayout({ editable = false }: { editable?: boolean }) {
   const { user } = useAuth();
+  const { toast } = useToast();
   const isITAdmin = user?.role === "it_admin";
 
   const { data: layout, error: layoutError } = useQuery({
@@ -17,37 +26,61 @@ export default function DashboardLayout({ editable = false }: { editable?: boole
       const { data, error } = await supabase
         .from("dashboard_layouts")
         .select("*")
-        .eq("user_id", user.id);
-      if (error || !data?.length) return [];
-      return data?.[0]?.layout || [];
+        .eq("created_by", user.id)
+        .eq("is_active", true)
+        .single();
+      
+      if (error) {
+        console.error("Error fetching layout:", error);
+        return [];
+      }
+      return data?.layout as Layout[] || [];
     },
   });
 
   const updateLayoutMutation = useMutation({
-    mutationFn: async (newLayout: any) => {
+    mutationFn: async (newLayout: Layout[]) => {
       if (!user) throw new Error("No user");
       const { error } = await supabase
         .from("dashboard_layouts")
-        .upsert({ user_id: user.id, layout: newLayout });
-      return error ?? null;
+        .upsert({
+          created_by: user.id,
+          layout: newLayout,
+          is_active: true
+        });
+
+      if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to save layout"
+        });
+        throw error;
+      }
+
+      toast({
+        title: "Success",
+        description: "Layout saved successfully"
+      });
     },
   });
 
   useEffect(() => {
-    if (editable && layout) updateLayoutMutation.mutate(layout);
-  }, [editable, layout]);
+    if (editable && layout && isITAdmin) {
+      updateLayoutMutation.mutate(layout);
+    }
+  }, [editable, layout, isITAdmin]);
 
   return (
     <div className="h-full overflow-y-auto overflow-x-hidden">
       <div className="container mx-auto p-6">
-        {editable && (
+        {editable && isITAdmin && (
           <div className="mb-4">
             <button
               className="bg-blue-500 text-white p-2 rounded"
-              onClick={async () => {
-                if (isITAdmin) {
-                  const success = await updateLayoutMutation.mutateAsync(layout);
-                  if (!success) alert("Layout saved successfully!");
+              onClick={() => {
+                if (layout) {
+                  updateLayoutMutation.mutate(layout);
                 }
               }}
             >
@@ -60,12 +93,15 @@ export default function DashboardLayout({ editable = false }: { editable?: boole
           layout={layout || []}
           cols={12}
           rowHeight={30}
+          width={1200}
           margin={[10, 10]}
           compactType="vertical"
           isDraggable={editable}
           isResizable={editable}
           onLayoutChange={(newLayout) => {
-            updateLayoutMutation.mutate(newLayout);
+            if (editable && isITAdmin) {
+              updateLayoutMutation.mutate(newLayout);
+            }
           }}
         >
           <Outlet />

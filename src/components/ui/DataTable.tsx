@@ -1,73 +1,67 @@
+import React from 'react';
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from '@tanstack/react-table';
 import {
   Table,
   TableBody,
-  TableFooter,
+  TableCell,
   TableHead,
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { useReactTable, ColumnDef } from '@tanstack/react-table';
-import { Button } from '@/components/ui/button';
-import { SearchBar } from '@/components/SearchBar';
 
-interface DataTableProps<T extends object> {
-  data: T[];
+interface DataTableProps<T> {
   columns: ColumnDef<T>[];
+  data: T[];
   isLoading?: boolean;
-  onColumnVisibilityChange?: (columns: string[]) => void;
 }
 
-export function DataTable<T extends object>({
-  data,
+export function DataTable<T>({
   columns,
-  isLoading,
-  onColumnVisibilityChange,
+  data,
+  isLoading = false,
 }: DataTableProps<T>) {
   const table = useReactTable({
     data,
     columns,
-    filterFns: {
-      fuzzy: (rows, id, filterValue) => {
-        const text = (row.getValue(id) as string).toLowerCase();
-        return text.includes(filterValue.toLowerCase());
-      },
-    },
-    state: {
-      columnVisibility: columns.reduce((acc, col) => ({ ...acc, [col.id]: col.meta?.visible ?? true }), {} as Record<string, boolean>),
-    },
-    onColumnVisibilityChange: (updater) =>
-      onColumnVisibilityChange?.(Object.entries(updater()).filter(([_, visible]) => visible).map(([key]) => key)),
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
   });
 
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <div className="h-full overflow-y-auto">
-      <div className="flex items-center justify-end mb-4">
-        <SearchBar onSearch={(value) => table.setGlobalFilter(value)} />
-      </div>
+    <div className="rounded-md border">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
                 <TableHead key={header.id}>
-                  {header.isPlaceholder
-                    ? null
-                    : header.column.getCanSort()
-                    ? <>{header.render('Header')} {header.column.getIsSorted() ? ((header.column.getIsSorted() === 'asc' ? '👆' : '👇') as any) : ''}</>
-                    : flexRender(header.column.columnDef.header, header.getContext())}
+                  {flexRender(
+                    header.column.columnDef.header,
+                    header.getContext()
+                  )}
                 </TableHead>
               ))}
             </TableRow>
           ))}
         </TableHeader>
         <TableBody>
-          {table.getRowModel().rows?.length > 0 ? (
+          {table.getRowModel().rows?.length ? (
             table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
+              <TableRow key={row.id}>
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -77,15 +71,12 @@ export function DataTable<T extends object>({
             ))
           ) : (
             <TableRow>
-              <TableCell colSpan={columns.length} className="text-center">
+              <TableCell colSpan={columns.length} className="h-24 text-center">
                 No results.
               </TableCell>
             </TableRow>
           )}
         </TableBody>
-        <TableFooter>
-          {/* Pagination controls */}
-        </TableFooter>
       </Table>
     </div>
   );

@@ -1,22 +1,47 @@
-import { PaymentTransaction, Invoice as DBInvoice } from './dashboard';
-
-export interface Invoice extends DBInvoice {
-  customerMaster: {
-    custBusinessname: string;
-    custCreditperiod?: number;
-    custWhatsapp: number;
-  };
-  paymentTransactions: PaymentTransaction[];
+export interface PaymentTransaction {
+  paymentId: number;
+  amount: number;
+  paymentDate?: string;
+  transactionId?: string;
+  paymentMode?: string;
+  chequeNumber?: string;
+  bankName?: string;
+  remarks?: string;
 }
 
-export interface Options {
-  startDate: string;
-  endDate: string;
-  selectQuery?: string;
+export interface CustomerMaster {
+  custBusinessname: string;
+  custCreditperiod?: number;
+  custWhatsapp: number;
+}
+
+export interface Invoice {
+  invId: number;
+  invNumber: string;
+  invDate: string;
+  invDuedate: string;
+  invTotal: number;
+  invValue: number;
+  invGst: number;
+  invBalanceAmount: number;
+  invAddamount?: number;
+  invSubamount?: number;
+  invMarkcleared?: boolean;
+  invMessage1?: string;
+  fy: string;
+  customerMaster: CustomerMaster;
+  paymentTransactions: PaymentTransaction[];
 }
 
 export interface Customer {
   id: number;
   custBusinessname: string;
   custWhatsapp: number;
+  custCreditperiod?: number;
+}
+
+export interface Options {
+  startDate: string;
+  endDate: string;
+  selectQuery?: string;
 }

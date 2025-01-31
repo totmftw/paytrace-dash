@@ -10,74 +10,16 @@ import { PaymentTracking } from "@/components/dashboard/PaymentTracking";
 import { Json } from "@/integrations/supabase/types";
 import { LayoutProvider } from "@/hooks/useLayouts";
 import { FinancialYearFilter } from "@/components/dashboard/FinancialYearFilter";
-import { Overview } from "@/components/dashboard/Overview";
-// src/pages/Dashboard.tsx
-import React from 'react';
-import { DashboardGridLayout } from '@/components/Dashboard/DashboardGridLayout';
-import PaymentMetrics from '@/components/Dashboard/PaymentMetrics';
-import FinancialYearFilter from '@/components/Dashboard/FinancialYearFilter';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-
-import { fetchInvoiceMetrics } from "@/apis/invoiceApi";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 
-const { start, end } = useFinancialYear();
-const { data } = useQuery({
-  queryKey: ["invoice-metrics", start, end],
-  queryFn: () => fetchInvoiceMetrics({ startDate: start, endDate: end }),
-});
-
-const Dashboard: React.FC = () => {
-  const { user } = useAuth();
-  const [widgets, setWidgets] = React.useState(defaultWidgets);
-
-  const { startDate, endDate } = useFinancialYear();
-
-  // Load or save widget positions based on user's saved layout
-
-  return (
-    <div>
-      <FinancialYearFilter />
-      <LayoutConfigButton />
-      <DashboardLayout widgets={widgets} />
-    </div>
-  );
-};
-
-
-const defaultWidgets = [
-  { id: 'payment-metrics', x: 0, y: 0, w: 6, h: 6, content: <PaymentMetrics /> },
-  { id: 'payment-tracking', x: 6, y: 0, w: 6, h: 6, content: <PaymentTracking /> },
-  // Add other widgets here with their corresponding components
-];
-
-export default function Dashboard() {
-  const { user, loading } = useAuth();
-  const { toast } = useToast();
-  
-  // Implement the rest of the logic from the original file here...
-
-  return (
-    <LayoutProvider>
-      <div className="flex flex-col h-screen">
-        <header className="p-4">
-          <FinancialYearFilter />
-        </header>
-        <main className="flex-1 p-4">
-          <div className="h-full overflow-y-auto overflow-x-hidden">
-            <div className="container mx-auto p-6">
-              <DashboardGridLayout 
-                widgets={currentWidgets} 
-                onApply={updateLayoutMutation.mutate}
-              />
-            </div>
-          </div>
-        </main>
-      </div>
-    </LayoutProvider>
-  );
+interface LayoutItem {
+  i: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
 }
+
 const defaultWidgets = [
   {
     id: "payment-metrics",
@@ -112,14 +54,6 @@ const defaultWidgets = [
     content: <PaymentTracking />
   }
 ];
-
-interface LayoutItem {
-  i: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
 
 export default function Dashboard() {
   const { user } = useAuth();

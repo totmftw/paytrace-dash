@@ -19,19 +19,18 @@ export interface LedgerEntry {
   description: string;
 }
 
-export interface CustomerLedgerProps {
-  customerId: number;
-  customerName: string;
-  whatsappNumber: number;
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-export interface CustomerLedgerSummary {
-  customerId: number;
-  customerName: string;
-  totalDebit: number;
-  totalCredit: number;
-  balance: number;
-  lastTransactionDate: string;
+export interface Invoice {
+  invId: number;
+  invNumber: string;
+  invDate: string;
+  invTotal: number;
+  customerMaster: {
+    custBusinessname: string;
+    custCreditperiod: number;
+    custWhatsapp: number;
+  };
+  paymentTransactions: {
+    amount: number;
+    paymentId: number;
+  }[];
 }

@@ -10,8 +10,9 @@ export function IncomeVsExpenses() {
   const { data: financialData } = useQuery({
     queryKey: ["financial-data", selectedYear],
     queryFn: async () => {
-      const startDate = `${selectedYear}-04-01`;
-      const endDate = `${+selectedYear + 1}-03-31`;
+      const startYear = selectedYear.split('-')[0];
+      const startDate = `${startYear}-04-01`;
+      const endDate = `${Number(startYear) + 1}-03-31`;
 
       const { data: invoices } = await supabase
         .from("invoiceTable")

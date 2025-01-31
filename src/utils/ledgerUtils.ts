@@ -4,10 +4,10 @@ import { formatCurrency as formatCurrencyUtil } from "@/lib/utils";
 export const calculateRunningBalance = (entries: LedgerEntry[]): LedgerEntry[] => {
   let balance = 0;
   return entries.map(entry => {
-    if (entry.type === 'invoice') {
-      balance += entry.amount;
-    } else if (entry.type === 'payment') {
-      balance -= entry.amount;
+    if (entry.transaction_type === 'invoice') {
+      balance += entry.debit_amount;
+    } else if (entry.transaction_type === 'payment') {
+      balance -= entry.credit_amount;
     }
     return { ...entry, balance };
   });
@@ -20,5 +20,7 @@ export const formatLedgerDate = (date: string) => {
 export const formatCurrency = formatCurrencyUtil;
 
 export const sortLedgerEntries = (entries: LedgerEntry[]) => {
-  return entries.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+  return entries.sort((a, b) => 
+    new Date(a.transaction_date).getTime() - new Date(b.transaction_date).getTime()
+  );
 };

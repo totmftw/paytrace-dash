@@ -22,11 +22,19 @@ export function InvoiceTable({ data, isLoading, visibleColumns }: InvoiceTablePr
       return new Date(value).toLocaleDateString();
     }
     
+    if (column === 'customerMaster') {
+      return (invoice.customerMaster as any)?.custBusinessname || '';
+    }
+    
+    if (Array.isArray(value)) {
+      return value.length.toString();
+    }
+    
     if (typeof value === 'object') {
       return JSON.stringify(value);
     }
     
-    return value;
+    return value?.toString() || '';
   };
 
   return (

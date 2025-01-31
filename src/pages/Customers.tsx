@@ -1,47 +1,31 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { FinancialYearSelector } from "@/components/FinancialYearSelector";
-import { useFinancialYear } from "@/contexts/FinancialYearContext";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ColumnConfigProvider } from "@/contexts/columnConfigContext";
-import { CustomerTable } from "@/components/customers/CustomerTable";
-import CustomerBalanceTable from "@/components/customers/CustomerBalanceTable";
+import { useColumnConfig } from "@/contexts/ColumnConfigContext";
+import { useInvoiceData } from "@/hooks/useInvoiceData";
+import { AddInvoiceButton } from "../buttons/AddInvoiceButton";
+import { DownloadTemplateButton } from "../buttons/DownloadTemplateButton";
+import { UploadInvoiceButton } from "../buttons/UploadInvoiceButton";
+import { TransactionInvoiceTable } from "./TransactionInvoiceTable";
+import type { Invoice } from "@/types";
 
-export default function Customers() {
-  const navigate = useNavigate();
-  const { selectedYear } = useFinancialYear();
+export default function InvoiceTab({ year }: { year: string }) {
+  const { data: invoices, isLoading, isError } = useInvoiceData(year);
 
-  // Convert selectedYear string to number for the CustomerBalanceTable
-  const financialYear = selectedYear ? parseInt(selectedYear.split('-')[0]) : new Date().getFullYear();
+  if (isError) return <div>Error fetching data</div>;
 
   return (
-    <div className="space-y-6 bg-[#E8F3E8] min-h-screen p-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight text-[#1B4D3E]">Customers</h2>
-          <p className="text-[#4A7862]">
-            View and manage all customers
-          </p>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <AddInvoiceButton />
+        <div className="flex items-center gap-4">
+          <DownloadTemplateButton tableName="invoiceTable" />
+          <UploadInvoiceButton />
         </div>
-        <FinancialYearSelector />
       </div>
-
-      <ColumnConfigProvider>
-        <Tabs defaultValue="customers" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="customers">Customers</TabsTrigger>
-            <TabsTrigger value="balances">Customer Balances</TabsTrigger>
-          </TabsList>
-          <TabsContent value="customers">
-            <CustomerTable />
-          </TabsContent>
-          <TabsContent value="balances">
-            <CustomerBalanceTable financialYear={financialYear} />
-          </TabsContent>
-        </Tabs>
-      </ColumnConfigProvider>
+      <TransactionInvoiceTable 
+        data={invoices || []} 
+        isLoading={isLoading}
+        onCustomerClick={() => {}}
+        onInvoiceClick={() => {}}
+      />
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-table";
 import { supabase } from "@/integrations/supabase/client";
 import { TransactionInvoiceTable } from "./TransactionInvoiceTable";
 import { AddInvoiceButton } from "../buttons/AddInvoiceButton";
@@ -7,6 +7,8 @@ import { UploadInvoiceButton } from "../buttons/UploadInvoiceButton";
 import type { Invoice } from "@/types/types";
 
 export default function InvoiceTab({ year }: { year: string }) {
+  const [startYear, endYear] = year.split('-');
+
   const { data: invoices, isLoading } = useQuery({
     queryKey: ["invoices", year],
     queryFn: async () => {
@@ -24,30 +26,25 @@ export default function InvoiceTab({ year }: { year: string }) {
             paymentId
           )
         `)
-        .gte("invDate", `${year}-04-01`)
-        .lte("invDate", `${parseInt(year) + 1}-03-31`);
+        .gte("invDate", `${startYear}-04-01`)
+        .lte("invDate", `${endYear}-03-31`);
 
       if (error) throw error;
       return data as Invoice[];
     },
   });
 
-  const handleCustomerClick = () => {};
-  const handleInvoiceClick = () => {};
-
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4">
         <AddInvoiceButton />
-        <DownloadTemplateButton tableName="invoiceTable" />
-        <UploadInvoiceButton />
+        <DownloadTemplateButton tableName="invoiceTable" fileName={`Invoice_Template_${startYear}.xlsx`} />
+        <UploadInvoiceButton tableName="invoiceTable" />
       </div>
       
       <TransactionInvoiceTable 
         data={invoices || []}
         isLoading={isLoading}
-        onCustomerClick={handleCustomerClick}
-        onInvoiceClick={handleInvoiceClick}
       />
     </div>
   );

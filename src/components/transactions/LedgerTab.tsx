@@ -3,9 +3,8 @@ import "jspdf-autotable";
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { DataTable } from "@/components/ui/data-table";
+import { DataTable } from "@/components/ui/datatable";
 import { Button } from "@/components/ui/button";
-import { PDFExport } from "@/components/buttons/PDFExport";
 import {
   Select,
   SelectContent,
@@ -14,10 +13,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { formatCurrency } from "@/lib/utils";
+import { useAuth } from "@/contexts/AuthContext";
+import { PDFExport } from "@/components/buttons/PDFExport";
+import { CustomerSelector } from "@/components/transactions/CustomerSelector";
 
 export default function LedgerTab({ year }: { year: string }) {
+  const { user } = useAuth();
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
+  const [buyerInfo, setBuyerInfo] = useState<any>({});
 
+  const [startYear] = year.split('-');
+  const endYear = parseInt(startYear) + 1;
+
+  // Fetch customer options and ledger data
   const { data: customers, isLoading: isLoadingCustomers } = useQuery({
     queryKey: ["customers"],
     queryFn: async () => {
@@ -33,8 +41,8 @@ export default function LedgerTab({ year }: { year: string }) {
       if (!selectedCustomerId) return [];
       const { data, error } = await supabase.rpc("get_customer_ledger", {
         p_customer_id: selectedCustomerId,
-        p_start_date: `${year}-04-01`,
-        p_end_date: `${parseInt(year) + 1}-03-31`
+        p_start_date: `${startYear}-04-01`,
+        p_end_date: `${endYear}-03-31`
       });
       if (error) throw error;
       return data || [];
@@ -42,11 +50,32 @@ export default function LedgerTab({ year }: { year: string }) {
     enabled: !!selectedCustomerId
   });
 
+  // Fetch buyer details
+  React.useEffect(() => {
+    if (selectedCustomerId) {
+      supabase.from('customerMaster')
+        .select('*')
+        .eq('id', selectedCustomerId)
+        .maybeSingle()
+        .then(({ data, error }) => {
+          if (error) {
+            console.error('Error fetching customer details:', error);
+          }
+          setBuyerInfo(data);
+        });
+    }
+  }, [selectedCustomerId]);
+
+  // PDF generation function
   const handlePDFDownload = () => {
     const doc = new jsPDF();
+    doc.setFontSize(12);
+    doc.text(`Seller: MKD Enterprises, Bengaluru`, 10, 10);
+    doc.text(`Buyer: ${buyerInfo?.custBusinessname}, ${buyerInfo?.address}, GST: ${buyerInfo?.gst}, Phone: ${buyerInfo?.custWhatsapp}`, 10, 15);
+    
     doc.autoTable({
       head: [['Date', 'Reference', 'Type', 'Amount', 'Balance']],
-      body: ledgerData.map((entry: any) => [
+      body: ledgerData.map((entry) => [
         new Date(entry.date).toLocaleDateString(),
         entry.type === 'credit' ? entry.transactionId : entry.invoiceNumber,
         entry.type,
@@ -60,29 +89,27 @@ export default function LedgerTab({ year }: { year: string }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <Select 
-          value={selectedCustomerId?.toString() || ''}
-          onValueChange={(value) => setSelectedCustomerId(parseInt(value))}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select Customer" />
-          </SelectTrigger>
-          <SelectContent>
-            {customers?.map((customer) => (
-              <SelectItem key={customer.id} value={customer.id.toString()}>
-                {customer.custBusinessname}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <Button onClick={handlePDFDownload} disabled={!selectedCustomerId}>
-          Export PDF
-        </Button>
+        <CustomerSelector
+          customers={customers}
+          isLoading={isLoadingCustomers}
+          selectedCustomerId={selectedCustomerId}
+          onSelect={setSelectedCustomerId}
+        />
+        <div className="flex items-center gap-2">
+          {user?.role === 'it_admin' && (
+            <Button variant="ghost" onClick={() => console.log('Configure Columns')}>
+              Configure Columns
+            </Button>
+          )}
+          <PDFExport
+            onClick={handlePDFDownload}
+          />
+        </div>
       </div>
       <DataTable
         columns={[
           { key: "date", header: "Date", cell: (item: any) => new Date(item.date).toLocaleDateString() },
-          { key: "reference", header: "Reference" },
+          { key: "reference", header: "Reference", cell: (item: any) => item.type === 'credit' ? item.transactionId : item.invoiceNumber },
           { key: "type", header: "Type" },
           { key: "amount", header: "Amount", cell: (item: any) => formatCurrency(item.amount) },
           { key: "balance", header: "Balance", cell: (item: any) => formatCurrency(item.balance) },

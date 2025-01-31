@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { DataTable } from "@/components/ui/data-table";
+import { DataTable } from "@/components/ui/datatable";
 import { AddPaymentButton } from "../buttons/AddPaymentButton";
 import { DownloadTemplateButton } from "../buttons/DownloadTemplateButton";
 import { UploadDataButton } from "../buttons/UploadDataButton";

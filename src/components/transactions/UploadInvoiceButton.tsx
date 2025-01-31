@@ -1,28 +1,19 @@
-import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import * as XLSX from 'xlsx';
+import { useState } from 'react';
+import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 
 interface UploadInvoiceButtonProps {
-  tableName: 'invoiceTable' | 'paymentTransactions';
-}
-
-interface InvoiceData {
-  invNumber: string;
-  invValue: number;
-  invGst: number;
-  invTotal: number;
-  invDate?: string;
-  invDuedate?: string;
-  invCustid?: number;
-  invMessage1?: string;
-  fy: string;
+  tableName: string;
 }
 
 export function UploadInvoiceButton({ tableName }: UploadInvoiceButtonProps) {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
+  const [duplicateData, setDuplicateData] = useState<any[]>([]);
+  const [isDuplicateModalOpen, setIsDuplicateModalOpen] = useState(false);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -36,29 +27,51 @@ export function UploadInvoiceButton({ tableName }: UploadInvoiceButtonProps) {
         const workbook = XLSX.read(data, { type: 'binary' });
         const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
-        const jsonData = XLSX.utils.sheet_to_json(sheet) as InvoiceData[];
+        const jsonData = XLSX.utils.sheet_to_json(sheet);
 
-        if (Array.isArray(jsonData) && jsonData.length > 0) {
-          const { error } = await supabase.from(tableName).insert(
-            jsonData.map(item => ({
-              ...item,
-              fy: new Date().getFullYear().toString(),
-              invGst: item.invGst || 0,
-              invValue: item.invValue || 0,
-              invTotal: item.invTotal || 0
-            }))
+        if (tableName === 'invoiceTable' || tableName === 'paymentTransactions') {
+          const { data: existingData, error } = await supabase
+            .from(tableName)
+            .select(tableName !== 'invoiceTable' ? 'transactionId' : 'invNumber');
+
+          if (error) {
+            toast({
+              title: 'Error',
+              description: 'Failed to check for duplicates',
+              variant: 'destructive',
+            });
+            setIsUploading(false);
+            return;
+          }
+
+          const existingItems = existingData?.map((item) => 
+            tableName === 'invoiceTable' ? item.invNumber : item.transactionId
+          ) || [];
+
+          const duplicates = jsonData.filter((row: any) => 
+            existingItems.includes(tableName === 'invoiceTable' ? row.invNumber : row.transactionId)
           );
-          if (error) throw error;
+          const newItems = jsonData.filter((row: any) => 
+            !existingItems.includes(tableName === 'invoiceTable' ? row.invNumber : row.transactionId)
+          );
 
-          toast({
-            title: 'Success',
-            description: 'File uploaded successfully',
-          });
+          if (duplicates.length > 0) {
+            setDuplicateData(duplicates);
+            setIsDuplicateModalOpen(true);
+          }
+
+          if (newItems.length > 0) {
+            const { error } = await supabase.from(tableName).insert(newItems);
+            if (error) throw error;
+            toast({
+              title: 'Success',
+              description: `Successfully uploaded ${newItems.length} new records`,
+            });
+          }
         }
       };
       reader.readAsBinaryString(file);
     } catch (error) {
-      console.error(error);
       toast({
         title: 'Error',
         description: 'Failed to upload file',
@@ -70,16 +83,31 @@ export function UploadInvoiceButton({ tableName }: UploadInvoiceButtonProps) {
   };
 
   return (
-    <Button variant="ghost" asChild disabled={isUploading}>
-      <label>
-        Upload Excel
-        <input
-          type="file"
-          accept=".xlsx,.xls"
-          onChange={handleFileUpload}
-          className="hidden"
-        />
-      </label>
-    </Button>
+    <>
+      <Button variant="ghost" asChild disabled={isUploading}>
+        <label>
+          Upload Excel
+          <input
+            type="file"
+            accept=".xlsx,.xls"
+            onChange={handleFileUpload}
+            className="hidden"
+          />
+        </label>
+      </Button>
+
+      <Dialog open={isDuplicateModalOpen} onOpenChange={setIsDuplicateModalOpen}>
+        <DialogContent>
+          <DialogTitle>Duplicate Records Found</DialogTitle>
+          <div>
+            {duplicateData.map((row, index) => (
+              <div key={index} className="border-b py-2">
+                <p>{`Record ${index + 1}: ${JSON.stringify(row)}`}</p>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

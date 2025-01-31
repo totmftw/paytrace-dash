@@ -1,6 +1,5 @@
-import { ReactNode } from 'react';
 import { Layout } from 'react-grid-layout';
-import { LucideIcon } from 'lucide-react';
+import { ReactNode } from 'react';
 
 export interface LayoutData {
   layout: Layout[];

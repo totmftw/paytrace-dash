@@ -1,9 +1,8 @@
 import React, { createContext, useContext, useState } from 'react';
-import { supabase } from "@/integrations/supabase/client";
 
 export interface FinancialYearContextType {
-  selectedYear: number;
-  setSelectedYear: (year: number) => void;
+  selectedYear: string;
+  setSelectedYear: (year: string) => void;
   getFYDates: () => { start: Date; end: Date };
 }
 
@@ -18,11 +17,19 @@ export function useFinancialYear() {
 }
 
 export function FinancialYearProvider({ children }: { children: React.ReactNode }) {
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedYear, setSelectedYear] = useState<string>(() => {
+    const currentDate = new Date();
+    const currentYear = currentDate.getFullYear();
+    const currentMonth = currentDate.getMonth() + 1; // JavaScript months are 0-based
+    return currentMonth >= 4 
+      ? `${currentYear}-${currentYear + 1}`
+      : `${currentYear - 1}-${currentYear}`;
+  });
 
   const getFYDates = () => {
-    const start = new Date(selectedYear, 3, 1); // April 1st
-    const end = new Date(selectedYear + 1, 2, 31); // March 31st
+    const [startYear] = selectedYear.split('-').map(Number);
+    const start = new Date(startYear, 3, 1); // April 1st
+    const end = new Date(startYear + 1, 2, 31); // March 31st next year
     return { start, end };
   };
 

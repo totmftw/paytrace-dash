@@ -6,7 +6,7 @@ export const FinancialYearSelector = () => {
 
   const currentYear = new Date().getFullYear();
   const availableYears = Array.from({ length: 5 }, (_, i) => 
-    `${currentYear - 2 + i}-${currentYear - 1 + i}`
+    `${currentYear - 2 + i}-${currentYear - 1 + i + 1}`
   );
 
   return (

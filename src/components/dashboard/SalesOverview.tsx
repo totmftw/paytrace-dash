@@ -5,8 +5,8 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 
 export function SalesOverview() {
-  const { selectedYear } = useFinancialYear();
-  const { start, end } = getFYDates(selectedYear);
+  const { selectedYear, getFYDates } = useFinancialYear();
+  const { start, end } = getFYDates();
 
   const { data } = useQuery({
     queryKey: ["sales-overview", selectedYear],
@@ -31,13 +31,6 @@ export function SalesOverview() {
       }));
     },
   });
-
-  function getFYDates(year: string) {
-    const [startYear] = year.split('-').map(Number);
-    const start = new Date(startYear, 3, 1); // April 1st
-    const end = new Date(startYear + 1, 2, 31); // March 31st next year
-    return { start, end };
-  }
 
   return (
     <Card>

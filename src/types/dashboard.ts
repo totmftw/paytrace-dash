@@ -1,5 +1,6 @@
-import { ReactNode } from 'react';
 import { Layout } from 'react-grid-layout';
+import { ReactNode } from 'react';
+import { LucideIcon } from 'lucide-react';
 
 export interface DashboardWidget extends Layout {
   id: string;
@@ -15,6 +16,9 @@ export interface PaymentTransaction {
 export interface CustomerMaster {
   custBusinessname: string;
   custCreditperiod?: number;
+  custWhatsapp?: number;
+  custGST?: string;
+  custPhone?: number;
 }
 
 export interface Invoice {
@@ -40,4 +44,38 @@ export interface MetricsSummary {
   pendingPayments: number;
   outstandingPayments: number;
   totalInvoices: number;
+}
+
+// Move types from dashboard.d.ts here
+export interface LayoutData {
+  layout: Layout[];
+}
+
+export interface LayoutItem extends Layout {
+  i: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
+export interface MetricsCardProps {
+  title: string;
+  value: number | string;
+  icon?: ReactNode;
+  isMonetary?: boolean;
+  onClick?: () => void;
+}
+
+export interface DashboardProps {
+  year?: string;
+}
+
+export interface DashboardWidget {
+  id: string;
+  content: ReactNode;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
 }

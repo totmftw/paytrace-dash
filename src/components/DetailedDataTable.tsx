@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/lib/utils";
 import {
+  Table,
   TableBody,
   TableCell,
   TableHead,
@@ -31,7 +32,7 @@ export function DetailedDataTable({
         </DialogTitle>
         <ScrollArea className="h-[calc(80vh-8rem)]">
           <div className="border rounded-lg">
-            <table className="w-full">
+            <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Invoice Number</TableHead>
@@ -58,7 +59,7 @@ export function DetailedDataTable({
                   </TableRow>
                 ))}
               </TableBody>
-            </table>
+            </Table>
           </div>
         </ScrollArea>
         <div className="mt-4 flex justify-end">

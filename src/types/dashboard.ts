@@ -1,12 +1,9 @@
 import { ReactElement } from 'react';
+import { Layout } from 'react-grid-layout';
 
-export interface DashboardWidget {
+export interface DashboardWidget extends Layout {
   id: string;
   content: ReactElement;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
 }
 
 export interface PaymentTransaction {

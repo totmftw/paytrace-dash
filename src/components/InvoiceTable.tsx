@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Table, useReactTable, getCoreRowModel } from '@tanstack/react-table';
-import { Table as TableUI, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ColumnDef, useReactTable, getCoreRowModel } from '@tanstack/react-table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useFinancialYear } from '@/contexts/FinancialYearContext';
 import { InvoiceDetailsPopup } from './InvoiceDetailsPopup';
 import { Invoice } from '@/types/dashboard';
@@ -39,7 +39,7 @@ export function InvoiceTable() {
     retryDelay: 1000,
   });
 
-  const columns = [
+  const columns: ColumnDef<Invoice>[] = [
     {
       accessorKey: 'invNumber',
       header: 'Invoice #',
@@ -55,21 +55,21 @@ export function InvoiceTable() {
         </button>
       ),
     },
-    { 
+    {
       accessorKey: 'customerMaster.custBusinessname',
       header: 'Customer',
     },
-    { 
+    {
       accessorKey: 'invDate',
       header: 'Invoice Date',
       cell: ({ getValue }) => new Date(getValue() as string).toLocaleDateString(),
     },
-    { 
+    {
       accessorKey: 'invDuedate',
       header: 'Due Date',
       cell: ({ getValue }) => new Date(getValue() as string).toLocaleDateString(),
     },
-    { 
+    {
       accessorKey: 'invTotal',
       header: 'Total Amount',
       cell: ({ getValue }) => `₹${(getValue() as number).toLocaleString()}`,
@@ -84,13 +84,13 @@ export function InvoiceTable() {
 
   return (
     <div className="h-full overflow-y-auto">
-      <TableUI>
+      <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
                 <TableHead key={header.id}>
-                  {header.column.columnDef.header}
+                  {String(header.column.columnDef.header)}
                 </TableHead>
               ))}
             </TableRow>
@@ -102,14 +102,14 @@ export function InvoiceTable() {
               {row.getVisibleCells().map((cell) => (
                 <TableCell key={cell.id}>
                   {cell.column.columnDef.cell ? 
-                    cell.column.columnDef.cell({ row, getValue: () => cell.getValue() }) : 
-                    cell.getValue() as string}
+                    cell.column.columnDef.cell(cell.getContext()) : 
+                    String(cell.getValue())}
                 </TableCell>
               ))}
             </TableRow>
           ))}
         </TableBody>
-      </TableUI>
+      </Table>
       {isInvoiceDetailOpen && selectedInvoice && (
         <InvoiceDetailsPopup
           invoiceId={selectedInvoice}

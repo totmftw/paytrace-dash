@@ -1,81 +1,68 @@
-import { useState } from 'react';
+import React from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
-import { DashboardGridLayout } from '@/components/DashboardGridLayout';
-import { FinancialYearSelector } from '@/components/FinancialYearSelector';
-import { useFinancialYear } from '@/contexts/FinancialYearContext';
-import { PaymentMetrics } from '@/components/dashboard/PaymentMetrics';
-import { SalesOverview } from '@/components/dashboard/SalesOverview';
-import { PaymentTracking } from '@/components/dashboard/PaymentTracking';
-import { InvoiceTable } from '@/components/dashboard/InvoiceTable';
-import { SalesVsPaymentsChart } from '@/components/dashboard/SalesVsPaymentsChart';
+import { useAuth } from '@/hooks/use-auth';
 import { DashboardWidget } from '@/types/dashboard';
+import { Layout } from 'react-grid-layout';
+import GridLayout from 'react-grid-layout';
+import { Card } from '@/components/ui/card';
+import { InvoiceTable } from '@/components/dashboard/InvoiceTable';
+import { MetricsCards } from '@/components/dashboard/MetricsCards';
+import { CustomerList } from '@/components/dashboard/CustomerList';
+import { PaymentHistory } from '@/components/dashboard/PaymentHistory';
+import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
 
 const defaultWidgets: DashboardWidget[] = [
   {
-    id: 'payment-metrics',
-    content: <PaymentMetrics />,
+    id: 'metrics',
+    content: <MetricsCards />,
     x: 0,
     y: 0,
-    w: 6,
-    h: 4,
-  },
-  {
-    id: 'sales-overview',
-    content: <SalesOverview />,
-    x: 6,
-    y: 0,
-    w: 6,
-    h: 4,
-  },
-  {
-    id: 'payment-tracking',
-    content: <PaymentTracking />,
-    x: 0,
-    y: 4,
-    w: 6,
-    h: 4,
-  },
-  {
-    id: 'invoice-table',
-    content: <InvoiceTable />,
-    x: 6,
-    y: 4,
-    w: 6,
-    h: 4,
-  },
-  {
-    id: 'sales-vs-payments',
-    content: <SalesVsPaymentsChart />,
-    x: 0,
-    y: 8,
     w: 12,
-    h: 6,
+    h: 2,
+  },
+  {
+    id: 'invoices',
+    content: <InvoiceTable />,
+    x: 0,
+    y: 2,
+    w: 8,
+    h: 4,
+  },
+  {
+    id: 'customers',
+    content: <CustomerList />,
+    x: 8,
+    y: 2,
+    w: 4,
+    h: 4,
+  },
+  {
+    id: 'payments',
+    content: <PaymentHistory />,
+    x: 0,
+    y: 6,
+    w: 12,
+    h: 3,
   },
 ];
 
 export default function Dashboard() {
   const { user } = useAuth();
-  const { toast } = useToast();
-  const isITAdmin = user?.role === 'it_admin';
-  const { selectedYear } = useFinancialYear();
-
+  
   const { data: layoutData } = useQuery({
-    queryKey: ['dashboard-layout', user?.id],
+    queryKey: ['dashboard-layout'],
     queryFn: async () => {
-      if (!user) throw new Error('No user');
       const { data, error } = await supabase
         .from('dashboard_layouts')
         .select('*')
-        .eq('created_by', user.id)
         .eq('is_active', true)
-        .maybeSingle();
+        .single();
+
       if (error) throw error;
       return data;
     },
-    enabled: !!user,
   });
 
   const updateLayoutMutation = useMutation({
@@ -88,27 +75,41 @@ export default function Dashboard() {
           layout: JSON.stringify(newLayout),
           is_active: true,
         });
+
       if (error) throw error;
-      toast({
-        title: 'Success',
-        description: 'Layout saved successfully',
-      });
     },
   });
 
   const currentLayout = layoutData?.layout ? JSON.parse(layoutData.layout) as DashboardWidget[] : defaultWidgets;
 
+  const handleLayoutChange = (layout: Layout[]) => {
+    const updatedWidgets = currentLayout.map((widget, index) => ({
+      ...widget,
+      ...layout[index],
+    }));
+    updateLayoutMutation.mutate(updatedWidgets);
+  };
+
   return (
-    <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
-        <FinancialYearSelector />
-      </div>
-      <DashboardGridLayout
-        widgets={currentLayout}
-        onLayoutChange={updateLayoutMutation.mutate}
-        isEditMode={isITAdmin}
-      />
+    <div className="container mx-auto p-4">
+      <GridLayout
+        className="layout"
+        layout={currentLayout}
+        cols={12}
+        rowHeight={100}
+        width={1200}
+        onLayoutChange={handleLayoutChange}
+        isDraggable
+        isResizable
+      >
+        {currentLayout.map((widget) => (
+          <div key={widget.id}>
+            <Card className="h-full">
+              {widget.content}
+            </Card>
+          </div>
+        ))}
+      </GridLayout>
     </div>
   );
 }

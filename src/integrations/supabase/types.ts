@@ -891,21 +891,36 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number[]
       }
-      get_customer_ledger: {
-        Args: {
-          p_customer_id: number
-          p_start_date: string
-          p_end_date: string
-        }
-        Returns: {
-          transaction_date: string
-          description: string
-          invoice_number: string
-          debit: number
-          credit: number
-          balance: number
-        }[]
-      }
+      get_customer_ledger:
+        | {
+            Args: {
+              p_customer_id: number
+              p_start_date: string
+              p_end_date: string
+            }
+            Returns: {
+              transaction_date: string
+              description: string
+              amount: number
+              balance: number
+              type: string
+            }[]
+          }
+        | {
+            Args: {
+              p_customer_id: number
+              p_start_date: string
+              p_end_date: string
+            }
+            Returns: {
+              transaction_date: string
+              description: string
+              invoice_number: string
+              debit: number
+              credit: number
+              balance: number
+            }[]
+          }
       get_financial_year: {
         Args: {
           the_date: string

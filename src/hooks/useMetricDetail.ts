@@ -3,10 +3,13 @@ import { useFinancialYear } from "@/contexts/FinancialYearContext";
 import { fetchInvoiceMetrics } from "@/apis/invoiceApi";
 
 export const useMetricDetail = () => {
-  const { startDate: start, endDate: end } = useFinancialYear();
+  const { startDate, endDate } = useFinancialYear();
   const { data: metrics } = useQuery({
-    queryKey: ["invoice-metrics", start, end],
-    queryFn: () => fetchInvoiceMetrics({ startDate: start, endDate: end }),
+    queryKey: ["invoice-metrics", startDate, endDate],
+    queryFn: () => fetchInvoiceMetrics({ 
+      startDate: startDate.toISOString(), 
+      endDate: endDate.toISOString() 
+    }),
   });
   return metrics;
 };

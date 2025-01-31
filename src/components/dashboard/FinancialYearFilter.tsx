@@ -1,14 +1,18 @@
-// src/components/Dashboard/FinancialYearFilter.tsx
-import { Select } from '@/components/ui/select';
-import { useFinancialYear } from '@/contexts/FinancialYearContext';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useFinancialYear } from "@/contexts/FinancialYearContext";
 
 export function FinancialYearFilter() {
-  const { selectedYear, getFYDates, setSelectedYear } = useFinancialYear();
+  const { selectedYear, setSelectedYear } = useFinancialYear();
 
-  const yearsList = Array.from({ length: 10 }, (_, i) => {
-    const thisYear = new Date().getFullYear() - i - 1;
-    return `${thisYear}-${thisYear + 1}`;
-  });
+  const generateYearOptions = () => {
+    const currentYear = new Date().getFullYear();
+    const years: string[] = [];
+    for (let i = -2; i <= 2; i++) {
+      const year = currentYear + i;
+      years.push(`${year}-${year + 1}`);
+    }
+    return years;
+  };
 
   return (
     <Select value={selectedYear} onValueChange={setSelectedYear}>
@@ -16,7 +20,7 @@ export function FinancialYearFilter() {
         <SelectValue placeholder="Select Year" />
       </SelectTrigger>
       <SelectContent>
-        {yearsList.map((year) => (
+        {generateYearOptions().map((year) => (
           <SelectItem key={year} value={year}>
             FY {year}
           </SelectItem>

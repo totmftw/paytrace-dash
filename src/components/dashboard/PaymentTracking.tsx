@@ -19,8 +19,7 @@ interface Invoice {
 }
 
 export const PaymentTracking = () => {
-  const { selectedYear, getFYDates } = useFinancialYear();
-  const { start, end } = getFYDates();
+  const { selectedYear, startDate, endDate } = useFinancialYear();
 
   const { data: invoices, isLoading } = useQuery({
     queryKey: ["payment-tracking", selectedYear],
@@ -32,14 +31,10 @@ export const PaymentTracking = () => {
           customerMaster!fk_invcustid_customer (
             custBusinessname,
             custCreditperiod
-          ),
-          paymentTransactions (
-            amount,
-            paymentId
           )
         `)
-        .gte("invDate", start.toISOString())
-        .lte("invDate", end.toISOString())
+        .gte("invDate", startDate.toISOString())
+        .lte("invDate", endDate.toISOString())
         .order("invDuedate", { ascending: true });
 
       if (error) throw error;

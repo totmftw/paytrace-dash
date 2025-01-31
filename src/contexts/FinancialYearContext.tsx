@@ -6,7 +6,7 @@ export interface FinancialYearContextType {
   getFYDates: () => { start: Date; end: Date };
 }
 
-export const FinancialYearContext = createContext<FinancialYearContextType | undefined>(undefined);
+const FinancialYearContext = createContext<FinancialYearContextType | undefined>(undefined);
 
 export function useFinancialYear() {
   const context = useContext(FinancialYearContext);
@@ -20,7 +20,7 @@ export function FinancialYearProvider({ children }: { children: React.ReactNode 
   const [selectedYear, setSelectedYear] = useState<string>(() => {
     const currentDate = new Date();
     const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth() + 1; // JavaScript months are 0-based
+    const currentMonth = currentDate.getMonth() + 1;
     return currentMonth >= 4 
       ? `${currentYear}-${currentYear + 1}`
       : `${currentYear - 1}-${currentYear}`;

@@ -7,15 +7,12 @@ import { AlertCircle, CheckCircle2, Clock } from "lucide-react";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 
 export const PaymentTracking = () => {
-  const { selectedYear } = useFinancialYear();
+  const { selectedYear, getFYDates } = useFinancialYear();
+  const { start, end } = getFYDates();
 
   const { data: invoices, isLoading } = useQuery({
     queryKey: ["payment-tracking", selectedYear],
     queryFn: async () => {
-      const year = parseInt(selectedYear.split('-')[0]);
-      const startDate = new Date(year, 3, 1).toISOString(); // April 1st
-      const endDate = new Date(year + 1, 2, 31).toISOString(); // March 31st
-
       const { data, error } = await supabase
         .from("invoiceTable")
         .select(`
@@ -29,8 +26,8 @@ export const PaymentTracking = () => {
             paymentId
           )
         `)
-        .gte("invDate", startDate)
-        .lte("invDate", endDate)
+        .gte("invDate", start.toISOString())
+        .lte("invDate", end.toISOString())
         .order("invDuedate", { ascending: true });
 
       if (error) throw error;
@@ -56,7 +53,6 @@ export const PaymentTracking = () => {
         };
       });
     },
-    refetchInterval: 300000,
   });
 
   if (isLoading) {

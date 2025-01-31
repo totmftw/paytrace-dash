@@ -4,6 +4,46 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 
+
+import { useFinancialYear } from "@/contexts/FinancialYearContext";
+
+export function SalesOverview() {
+  const { selectedYear } = useFinancialYear();
+
+  const { data } = useQuery({
+    queryKey: ["sales-overview", selectedYear],
+    queryFn: async () => {
+      const { start, end } = getFinancialYearDates(selectedYear);
+      const { data: invoices, error } = await supabase
+        .from("invoiceTable")
+        .select("invTotal, invDate")
+        .gte("invDate", start.toISOString())
+        .lte("invDate", end.toISOString());
+
+      if (error) throw error;
+
+      const monthlySales = Array(12).fill(0);
+      invoices.forEach((invoice) => {
+        const month = new Date(invoice.invDate).getMonth();
+        monthlySales[month] += invoice.invTotal;
+      });
+
+      return Array.from({ length: 12 }, (_, i) => ({
+        month: new Date(0, i).toLocaleString("default", { month: "short" }),
+        sales: monthlySales[i],
+      }));
+    },
+  });
+
+  return (
+    <Card>
+      <div className="h-96">
+        <SalesChart data={data} />
+      </div>
+    </Card>
+  );
+}
+
 export function SalesOverview() {
   const { selectedYear, getFYDates } = useFinancialYear();
   const { start, end } = getFYDates();

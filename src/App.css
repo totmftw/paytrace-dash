@@ -6,6 +6,12 @@
   flex-direction: column;
 }
 
+.grid-auto-fit {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
 import { Button } from "@/components/ui/button";
 
 <Button variant="default">Click Me</Button>

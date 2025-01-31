@@ -4,25 +4,35 @@ import { SalesOverview } from "./SalesOverview";
 import { CustomerStats } from "./CustomerStats";
 import { PaymentTracking } from "./PaymentTracking";
 import { RecentSales } from "./RecentSales";
+import { useLayouts } from "@/hooks/useLayouts";
+
+const componentOrder = [
+  PaymentMetrics,
+  SalesOverview,
+  CustomerStats,
+  PaymentTracking,
+  RecentSales,
+];
 
 export function Overview() {
+  const { saveLayout } = useLayouts();
+
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <Card className="col-span-4">
-        <PaymentMetrics />
-      </Card>
-      <Card className="col-span-4">
-        <SalesOverview />
-      </Card>
-      <Card className="col-span-2">
-        <CustomerStats />
-      </Card>
-      <Card className="col-span-2">
-        <PaymentTracking />
-      </Card>
-      <Card className="col-span-4">
-        <RecentSales />
-      </Card>
+    <div className="grid-auto-fit">
+      {componentOrder.map((Component, index) => (
+        <Card
+          key={index}
+          horizontalScroll
+          verticalScroll
+          className="h-[400px] max-w-4xl"
+          onResize={(event) => {
+            const rect = event.currentTarget.getBoundingClientRect();
+            saveLayout({ id: Component.name, width: rect.width, height: rect.height });
+          }}
+        >
+          <Component />
+        </Card>
+      ))}
     </div>
   );
 }

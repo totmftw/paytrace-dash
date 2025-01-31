@@ -9,7 +9,23 @@ import { SalesOverview } from "@/components/dashboard/SalesOverview";
 import { CustomerStats } from "@/components/dashboard/CustomerStats";
 import { PaymentTracking } from "@/components/dashboard/PaymentTracking";
 import { Json } from "@/integrations/supabase/types";
+import { LayoutProvider } from "@/hooks/useLayouts";
+import { FinancialYearFilter } from "./FinancialYearFilter";
 
+export default function Dashboard() {
+  return (
+    <LayoutProvider>
+      <div className="flex flex-col h-screen">
+        <header className="p-4">
+          <FinancialYearFilter />
+        </header>
+        <main className="flex-1 p-4">
+          <Overview />
+        </main>
+      </div>
+    </LayoutProvider>
+  );
+}
 const defaultWidgets = [
   {
     id: "payment-metrics",

@@ -10,9 +10,6 @@ export interface PaymentTransaction {
   chequeNumber?: string;
   bankName?: string;
   remarks?: string;
-  createdAt?: string;
-  createdBy?: string;
-  updatedAt?: string;
 }
 
 export interface CustomerMaster {
@@ -38,9 +35,32 @@ export interface Invoice {
   invSubamount?: number;
   invMarkcleared?: boolean;
   fy: string;
-  customerMaster?: CustomerMaster;
+  customerMaster: CustomerMaster;
   paymentTransactions: PaymentTransaction[];
 }
+
+export interface PaymentData {
+  invId: number;
+  amount: number;
+  paymentDate: string;
+  paymentMode: string;
+  transactionId: string;
+  chequeNumber?: string;
+  bankName?: string;
+  remarks?: string;
+}
+
+export interface LedgerEntry {
+  transaction_date: string;
+  description: string;
+  invoice_number?: string;
+  debit_amount: number;
+  credit_amount: number;
+  balance: number;
+  transaction_type: string;
+}
+
+export type TableName = 'invoiceTable' | 'customerMaster' | 'paymentTransactions';
 
 export interface UserPreferences {
   columns?: string[];

@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Invoice } from '@/types';
+import type { Invoice } from '@/types';
 
 interface DashboardData {
   totalSales: number;
@@ -24,9 +24,11 @@ export const useDashboardData = (selectedYear: string) => {
           *,
           customerMaster!invoiceTable_invCustid_fkey (
             custBusinessname,
-            custCreditperiod
+            custCreditperiod,
+            custWhatsapp
           ),
           paymentTransactions!paymentTransactions_invId_fkey (
+            paymentId,
             amount,
             paymentDate
           )

@@ -27,18 +27,24 @@ export default function LedgerTab({ year }: { year: string }) {
     creditPeriod: customer.custCreditperiod
   })) || [];
 
+  const handleExport = () => {
+    // Export logic here
+  };
+
   return (
     <Card className="p-4">
-      <PDFExport data={exportData} fileName="customer-ledger.pdf" />
+      <PDFExport onClick={handleExport} fileName="customer-ledger.pdf">
+        Export Customer Ledger
+      </PDFExport>
       <DataTable
         data={customers || []}
         columns={[
           {
-            accessorKey: "custBusinessname",
+            key: "custBusinessname",
             header: "Business Name"
           },
           {
-            accessorKey: "custWhatsapp",
+            key: "custWhatsapp",
             header: "WhatsApp"
           }
         ]}

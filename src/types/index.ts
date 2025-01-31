@@ -42,14 +42,6 @@ export interface PDFExportProps {
   onExport?: () => void;
 }
 
-export interface SalesVsPaymentsChartProps {
-  selectedYear: string;
-}
-
-export interface InvoiceTableProps {
-  selectedYear: string;
-}
-
 export interface Customer {
   id: number;
   custBusinessname: string;

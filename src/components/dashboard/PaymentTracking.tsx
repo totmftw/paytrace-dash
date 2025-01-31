@@ -5,6 +5,19 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { AlertCircle, CheckCircle2, Clock } from "lucide-react";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 
+interface Invoice {
+  invId: number;
+  invNumber: string;
+  invDate: string;
+  invDuedate: string;
+  invTotal: number;
+  invMarkcleared: boolean;
+  customerMaster: {
+    custBusinessname: string;
+    custCreditperiod: number;
+  };
+}
+
 export const PaymentTracking = () => {
   const { selectedYear, getFYDates } = useFinancialYear();
   const { start, end } = getFYDates();
@@ -30,7 +43,7 @@ export const PaymentTracking = () => {
         .order("invDuedate", { ascending: true });
 
       if (error) throw error;
-      return data;
+      return data as Invoice[];
     },
   });
 

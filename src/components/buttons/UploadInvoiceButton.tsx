@@ -47,14 +47,14 @@ export default function UploadInvoiceButton({ tableName }: UploadInvoiceButtonPr
           // Check for duplicates
           const { data: existingInvoices, error } = await supabase
             .from(tableName)
-            .select('invNumber');
+            .select();
 
           if (error) throw error;
 
           if (existingInvoices && existingInvoices.length > 0) {
             const duplicateNumbers = existingInvoices
-              .map(inv => inv.invNumber)
-              .filter(num => jsonData.some(item => item.invNumber === num));
+              .filter((inv: TableRecord) => jsonData.some(item => item.invNumber === inv.invNumber))
+              .map((inv: TableRecord) => inv.invNumber);
 
             if (duplicateNumbers.length > 0) {
               toast({

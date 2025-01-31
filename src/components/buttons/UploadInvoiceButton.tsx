@@ -22,8 +22,6 @@ type InvoiceData = {
   fy: string;
 };
 
-type TableRecord = Database['public']['Tables'][UploadInvoiceButtonProps['tableName']]['Row'];
-
 export default function UploadInvoiceButton({ tableName }: UploadInvoiceButtonProps) {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
@@ -53,8 +51,13 @@ export default function UploadInvoiceButton({ tableName }: UploadInvoiceButtonPr
 
           if (existingInvoices && existingInvoices.length > 0) {
             const duplicateNumbers = existingInvoices
-              .filter((inv: TableRecord) => jsonData.some(item => item.invNumber === inv.invNumber))
-              .map((inv: TableRecord) => inv.invNumber);
+              .filter((inv) => {
+                if (tableName === 'invoiceTable') {
+                  return jsonData.some(item => item.invNumber === (inv as Database['public']['Tables']['invoiceTable']['Row']).invNumber);
+                }
+                return false; // For paymentTransactions table, we don't check for duplicates
+              })
+              .map((inv) => (inv as Database['public']['Tables']['invoiceTable']['Row']).invNumber);
 
             if (duplicateNumbers.length > 0) {
               toast({

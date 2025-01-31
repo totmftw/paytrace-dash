@@ -3,6 +3,7 @@ import { createContext, useContext, useState } from "react";
 interface ColumnConfigContextType {
   visibleColumns: string[];
   setVisibleColumns: (columns: string[]) => void;
+  setColumnOrder: (columns: string[]) => void;
 }
 
 const ColumnConfigContext = createContext<ColumnConfigContextType | undefined>(
@@ -19,8 +20,12 @@ export function ColumnConfigProvider({ children }: { children: React.ReactNode }
     "invPaymentStatus"
   ]);
 
+  const setColumnOrder = (columns: string[]) => {
+    setVisibleColumns(columns);
+  };
+
   return (
-    <ColumnConfigContext.Provider value={{ visibleColumns, setVisibleColumns }}>
+    <ColumnConfigContext.Provider value={{ visibleColumns, setVisibleColumns, setColumnOrder }}>
       {children}
     </ColumnConfigContext.Provider>
   );

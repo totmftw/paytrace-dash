@@ -1,10 +1,12 @@
 export interface LedgerEntry {
   id: number;
-  date: string;
-  description: string;
-  amount: number;
-  type: 'invoice' | 'payment' | 'credit_note' | 'debit_note';
+  transaction_date: string;
+  transaction_type: string;
+  reference_number: string;
+  debit_amount: number;
+  credit_amount: number;
   balance: number;
+  description: string;
 }
 
 export interface CustomerLedgerProps {

@@ -1,23 +1,19 @@
-// src/hooks/useUpload.ts
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
-export const useUploadData = (tableName: string) => {
+export const useUploadData = <T extends Record<string, any>>(tableName: keyof Database['public']['Tables']) => {
   const { toast } = useToast();
 
-  const upload = async (data: any[]) => {
+  const upload = async (data: T[]) => {
     try {
-      const existingRecords = await supabase.from(tableName).select(tableName + "Id, invNumber");
-      const existingInvNumbers = new Set(existingRecords.data?.map(rec => rec.invNumber));
+      const { error } = await supabase
+        .from(tableName)
+        .insert(data);
 
-      const duplicates = data.filter(item => existingInvNumbers.has(item.invNumber));
-      if (duplicates.length > 0) {
-        throw new Error(`Duplicate invoices found: ${duplicates.map(d => d.invNumber).join(", ")}`);
-      }
+      if (error) throw error;
 
-      await supabase.from(tableName).insert(data);
       toast({ title: "Success", description: "Data uploaded successfully" });
-    } catch (error) {
+    } catch (error: any) {
       toast({
         variant: "destructive",
         title: "Error",

@@ -10,6 +10,36 @@ import { LayoutConfig } from '../components/dashboard/LayoutConfig';
 import { Layout } from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
+// src/pages/Dashboard.tsx
+import { useAuth } from '../contexts/AuthContext';
+import { useFinancialYear } from '../contexts/FinancialYearContext';
+import { FinancialYearSelector } from '../components/FinancialYearSelector';
+import { MetricsGrid } from '../components/dashboard/MetricsGrid';
+
+const Dashboard = () => {
+  const { user } = useAuth();
+  const { selectedYear } = useFinancialYear();
+
+  // Add a console.log to debug
+  console.log('Dashboard rendering:', { user, selectedYear });
+
+  return (
+    <div className="min-h-screen bg-gray-100 p-4">
+      <div className="max-w-7xl mx-auto">
+        <div className="mb-4 flex justify-between items-center">
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+          <FinancialYearSelector />
+        </div>
+        <div className="grid gap-6">
+          <MetricsGrid />
+          {/* Add other components here */}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;
 
 const Dashboard = () => {
   const { user } = useAuth();

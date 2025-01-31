@@ -16,22 +16,27 @@ export function PaymentMetrics() {
     queryFn: async () => {
       const { start, end } = getFYDates(selectedYear);
 
-      const { data: invoices } = await supabase
+      const { data: invoices, error } = await supabase
         .from("invoiceTable")
         .select(`
           *,
-          customerMaster:customerMaster!invoiceTable_invCustid_fkey (
+          customerMaster!invoiceTable_invCustid_fkey (
             custBusinessname,
             custCreditperiod,
             custWhatsapp
           ),
-          paymentTransactions:paymentTransactions (
+          paymentTransactions (
             amount,
             paymentId
           )
         `)
-        .gte("invDate", start.toISOString())
-        .lte("invDate", end.toISOString());
+        .gte("invDate", start.toISOString().split('T')[0])
+        .lte("invDate", end.toISOString().split('T')[0]);
+
+      if (error) {
+        console.error("Error fetching invoices:", error);
+        throw error;
+      }
 
       const today = new Date();
       const totalSales = invoices?.reduce((sum, inv) => sum + inv.invTotal, 0) || 0;

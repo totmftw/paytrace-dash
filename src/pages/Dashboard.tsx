@@ -5,7 +5,7 @@ import { useAuth } from '@/hooks/use-auth';
 import GridLayout from 'react-grid-layout';
 import { Card } from '@/components/ui/card';
 import { InvoiceTable } from '@/components/dashboard/InvoiceTable';
-import { MetricsCards } from '@/components/dashboard/MetricsCards';
+import { MetricsCards } from '@/components/dashboard/metrics/MetricsCard';
 import { CustomerList } from '@/components/dashboard/CustomerList';
 import { PaymentHistory } from '@/components/dashboard/PaymentHistory';
 import 'react-grid-layout/css/styles.css';

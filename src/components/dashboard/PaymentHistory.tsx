@@ -12,7 +12,7 @@ export function PaymentHistory() {
         .from("paymentTransactions")
         .select(`
           *,
-          invoiceTable!invoiceTable_invId_fkey (
+          invoiceTable!paymentTransactions_invId_fkey (
             invNumber,
             customerMaster!invoiceTable_invCustid_fkey (
               custBusinessname
@@ -42,10 +42,10 @@ export function PaymentHistory() {
               >
                 <div>
                   <p className="font-medium">
-                    {payment.invoiceTable.customerMaster.custBusinessname}
+                    {payment.invoiceTable?.customerMaster?.custBusinessname}
                   </p>
                   <p className="text-sm text-muted-foreground">
-                    Invoice #{payment.invoiceTable.invNumber}
+                    Invoice #{payment.invoiceTable?.invNumber}
                   </p>
                 </div>
                 <div className="text-right">

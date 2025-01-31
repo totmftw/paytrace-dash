@@ -23,7 +23,7 @@ export function InvoiceTable() {
             custBusinessname,
             custCreditperiod
           ),
-          paymentTransactions (
+          paymentTransactions!paymentTransactions_invId_fkey (
             paymentId,
             amount,
             paymentDate
@@ -35,8 +35,6 @@ export function InvoiceTable() {
       if (error) throw error;
       return data as unknown as Invoice[];
     },
-    retry: 3,
-    retryDelay: 1000,
   });
 
   const columns: ColumnDef<Invoice>[] = [
@@ -62,17 +60,26 @@ export function InvoiceTable() {
     {
       accessorKey: 'invDate',
       header: 'Invoice Date',
-      cell: ({ getValue }) => new Date(getValue() as string).toLocaleDateString(),
+      cell: ({ getValue }) => {
+        const value = getValue() as string;
+        return value ? new Date(value).toLocaleDateString() : '';
+      },
     },
     {
       accessorKey: 'invDuedate',
       header: 'Due Date',
-      cell: ({ getValue }) => new Date(getValue() as string).toLocaleDateString(),
+      cell: ({ getValue }) => {
+        const value = getValue() as string;
+        return value ? new Date(value).toLocaleDateString() : '';
+      },
     },
     {
       accessorKey: 'invTotal',
       header: 'Total Amount',
-      cell: ({ getValue }) => `₹${(getValue() as number).toLocaleString()}`,
+      cell: ({ getValue }) => {
+        const value = getValue() as number;
+        return value ? `₹${value.toLocaleString()}` : '';
+      },
     },
   ];
 
@@ -90,7 +97,7 @@ export function InvoiceTable() {
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
                 <TableHead key={header.id}>
-                  {String(header.column.columnDef.header)}
+                  {header.column.columnDef.header as string}
                 </TableHead>
               ))}
             </TableRow>

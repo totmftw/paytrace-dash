@@ -2,10 +2,11 @@ import { useState } from "react";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { MetricsCard } from "@/components/MetricsCard";
-import { DetailedDataTable } from "@/components/DetailedDataTable";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Table } from "@/components/ui/table";
 
-interface PaymentMetricsData {
+interface MetricsData {
   pendingAmount: number;
   outstandingAmount: number;
   totalSales: number;
@@ -20,7 +21,7 @@ export function PaymentMetrics() {
   const [selectedData, setSelectedData] = useState<any[]>([]);
   const [dialogTitle, setDialogTitle] = useState("");
 
-  const { data } = useQuery<PaymentMetricsData>({
+  const { data } = useQuery<MetricsData>({
     queryKey: ["payment-metrics", selectedYear],
     queryFn: async () => {
       const { data: invoices, error } = await supabase
@@ -86,36 +87,69 @@ export function PaymentMetrics() {
   return (
     <>
       <div className="grid grid-cols-2 gap-4">
-        <MetricsCard
-          title="Pending Payments"
-          value={data?.pendingAmount || 0}
-          onClick={() => handleMetricClick("pending")}
-        />
-        <MetricsCard
-          title="Outstanding Payments"
-          value={data?.outstandingAmount || 0}
-          onClick={() => handleMetricClick("outstanding")}
-        />
-        <MetricsCard
-          title="Total Sales"
-          value={data?.totalSales || 0}
-          onClick={() => handleMetricClick("sales")}
-        />
-        <MetricsCard
-          title="Total Orders"
-          value={data?.totalOrders || 0}
-          onClick={() => handleMetricClick("orders")}
-        />
+        <Card className="cursor-pointer" onClick={() => handleMetricClick("pending")}>
+          <CardHeader>
+            <CardTitle>Pending Payments</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">₹{data?.pendingAmount.toLocaleString()}</p>
+          </CardContent>
+        </Card>
+        <Card className="cursor-pointer" onClick={() => handleMetricClick("outstanding")}>
+          <CardHeader>
+            <CardTitle>Outstanding Payments</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">₹{data?.outstandingAmount.toLocaleString()}</p>
+          </CardContent>
+        </Card>
+        <Card className="cursor-pointer" onClick={() => handleMetricClick("sales")}>
+          <CardHeader>
+            <CardTitle>Total Sales</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">₹{data?.totalSales.toLocaleString()}</p>
+          </CardContent>
+        </Card>
+        <Card className="cursor-pointer" onClick={() => handleMetricClick("orders")}>
+          <CardHeader>
+            <CardTitle>Total Orders</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">{data?.totalOrders}</p>
+          </CardContent>
+        </Card>
       </div>
 
-      <DetailedDataTable
-        title={dialogTitle}
-        data={selectedData}
-        onClose={() => {
-          setSelectedData([]);
-          setDialogTitle("");
-        }}
-      />
+      <Dialog open={selectedData.length > 0} onOpenChange={() => setSelectedData([])}>
+        <DialogContent className="max-w-4xl">
+          <DialogHeader>
+            <DialogTitle>{dialogTitle}</DialogTitle>
+          </DialogHeader>
+          <div className="max-h-[600px] overflow-auto">
+            <Table>
+              <thead>
+                <tr>
+                  <th>Invoice Number</th>
+                  <th>Customer</th>
+                  <th>Amount</th>
+                  <th>Date</th>
+                </tr>
+              </thead>
+              <tbody>
+                {selectedData.map((invoice) => (
+                  <tr key={invoice.invId}>
+                    <td>{invoice.invNumber}</td>
+                    <td>{invoice.customerMaster.custBusinessname}</td>
+                    <td>₹{invoice.invTotal.toLocaleString()}</td>
+                    <td>{new Date(invoice.invDate).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { DashboardGridLayout } from "@/components/DashboardGridLayout";
-import { FinancialYearSelector } from "@/components/FinancialYearSelector";
+import { FinancialYearFilter } from "@/components/dashboard/FinancialYearFilter";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 import { ComponentDataProvider } from "@/contexts/ComponentDataContext";
 import { PaymentMetrics } from "@/components/dashboard/PaymentMetrics";
@@ -86,7 +86,7 @@ export default function Dashboard() {
 
   return (
     <ComponentDataProvider value={{ selectedYear }}>
-      <FinancialYearSelector />
+      <FinancialYearFilter />
       <DashboardGridLayout
         widgets={widgets}
         layout={currentLayout}

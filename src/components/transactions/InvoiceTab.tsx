@@ -21,6 +21,9 @@ export default function InvoiceTab({ year }: { year: string }) {
     },
   });
 
+  const handleCustomerClick = () => {};
+  const handleInvoiceClick = () => {};
+
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4">
@@ -32,8 +35,8 @@ export default function InvoiceTab({ year }: { year: string }) {
       <TransactionInvoiceTable 
         data={invoices || []}
         isLoading={isLoading}
-        onCustomerClick={() => {}}
-        onInvoiceClick={() => {}}
+        onCustomerClick={handleCustomerClick}
+        onInvoiceClick={handleInvoiceClick}
       />
     </div>
   );

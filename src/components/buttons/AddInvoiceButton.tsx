@@ -1,4 +1,4 @@
-import { useState, useEffect, useReducer } from "react";
+import React, { useState, useEffect, useReducer } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -54,7 +54,7 @@ const formReducer = (state: FormState, action: ToggleAction): FormState => {
 
 export function AddInvoiceButton() {
   const [open, setOpen] = useState(false);
-  const [customers, setCustomers] = useState<{ id: string; name: string }[]>([]);
+  const [customers, setCustomers] = useState<Array<{ id: string; name: string }>>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [formState, dispatch] = useReducer(formReducer, { draft: null, saved: null });
 
@@ -75,6 +75,7 @@ export function AddInvoiceButton() {
     formState: { errors },
     setValue,
     reset,
+    getValues,
   } = useForm<FormData>({
     resolver: zodResolver(schema),
     defaultValues: formState.draft || formState.saved || defaultValues,
@@ -87,7 +88,10 @@ export function AddInvoiceButton() {
       try {
         const { data, error } = await supabase.from("customerMaster").select("id, custBusinessname");
         if (error) throw error;
-        setCustomers(data || []);
+        setCustomers(data?.map(c => ({
+          id: c.id.toString(),
+          name: c.custBusinessname
+        })) || []);
       } catch (err) {
         console.error("Error fetching customers:", err);
       }
@@ -100,11 +104,19 @@ export function AddInvoiceButton() {
     setIsSaving(true);
 
     try {
-      await supabase.from("invoiceTable").insert({
-        ...data,
-        invDate: new Date(data.invDate),
-        invDuedate: new Date(data.invDuedate),
-      });
+      const payload = {
+        invCustid: parseInt(data.invCustid),
+        invNumber: data.invNumber,
+        invDate: data.invDate,
+        invDuedate: data.invDuedate,
+        invValue: parseFloat(data.invValue),
+        invGst: parseFloat(data.invGst),
+        invTotal: parseFloat(data.invTotal),
+        invPaymentStatus: data.invPaymentStatus,
+        fy: new Date().getFullYear().toString()
+      };
+
+      await supabase.from("invoiceTable").insert([payload]);
 
       toast({
         title: "Success",

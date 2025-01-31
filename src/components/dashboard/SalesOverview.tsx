@@ -1,20 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
-// SalesOverview.tsx
-import BarChart from "@/components/Charts/BarChart";
 
-<BarChart
-  data={data}
-  xAxisKey="month"
-  yAxisKey="sales"
-  colors={["#22c55e"]}
-/>
 export function SalesOverview() {
-  const { selectedYear, getFYDates } = useFinancialYear();
-  const { start, end } = getFYDates();
+  const { selectedYear, startDate, endDate } = useFinancialYear();
 
   const { data } = useQuery({
     queryKey: ["sales-overview", selectedYear],
@@ -22,8 +13,8 @@ export function SalesOverview() {
       const { data: invoices, error } = await supabase
         .from("invoiceTable")
         .select("invTotal, invDate")
-        .gte("invDate", start.toISOString())
-        .lte("invDate", end.toISOString());
+        .gte("invDate", startDate.toISOString())
+        .lte("invDate", endDate.toISOString());
 
       if (error) throw error;
 
@@ -48,13 +39,13 @@ export function SalesOverview() {
       <CardContent>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={data}>
+            <RechartsBarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="month" />
               <YAxis />
               <Tooltip formatter={(value) => `₹${value.toLocaleString()}`} />
               <Bar dataKey="sales" fill="#22c55e" />
-            </BarChart>
+            </RechartsBarChart>
           </ResponsiveContainer>
         </div>
       </CardContent>

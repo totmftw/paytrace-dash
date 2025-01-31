@@ -37,11 +37,11 @@ export default function LedgerTab() {
         data={customers || []}
         columns={[
           {
-            accessorKey: "custBusinessname",
+            key: "custBusinessname",
             header: "Business Name"
           },
           {
-            accessorKey: "custWhatsapp",
+            key: "custWhatsapp",
             header: "WhatsApp"
           }
         ]}

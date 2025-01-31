@@ -14,12 +14,18 @@ interface Layout {
   h: number;
 }
 
+interface DashboardLayout {
+  created_by: string;
+  layout: Layout[];
+  is_active: boolean;
+}
+
 export default function DashboardLayout({ editable = false }: { editable?: boolean }) {
   const { user } = useAuth();
   const { toast } = useToast();
   const isITAdmin = user?.role === "it_admin";
 
-  const { data: layout, error: layoutError } = useQuery({
+  const { data: layoutData } = useQuery({
     queryKey: ["dashboard-layout", user?.id],
     queryFn: async () => {
       if (!user) throw new Error("No user");
@@ -28,14 +34,15 @@ export default function DashboardLayout({ editable = false }: { editable?: boole
         .select("*")
         .eq("created_by", user.id)
         .eq("is_active", true)
-        .single();
+        .maybeSingle();
       
       if (error) {
         console.error("Error fetching layout:", error);
-        return [];
+        return null;
       }
-      return data?.layout as Layout[] || [];
+      return data as DashboardLayout | null;
     },
+    enabled: !!user,
   });
 
   const updateLayoutMutation = useMutation({
@@ -47,7 +54,7 @@ export default function DashboardLayout({ editable = false }: { editable?: boole
           created_by: user.id,
           layout: newLayout,
           is_active: true
-        });
+        } as DashboardLayout);
 
       if (error) {
         toast({
@@ -66,10 +73,10 @@ export default function DashboardLayout({ editable = false }: { editable?: boole
   });
 
   useEffect(() => {
-    if (editable && layout && isITAdmin) {
-      updateLayoutMutation.mutate(layout);
+    if (editable && layoutData?.layout && isITAdmin) {
+      updateLayoutMutation.mutate(layoutData.layout);
     }
-  }, [editable, layout, isITAdmin]);
+  }, [editable, layoutData, isITAdmin]);
 
   return (
     <div className="h-full overflow-y-auto overflow-x-hidden">
@@ -79,8 +86,8 @@ export default function DashboardLayout({ editable = false }: { editable?: boole
             <button
               className="bg-blue-500 text-white p-2 rounded"
               onClick={() => {
-                if (layout) {
-                  updateLayoutMutation.mutate(layout);
+                if (layoutData?.layout) {
+                  updateLayoutMutation.mutate(layoutData.layout);
                 }
               }}
             >
@@ -90,7 +97,7 @@ export default function DashboardLayout({ editable = false }: { editable?: boole
         )}
         <GridLayout
           className="layout"
-          layout={layout || []}
+          layout={layoutData?.layout || []}
           cols={12}
           rowHeight={30}
           width={1200}

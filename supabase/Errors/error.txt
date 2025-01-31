@@ -1,0 +1,465 @@
+Runtime error
+
+today at 4:45 PM
+
+Error: 
+
+{
+  "lineno": 42,
+  "filename": "https://id-preview--0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovable.app/assets/index-C0eYNWIh.js",
+  "error_type": "runtime",
+  "colno": 660,
+  "message": "Error: ",
+  "stack": "pt@https://id-preview--0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovable.app/assets/index-C0eYNWIh.js:42:660\nz5@https://id-preview--0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovable.app/assets/index-C0eYNWIh.js:51:922\nfs@https://id-preview--0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovable.app/assets/index-C0eYNWIh.js:51:897\nA3@https://id-preview--0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovable.app/assets/index-C0eYNWIh.js:65:75026\nF1@https://id-preview--0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovable.app/assets/index-C0eYNWIh.js:31:16998\nFk@https://id-preview--0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovable.app/assets/index-C0eYNWIh.js:33:44030\nMk@https://id-preview--0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovable.app/assets/index-C0eYNWIh.js:33:39768\nn5@https://id-preview--0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovable.app/assets/index-C0eYNWIh.js:33:39696\nih@https://id-preview--0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovable.app/assets/index-C0eYNWIh.js:33:39547\nV0@https://id-preview--0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovable.app/assets/index-C0eYNWIh.js:33:35914\nNk@https://id-preview--0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovable.app/assets/index-C0eYNWIh.js:33:34865\nw@https://id-preview--0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovable.app/assets/index-C0eYNWIh.js:18:1560\nD@https://id-preview--0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovable.app/assets/index-C0eYNWIh.js:18:1924\n"
+}
+
+Runtime error
+
+today at 2:43 PM
+
+Error: useNavigate() may be used only in the context of a <Router> component.
+
+{
+  "colno": 11,
+  "lineno": 209,
+  "message": "Error: useNavigate() may be used only in the context of a <Router> component.",
+  "stack": "invariant@https://0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovableproject.com/node_modules/.vite/deps/react-router-dom.js?v=f27f3ef0:209:11\nuseNavigateUnstable@https://0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovableproject.com/node_modules/.vite/deps/react-router-dom.js?v=f27f3ef0:3862:34\nuseNavigate@https://0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovableproject.com/node_modules/.vite/deps/react-router-dom.js?v=f27f3ef0:3859:46\nAuthProvider@https://0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovableproject.com/src/contexts/AuthContext.tsx:20:22\nrenderWithHooks@https://0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovableproject.com/node_modules/.vite/deps/chunk-FJ2A54M7.js?v=b62a3f1f:11548:35\nmountIndeterminateComponent@https://0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovableproject.com/node_modules/.vite/deps/chunk-FJ2A54M7.js?v=b62a3f1f:14926:21\nbeginWork@https://0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovableproject.com/node_modules/.vite/deps/chunk-FJ2A54M7.js?v=b62a3f1f:15914:22\ncallCallback2@https://0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovableproject.com/node_modules/.vite/deps/chunk-FJ2A54M7.js?v=b62a3f1f:3674:22\ninvokeGuardedCallbackDev@https://0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovableproject.com/node_modules/.vite/deps/chunk-FJ2A54M7.js?v=b62a3f1f:3699:24\ninvokeGuardedCallback@https://0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovableproject.com/node_modules/.vite/deps/chunk-FJ2A54M7.js?v=b62a3f1f:3733:39\nbeginWork$1@https://0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovableproject.com/node_modules/.vite/deps/chunk-FJ2A54M7.js?v=b62a3f1f:19765:36\nperformUnitOfWork@https://0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovableproject.com/node_modules/.vite/deps/chunk-FJ2A54M7.js?v=b62a3f1f:19198:20\nworkLoopSync@https://0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovableproject.com/node_modules/.vite/deps/chunk-FJ2A54M7.js?v=b62a3f1f:19137:30\nrenderRootSync@https://0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovableproject.com/node_modules/.vite/deps/chunk-FJ2A54M7.js?v=b62a3f1f:19116:15\nperformConcurrentWorkOnRoot@https://0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovableproject.com/node_modules/.vite/deps/chunk-FJ2A54M7.js?v=b62a3f1f:18678:83\nworkLoop@https://0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovableproject.com/node_modules/.vite/deps/chunk-FJ2A54M7.js?v=b62a3f1f:197:50\nflushWork@https://0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovableproject.com/node_modules/.vite/deps/chunk-FJ2A54M7.js?v=b62a3f1f:176:22\nperformWorkUntilDeadline@https://0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovableproject.com/node_modules/.vite/deps/chunk-FJ2A54M7.js?v=b62a3f1f:384:29\n",
+  "error_type": "runtime",
+  "filename": "https://0aeeea37-cd03-4331-b3c6-e2ac45d880e6.lovableproject.com/node_modules/.vite/deps/react-router-dom.js?v=f27f3ef0"
+}
+
+Runtime error
+
+today at 4:56 PM
+
+  x 'import', and 'export' cannot be used outside of module code
+    ,-[/dev-server/src/pages/Transactions.tsx:84:1]
+ 81 |   if (loading) return <div data-component-path="src/pages/Transactions.tsx" data-component-name="div" data-component-line="81" data-component-file="Transactions.tsx" data-component-content="%7B%22text%22%3A%22Loading...%22%7D">Loading...</div>;
+ 82 |   if (error) return <div data-component-path="src/pages/Transactions.tsx" data-component-name="div" data-component-line="82" data-component-file="Transactions.tsx" data-component-content="%7B%22text%22%3A%22Error%3A%22%7D">Error: {error.message}</div>;
+ 83 | // src/pages/Transactions.tsx
+ 84 | import { useState } from 'react';
+    : ^^^^^^
+ 85 | import { Tab } from '@headlessui/react';
+ 86 | import { useFinancialYear } from '@/hooks/useFinancialYear';
+ 87 | import InvoicesTab from './Transactions/InvoicesTab';
+    `----
+
+
+Caused by:
+    Syntax Error
+
+Stack backtrace:
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <unknown>
+   4: <unknown>
+   5: <unknown>
+   6: <unknown>
+   7: <unknown>
+   8: <unknown>
+   9: <unknown>
+  10: <unknown>
+  11: <unknown>
+  12: <unknown>
+  13: <unknown>
+  14: _ZZN4node14ThreadPoolWork12ScheduleWorkEvENUlP9uv_work_sE_4_FUNES2_
+  15: worker
+             at /home/iojs/build/ws/out/../deps/uv/src/threadpool.c:122:5
+  16: <unknown>
+  17: <unknown>
+
+{
+  "message": "  x 'import', and 'export' cannot be used outside of module code\n    ,-[/dev-server/src/pages/Transactions.tsx:84:1]\n 81 |   if (loading) return <div data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"div\" data-component-line=\"81\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%22text%22%3A%22Loading...%22%7D\">Loading...</div>;\n 82 |   if (error) return <div data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"div\" data-component-line=\"82\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%22text%22%3A%22Error%3A%22%7D\">Error: {error.message}</div>;\n 83 | // src/pages/Transactions.tsx\n 84 | import { useState } from 'react';\n    : ^^^^^^\n 85 | import { Tab } from '@headlessui/react';\n 86 | import { useFinancialYear } from '@/hooks/useFinancialYear';\n 87 | import InvoicesTab from './Transactions/InvoicesTab';\n    `----\n\n\nCaused by:\n    Syntax Error\n\nStack backtrace:\n   0: <unknown>\n   1: <unknown>\n   2: <unknown>\n   3: <unknown>\n   4: <unknown>\n   5: <unknown>\n   6: <unknown>\n   7: <unknown>\n   8: <unknown>\n   9: <unknown>\n  10: <unknown>\n  11: <unknown>\n  12: <unknown>\n  13: <unknown>\n  14: _ZZN4node14ThreadPoolWork12ScheduleWorkEvENUlP9uv_work_sE_4_FUNES2_\n  15: worker\n             at /home/iojs/build/ws/out/../deps/uv/src/threadpool.c:122:5\n  16: <unknown>\n  17: <unknown>",
+  "plugin": "vite:react-swc",
+  "id": "/dev-server/src/pages/Transactions.tsx",
+  "stack": "             at /home/iojs/build/ws/out/../deps/uv/src/threadpool.c:122:5",
+  "frame": "",
+  "pluginCode": "import { useNavigate } from \"react-router-dom\";\nimport { useFinancialYear } from \"@/contexts/FinancialYearContext\";\nimport { Tabs, TabsContent, TabsList, TabsTrigger } from \"@/components/ui/tabs\";\nimport { FinancialYearSelector } from \"@/components/FinancialYearSelector\";\nimport InvoiceTab from \"@/components/transactions/InvoicesTab\";\nimport PaymentTab from \"@/components/transactions/PaymentTab\";\nimport LedgerTab from \"@/components/transactions/LedgerTab\";\n// src/pages/Transactions.tsx\nimport { useState } from 'react';\nimport { useFinancialYear } from '@/hooks/useFinancialYear';\nimport { useInvoiceData } from '@/hooks/useInvoiceData';\n// src/pages/Transactions/LedgerTab.tsx\n// Add these functions to the existing LedgerTab component\n\nconst handleExportLedger = (format: 'xlsx' | 'pdf' | 'csv') => {\n  if (!selectedCustomer || ledgerEntries.length === 0) return;\n\n  const exportData = {\n    seller: {\n      name: 'MKD Enterprises',\n      address: 'Bengaluru',\n      gst: 'XXXXXXXXXXXXX'\n    },\n    buyer: {\n      name: selectedCustomer.custName,\n      address: selectedCustomer.custAddress,\n      gst: selectedCustomer.custGst,\n      phone: selectedCustomer.custPhone\n    },\n    entries: ledgerEntries,\n    year,\n    totalDebit: ledgerEntries.reduce((sum, entry) => sum + entry.debit, 0),\n    totalCredit: ledgerEntries.reduce((sum, entry) => sum + entry.credit, 0),\n    finalBalance: ledgerEntries[ledgerEntries.length - 1]?.balance || 0\n  };\n\n  const fileName = `ledger_${selectedCustomer.custName}_${year}`;\n\n  if (format === 'pdf') {\n    generatePDF(exportData);\n  } else {\n    exportData(ledgerEntries, {\n      fileName,\n      format,\n      columns: ['date', 'type', 'reference', 'debit', 'credit', 'balance'],\n      title: `Ledger - ${selectedCustomer.custName}`\n    });\n  }\n};\n\n// Add this to the JSX\n<div data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"div\" data-component-line=\"52\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%22className%22%3A%22flex%20space-x-2%22%7D\" className=\"flex space-x-2\">\n  <button data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"button\" data-component-line=\"53\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%22text%22%3A%22Export%20to%20Excel%22%2C%22className%22%3A%22btn%20btn-secondary%22%7D\"\n    onClick={() => handleExportLedger('xlsx')}\n    className=\"btn btn-secondary\"\n    disabled={!selectedCustomer || ledgerEntries.length === 0}\n  >\n    Export to Excel\n  </button>\n  <button data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"button\" data-component-line=\"60\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%22text%22%3A%22Export%20to%20PDF%22%2C%22className%22%3A%22btn%20btn-secondary%22%7D\"\n    onClick={() => handleExportLedger('pdf')}\n    className=\"btn btn-secondary\"\n    disabled={!selectedCustomer || ledgerEntries.length === 0}\n  >\n    Export to PDF\n  </button>\n  <button data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"button\" data-component-line=\"67\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%22text%22%3A%22Export%20to%20CSV%22%2C%22className%22%3A%22btn%20btn-secondary%22%7D\"\n    onClick={() => handleExportLedger('csv')}\n    className=\"btn btn-secondary\"\n    disabled={!selectedCustomer || ledgerEntries.length === 0}\n  >\n    Export to CSV\n  </button>\n</div>\n\nconst TransactionsPage = () => {\n  const { currentYear } = useFinancialYear();\n  const { invoices, loading, error } = useInvoiceData(currentYear);\n  const [activeTab, setActiveTab] = useState('invoices');\n\n  if (loading) return <div data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"div\" data-component-line=\"81\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%22text%22%3A%22Loading...%22%7D\">Loading...</div>;\n  if (error) return <div data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"div\" data-component-line=\"82\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%22text%22%3A%22Error%3A%22%7D\">Error: {error.message}</div>;\n// src/pages/Transactions.tsx\nimport { useState } from 'react';\nimport { Tab } from '@headlessui/react';\nimport { useFinancialYear } from '@/hooks/useFinancialYear';\nimport InvoicesTab from './Transactions/InvoicesTab';\nimport PaymentsTab from './Transactions/PaymentsTab';\nimport LedgerTab from './Transactions/LedgerTab';\nimport YearSelector from '@/components/YearSelector';\n\nconst TransactionsPage = () => {\n  const { years, currentYear, setCurrentYear } = useFinancialYear();\n\n  const tabs = [\n    { key: 'invoices', label: 'Invoices', component: InvoicesTab },\n    { key: 'payments', label: 'Payments', component: PaymentsTab },\n    { key: 'ledger', label: 'Ledger', component: LedgerTab }\n  ];\n\n  return (\n    <div data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"div\" data-component-line=\"102\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%22className%22%3A%22p-6%20h-full%22%7D\" className=\"p-6 h-full\">\n      <div data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"div\" data-component-line=\"103\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%22className%22%3A%22flex%20justify-between%20items-center%20mb-6%22%7D\" className=\"flex justify-between items-center mb-6\">\n        <h1 data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"h1\" data-component-line=\"104\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%22text%22%3A%22Transactions%22%2C%22className%22%3A%22text-2xl%20font-bold%22%7D\" className=\"text-2xl font-bold\">Transactions</h1>\n        <YearSelector data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"YearSelector\" data-component-line=\"105\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%7D\"\n          years={years}\n          selectedYear={currentYear}\n          onChange={setCurrentYear}\n        />\n      </div>\n\n      <Tab.Group>\n        <Tab.List className=\"flex space-x-1 border-b mb-4\">\n          {tabs.map(({ key, label }) => (\n            <Tab data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"Tab\" data-component-line=\"115\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%7D\"\n              key={key}\n              className={({ selected }) =>\n                `px-4 py-2 focus:outline-none ${\n                  selected \n                    ? 'border-b-2 border-blue-500 font-medium' \n                    : 'text-gray-500 hover:text-gray-700'\n                }`\n              }\n            >\n              {label}\n            </Tab>\n          ))}\n        </Tab.List>\n        <Tab.Panels className=\"h-[calc(100vh-200px)]\">\n          {tabs.map(({ key, component: Component }) => (\n            <Tab.Panel key={key} className=\"h-full\">\n              <Component data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"Component\" data-component-line=\"132\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%7D\" year={currentYear} />\n            </Tab.Panel>\n          ))}\n        </Tab.Panels>\n      </Tab.Group>\n    </div>\n  );\n};\n\nexport default TransactionsPage;\n\n  return (\n    <div data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"div\" data-component-line=\"144\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%22className%22%3A%22p-6%22%7D\" className=\"p-6\">\n      <h1 data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"h1\" data-component-line=\"145\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%22text%22%3A%22Transactions%22%2C%22className%22%3A%22text-2xl%20font-bold%20mb-6%22%7D\" className=\"text-2xl font-bold mb-6\">Transactions</h1>\n      {/* Transactions content will go here */}\n    </div>\n  );\n};\n\nexport default TransactionsPage;\n\ninterface TabProps {\n  year: string;\n}\n\nexport default function Transactions() {\n  const navigate = useNavigate();\n  const { selectedYear } = useFinancialYear();\n\n  return (\n    <div data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"div\" data-component-line=\"162\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%22className%22%3A%22w-full%20h-screen%20bg-%5B%23E8F3E8%5D%20p-6%22%7D\" className=\"w-full h-screen bg-[#E8F3E8] p-6\">\n      <div data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"div\" data-component-line=\"163\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%22className%22%3A%22flex%20justify-between%20items-center%22%7D\" className=\"flex justify-between items-center\">\n        <div data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"div\" data-component-line=\"164\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%7D\">\n          <h2 data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"h2\" data-component-line=\"165\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%22text%22%3A%22Transactions%22%2C%22className%22%3A%22text-3xl%20font-bold%20tracking-tight%20text-%5B%231B4D3E%5D%22%7D\" className=\"text-3xl font-bold tracking-tight text-[#1B4D3E]\">Transactions</h2>\n          <p data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"p\" data-component-line=\"166\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%22text%22%3A%22View%20and%20manage%20all%20transactions%22%2C%22className%22%3A%22text-%5B%234A7862%5D%22%7D\" className=\"text-[#4A7862]\">View and manage all transactions</p>\n        </div>\n        <FinancialYearSelector data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"FinancialYearSelector\" data-component-line=\"168\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%7D\" />\n      </div>\n\n      <Tabs data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"Tabs\" data-component-line=\"171\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%22className%22%3A%22space-y-4%22%7D\" defaultValue=\"invoices\" className=\"space-y-4\">\n        <TabsList data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"TabsList\" data-component-line=\"172\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%7D\">\n          <TabsTrigger data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"TabsTrigger\" data-component-line=\"173\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%22text%22%3A%22Invoices%22%7D\" value=\"invoices\">Invoices</TabsTrigger>\n          <TabsTrigger data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"TabsTrigger\" data-component-line=\"174\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%22text%22%3A%22Payments%22%7D\" value=\"payments\">Payments</TabsTrigger>\n          <TabsTrigger data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"TabsTrigger\" data-component-line=\"175\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%22text%22%3A%22Ledger%22%7D\" value=\"ledger\">Ledger</TabsTrigger>\n        </TabsList>\n        <TabsContent data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"TabsContent\" data-component-line=\"177\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%7D\" value=\"invoices\">\n          <InvoiceTab data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"InvoiceTab\" data-component-line=\"178\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%7D\" year={selectedYear} />\n        </TabsContent>\n        <TabsContent data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"TabsContent\" data-component-line=\"180\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%7D\" value=\"payments\">\n          <PaymentTab data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"PaymentTab\" data-component-line=\"181\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%7D\" year={selectedYear} />\n        </TabsContent>\n        <TabsContent data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"TabsContent\" data-component-line=\"183\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%7D\" value=\"ledger\">\n          <LedgerTab data-component-path=\"src/pages/Transactions.tsx\" data-component-name=\"LedgerTab\" data-component-line=\"184\" data-component-file=\"Transactions.tsx\" data-component-content=\"%7B%7D\" />\n        </TabsContent>\n      </Tabs>\n    </div>\n  );\n}",
+  "error_type": "immediate_runtime"
+}
+
+Runtime error
+
+today at 4:56 PM
+
+  x the name `useFinancialYear` is defined multiple times
+    ,-[/dev-server/src/pages/Dashboard.tsx:5:1]
+  2 | import { supabase } from "@/integrations/supabase/client";
+  3 | import { MetricsCard } from "@/components/MetricsCard";
+  4 | import { FinancialYearSelector } from "@/components/FinancialYearSelector";
+  5 | import { useFinancialYear } from "@/contexts/FinancialYearContext";
+    :          ^^^^^^^^|^^^^^^^
+    :                  `-- previous definition of `useFinancialYear` here
+  6 | import { BanknoteIcon, FileTextIcon, AlertCircleIcon, CheckCircleIcon } from "lucide-react";
+  7 | import type { DashboardProps, Invoice } from "@/types/dashboard";
+  8 | import { SalesVsPaymentsChart } from "@/components/SalesVsPaymentsChart";
+  9 | import { PaymentTracking } from "@/components/dashboard/PaymentTracking";
+ 10 | import { InvoiceTable } from "@/components/InvoiceTable";
+ 11 | // src/components/Dashboard.tsx
+ 12 | import { useEffect, useState } from 'react';
+ 13 | import { GridLayout, Responsive, WidthProvider } from 'react-grid-layout';
+ 14 | import { useSupabaseClient } from '@supabase/auth-helpers-react';
+ 15 | import { useFinancialYear } from '@/context/FinancialYearContext';
+    :          ^^^^^^^^|^^^^^^^
+    :                  `-- `useFinancialYear` redefined here
+ 16 | import { useUser } from '@/hooks/useUser';
+ 17 | import 'react-grid-layout/css/styles.css';
+ 18 | import 'react-resizable/css/styles.css';
+    `----
+  x the name `Dashboard` is defined multiple times
+     ,-[/dev-server/src/pages/Dashboard.tsx:22:1]
+  19 | 
+  20 | const ResponsiveGridLayout = WidthProvider(Responsive);
+  21 | 
+  22 | const Dashboard = () => {
+     :       ^^^^|^^^^
+     :           `-- previous definition of `Dashboard` here
+  23 |   const { user, isAdmin } = useUser();
+  24 |   const supabase = useSupabaseClient();
+  25 |   const { selectedYear, setSelectedYear } = useFinancialYear();
+  26 |   const [layouts, setLayouts] = useState(null);
+  27 |   const [isEditing, setIsEditing] = useState(false);
+  28 | 
+  29 |   // Fetch saved layout
+  30 |   useEffect(() => {
+  31 |     const fetchLayout = async () => {
+  32 |       const { data, error } = await supabase
+  33 |         .from('dashboard_layouts')
+  34 |         .select('layout')
+  35 |         .eq('is_active', true)
+  36 |         .single();
+  37 |       
+  38 |       if (data) setLayouts(JSON.parse(data.layout));
+  39 |     };
+  40 |     fetchLayout();
+  41 |   }, []);
+  42 | 
+  43 |   const saveLayout = async (newLayout) => {
+  44 |     const { error } = await supabase
+  45 |       .from('dashboard_layouts')
+  46 |       .upsert({
+  47 |         layout: JSON.stringify(newLayout),
+  48 |         created_by: user.id,
+  49 |         is_active: true
+  50 |       });
+  51 | 
+  52 |     if (!error) {
+  53 |       setIsEditing(false);
+  54 |       // Show success toast
+  55 |     }
+  56 |   };
+  57 | 
+  58 |   return (
+  59 |     <div data-component-path="src/pages/Dashboard.tsx" data-component-name="div" data-component-line="59" data-component-file="Dashboard.tsx" data-component-content="%7B%22className%22%3A%22p-4%20bg-pastel-moss%20min-h-screen%22%7D" className="p-4 bg-pastel-moss min-h-screen">
+  60 |       <div data-component-path="src/pages/Dashboard.tsx" data-component-name="div" data-component-line="60" data-component-file="Dashboard.tsx" data-component-content="%7B%22className%22%3A%22flex%20justify-between%20items-center%20mb-4%22%7D" className="flex justify-between items-center mb-4">
+  61 |         <select data-component-path="src/pages/Dashboard.tsx" data-component-name="select" data-component-line="61" data-component-file="Dashboard.tsx" data-component-content="%7B%22className%22%3A%22p-2%20border%20rounded%20bg-white%22%7D"
+  62 |           value={selectedYear}
+  63 |           onChange={(e) => setSelectedYear(e.target.value)}
+  64 |           className="p-2 border rounded bg-white"
+  65 |         >
+  66 |           {Array.from({ length: 5 }, (_, i) => {
+  67 |             const year = new Date().getFullYear() - 2 + i;
+  68 |             return (
+  69 |               <option data-component-path="src/pages/Dashboard.tsx" data-component-name="option" data-component-line="69" data-component-file="Dashboard.tsx" data-component-content="%7B%7D" key={year} value={year}>
+  70 |                 {`FY ${year}-${year + 1}`}
+  71 |               </option>
+  72 |             );
+  73 |           })}
+  74 |         </select>
+  75 | 
+  76 |         {isAdmin && (
+  77 |           <button data-component-path="src/pages/Dashboard.tsx" data-component-name="button" data-component-line="77" data-component-file="Dashboard.tsx" data-component-content="%7B%22className%22%3A%22bg-leaf-green%20text-forest-green%20px-4%20py-2%20rounded%22%7D"
+  78 |             onClick={() => setIsEditing(!isEditing)}
+  79 |             className="bg-leaf-green text-forest-green px-4 py-2 rounded"
+  80 |           >
+  81 |             {isEditing ? 'Save Layout' : 'Configure Layout'}
+  82 |           </button>
+  83 |         )}
+  84 |       </div>
+  85 | 
+  86 |       <ResponsiveGridLayout data-component-path="src/pages/Dashboard.tsx" data-component-name="ResponsiveGridLayout" data-component-line="86" data-component-file="Dashboard.tsx" data-component-content="%7B%22className%22%3A%22layout%22%7D"
+  87 |         className="layout"
+  88 |         layouts={layouts}
+  89 |         breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
+  90 |         cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
+  91 |         rowHeight={100}
+  92 |         isDraggable={isEditing}
+  93 |         isResizable={isEditing}
+  94 |         onLayoutChange={(layout) => {
+  95 |           if (isEditing) setLayouts({ ...layouts, lg: layout });
+  96 |         }}
+  97 |       >
+  98 |         <div data-component-path="src/pages/Dashboard.tsx" data-component-name="div" data-component-line="98" data-component-file="Dashboard.tsx" data-component-content="%7B%7D" key="metrics" data-grid={{ x: 0, y: 0, w: 12, h: 2 }}>
+  99 |           <MetricsGrid data-component-path="src/pages/Dashboard.tsx" data-component-name="MetricsGrid" data-component-line="99" data-component-file="Dashboard.tsx" data-component-content="%7B%7D" />
+ 100 |         </div>
+ 101 |         <div data-component-path="src/pages/Dashboard.tsx" data-component-name="div" data-component-line="101" data-component-file="Dashboard.tsx" data-component-content="%7B%7D" key="invoiceTable" data-grid={{ x: 0, y: 2, w: 8, h: 4 }}>
+ 102 |           <InvoiceTable data-component-path="src/pages/Dashboard.tsx" data-component-name="InvoiceTable" data-component-line="102" data-component-file="Dashboard.tsx" data-component-content="%7B%7D" />
+ 103 |         </div>
+ 104 |         <div data-component-path="src/pages/Dashboard.tsx" data-component-name="div" data-component-line="104" data-component-file="Dashboard.tsx" data-component-content="%7B%7D" key="salesChart" data-grid={{ x: 8, y: 2, w: 4, h: 4 }}>
+ 105 |           <SalesVsPaymentsChart data-component-path="src/pages/Dashboard.tsx" data-component-name="SalesVsPaymentsChart" data-component-line="105" data-component-file="Dashboard.tsx" data-component-content="%7B%7D" />
+ 106 |         </div>
+ 107 |       </ResponsiveGridLayout>
+ 108 |     </div>
+ 109 |   );
+ 110 | };
+ 111 | 
+ 112 | export default Dashboard;
+ 113 | 
+ 114 | 
+ 115 | export default Dashboard;
+ 116 | 
+ 117 | export default function Dashboard({ year }: DashboardProps) {
+     :                         ^^^^|^^^^
+     :                             `-- `Dashboard` redefined here
+ 118 |   const { selectedYear } = useFinancialYear();
+ 119 |   const [startYear, endYear] = selectedYear.split("-");
+ 120 |   const startDate = `${startYear}-04-01`;
+     `----
+  x the name `default` is exported multiple times
+     ,-[/dev-server/src/pages/Dashboard.tsx:112:1]
+ 109 |   );
+ 110 | };
+ 111 | 
+ 112 | export default Dashboard;
+     : ^^^^^^^^^^^^|^^^^^^^^^^^^
+     :             `-- previous exported here
+ 113 | 
+ 114 | 
+ 115 | export default Dashboard;
+     : ^^^^^^^^^^^^|^^^^^^^^^^^^
+     :             `-- exported more than once
+ 116 | 
+ 117 | export default function Dashboard({ year }: DashboardProps) {
+ 118 |   const { selectedYear } = useFinancialYear();
+     `----
+
+Advice:   > Exported identifiers must be unique
+  x the name `default` is exported multiple times
+     ,-[/dev-server/src/pages/Dashboard.tsx:115:1]
+ 112 |     export default Dashboard;
+ 113 |     
+ 114 |     
+ 115 |     export default Dashboard;
+     :     ^^^^^^^^^^^^|^^^^^^^^^^^^
+     :                 `-- previous exported here
+ 116 |     
+ 117 | ,-> export default function Dashboard({ year }: DashboardProps) {
+ 118 | |     const { selectedYear } = useFinancialYear();
+ 119 | |     const [startYear, endYear] = selectedYear.split("-");
+ 120 | |     const startDate = `${startYear}-04-01`;
+ 121 | |     const endDate = `${Number(startYear) + 1}-03-31`;
+ 122 | |   
+ 123 | |     const { data: invoices, isLoading } = useQuery({
+ 124 | |       queryKey: ["dashboard-data", selectedYear],
+ 125 | |       queryFn: async () => {
+ 126 | |         const { data, error } = await supabase
+ 127 | |           .from("invoiceTable")
+ 128 | |           .select(`
+ 129 | |             *,
+ 130 | |             customerMaster!invoiceTable_invCustid_fkey (
+ 131 | |               custBusinessname,
+ 132 | |               custCreditperiod,
+ 133 | |               custWhatsapp,
+ 134 | |               custGST,
+ 135 | |               custPhone
+ 136 | |             ),
+ 137 | |             paymentTransactions (
+ 138 | |               paymentId,
+ 139 | |               amount,
+ 140 | |               paymentDate
+ 141 | |             )
+ 142 | |           `)
+ 143 | |           .gte("invDate", startDate)
+ 144 | |           .lte("invDate", endDate);
+ 145 | |   
+ 146 | |         if (error) throw error;
+ 147 | |         return data as Invoice[];
+ 148 | |       }
+ 149 | |     });
+ 150 | |   
+ 151 | |     const totalSales = invoices?.reduce((sum, inv) => sum + inv.invTotal, 0) ?? 0;
+ 152 | |     const totalPayments = invoices?.reduce((sum, inv) => 
+ 153 | |       sum + (inv.paymentTransactions?.reduce((pSum, p) => pSum + p.amount, 0) || 0), 
+ 154 | |     0) ?? 0;
+ 155 | |     const pendingPayments = totalSales - totalPayments;
+ 156 | |     const overdueInvoices = invoices?.filter(inv => 
+ 157 | |       new Date(inv.invDuedate) < new Date() && 
+ 158 | |       (inv.invTotal - (inv.paymentTransactions?.reduce((sum, p) => sum + p.amount, 0) || 0)) > 0
+ 159 | |     ).length ?? 0;
+ 160 | |   
+ 161 | |     return (
+ 162 | |       <div data-component-path="src/pages/Dashboard.tsx" data-component-name="div" data-component-line="162" data-component-file="Dashboard.tsx" data-component-content="%7B%22className%22%3A%22space-y-6%22%7D" className="space-y-6">
+ 163 | |         <div data-component-path="src/pages/Dashboard.tsx" data-component-name="div" data-component-line="163" data-component-file="Dashboard.tsx" data-component-content="%7B%22className%22%3A%22flex%20justify-between%20items-center%22%7D" className="flex justify-between items-center">
+ 164 | |           <h2 data-component-path="src/pages/Dashboard.tsx" data-component-name="h2" data-component-line="164" data-component-file="Dashboard.tsx" data-component-content="%7B%22text%22%3A%22Dashboard%22%2C%22className%22%3A%22text-3xl%20font-bold%20tracking-tight%22%7D" className="text-3xl font-bold tracking-tight">Dashboard</h2>
+ 165 | |           <FinancialYearSelector data-component-path="src/pages/Dashboard.tsx" data-component-name="FinancialYearSelector" data-component-line="165" data-component-file="Dashboard.tsx" data-component-content="%7B%7D" />
+ 166 | |         </div>
+ 167 | |   
+ 168 | |         <div data-component-path="src/pages/Dashboard.tsx" data-component-name="div" data-component-line="168" data-component-file="Dashboard.tsx" data-component-content="%7B%22className%22%3A%22grid%20gap-4%20md%3Agrid-cols-2%20lg%3Agrid-cols-4%22%7D" className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+ 169 | |           <MetricsCard data-component-path="src/pages/Dashboard.tsx" data-component-name="MetricsCard" data-component-line="169" data-component-file="Dashboard.tsx" data-component-content="%7B%7D"
+ 170 | |             title="Total Sales"
+ 171 | |             value={totalSales}
+ 172 | |             icon={<BanknoteIcon data-component-path="src/pages/Dashboard.tsx" data-component-name="BanknoteIcon" data-component-line="172" data-component-file="Dashboard.tsx" data-component-content="%7B%22className%22%3A%22h-6%20w-6%22%7D" className="h-6 w-6" />}
+ 173 | |           />
+ 174 | |           <MetricsCard data-component-path="src/pages/Dashboard.tsx" data-component-name="MetricsCard" data-component-line="174" data-component-file="Dashboard.tsx" data-component-content="%7B%7D"
+ 175 | |             title="Pending Payments"
+ 176 | |             value={pendingPayments}
+ 177 | |             icon={<AlertCircleIcon data-component-path="src/pages/Dashboard.tsx" data-component-name="AlertCircleIcon" data-component-line="177" data-component-file="Dashboard.tsx" data-component-content="%7B%22className%22%3A%22h-6%20w-6%22%7D" className="h-6 w-6" />}
+ 178 | |           />
+ 179 | |           <MetricsCard data-component-path="src/pages/Dashboard.tsx" data-component-name="MetricsCard" data-component-line="179" data-component-file="Dashboard.tsx" data-component-content="%7B%7D"
+ 180 | |             title="Total Invoices"
+ 181 | |             value={invoices?.length ?? 0}
+ 182 | |             icon={<FileTextIcon data-component-path="src/pages/Dashboard.tsx" data-component-name="FileTextIcon" data-component-line="182" data-component-file="Dashboard.tsx" data-component-content="%7B%22className%22%3A%22h-6%20w-6%22%7D" className="h-6 w-6" />}
+ 183 | |             isMonetary={false}
+ 184 | |           />
+ 185 | |           <MetricsCard data-component-path="src/pages/Dashboard.tsx" data-component-name="MetricsCard" data-component-line="185" data-component-file="Dashboard.tsx" data-component-content="%7B%7D"
+ 186 | |             title="Overdue Invoices"
+ 187 | |             value={overdueInvoices}
+ 188 | |             icon={<CheckCircleIcon data-component-path="src/pages/Dashboard.tsx" data-component-name="CheckCircleIcon" data-component-line="188" data-component-file="Dashboard.tsx" data-component-content="%7B%22className%22%3A%22h-6%20w-6%22%7D" className="h-6 w-6" />}
+ 189 | |             isMonetary={false}
+ 190 | |           />
+ 191 | |         </div>
+ 192 | |   
+ 193 | |         <div data-component-path="src/pages/Dashboard.tsx" data-component-name="div" data-component-line="193" data-component-file="Dashboard.tsx" data-component-content="%7B%22className%22%3A%22grid%20gap-4%20grid-cols-1%20md%3Agrid-cols-2%22%7D" className="grid gap-4 grid-cols-1 md:grid-cols-2">
+ 194 | |           <SalesVsPaymentsChart data-component-path="src/pages/Dashboard.tsx" data-component-name="SalesVsPaymentsChart" data-component-line="194" data-component-file="Dashboard.tsx" data-component-content="%7B%7D" selectedYear={selectedYear} />
+ 195 | |           <PaymentTracking data-component-path="src/pages/Dashboard.tsx" data-component-name="PaymentTracking" data-component-line="195" data-component-file="Dashboard.tsx" data-component-content="%7B%7D" />
+ 196 | |         </div>
+ 197 | |   
+ 198 | |         <div data-component-path="src/pages/Dashboard.tsx" data-component-name="div" data-component-line="198" data-component-file="Dashboard.tsx" data-component-content="%7B%22className%22%3A%22mt-6%22%7D" className="mt-6">
+ 199 | |           <h3 data-component-path="src/pages/Dashboard.tsx" data-component-name="h3" data-component-line="199" data-component-file="Dashboard.tsx" data-component-content="%7B%22text%22%3A%22Recent%20Invoices%22%2C%22className%22%3A%22text-xl%20font-semibold%20mb-4%22%7D" className="text-xl font-semibold mb-4">Recent Invoices</h3>
+ 200 | |           <InvoiceTable data-component-path="src/pages/Dashboard.tsx" data-component-name="InvoiceTable" data-component-line="200" data-component-file="Dashboard.tsx" data-component-content="%7B%7D" 
+ 201 | |             data={invoices || []} 
+ 202 | |             isLoading={isLoading}
+ 203 | |             visibleColumns={[
+ 204 | |               'invNumber',
+ 205 | |               'customerBusinessname',
+ 206 | |               'invTotal',
+ 207 | |               'invDate',
+ 208 | |               'invDuedate',
+ 209 | |               'status'
+ 210 | |             ]}
+ 211 | |           />
+ 212 | |         </div>
+ 213 | |       </div>
+ 214 | |     );
+ 215 | |-> }
+     : `---- exported more than once
+     `----
+
+Advice:   > Exported identifiers must be unique
+
+
+Stack backtrace:
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <unknown>
+   4: <unknown>
+   5: _ZZN4node14ThreadPoolWork12ScheduleWorkEvENUlP9uv_work_sE_4_FUNES2_
+   6: worker
+             at /home/iojs/build/ws/out/../deps/uv/src/threadpool.c:122:5
+   7: <unknown>
+   8: <unknown>
+
+{
+  "error_type": "immediate_runtime",
+  "id": "/dev-server/src/pages/Dashboard.tsx",
+  "plugin": "vite:react-swc",
+  "stack": "             at /home/iojs/build/ws/out/../deps/uv/src/threadpool.c:122:5",
+  "frame": "",
+  "message": "  x the name `useFinancialYear` is defined multiple times\n    ,-[/dev-server/src/pages/Dashboard.tsx:5:1]\n  2 | import { supabase } from \"@/integrations/supabase/client\";\n  3 | import { MetricsCard } from \"@/components/MetricsCard\";\n  4 | import { FinancialYearSelector } from \"@/components/FinancialYearSelector\";\n  5 | import { useFinancialYear } from \"@/contexts/FinancialYearContext\";\n    :          ^^^^^^^^|^^^^^^^\n    :                  `-- previous definition of `useFinancialYear` here\n  6 | import { BanknoteIcon, FileTextIcon, AlertCircleIcon, CheckCircleIcon } from \"lucide-react\";\n  7 | import type { DashboardProps, Invoice } from \"@/types/dashboard\";\n  8 | import { SalesVsPaymentsChart } from \"@/components/SalesVsPaymentsChart\";\n  9 | import { PaymentTracking } from \"@/components/dashboard/PaymentTracking\";\n 10 | import { InvoiceTable } from \"@/components/InvoiceTable\";\n 11 | // src/components/Dashboard.tsx\n 12 | import { useEffect, useState } from 'react';\n 13 | import { GridLayout, Responsive, WidthProvider } from 'react-grid-layout';\n 14 | import { useSupabaseClient } from '@supabase/auth-helpers-react';\n 15 | import { useFinancialYear } from '@/context/FinancialYearContext';\n    :          ^^^^^^^^|^^^^^^^\n    :                  `-- `useFinancialYear` redefined here\n 16 | import { useUser } from '@/hooks/useUser';\n 17 | import 'react-grid-layout/css/styles.css';\n 18 | import 'react-resizable/css/styles.css';\n    `----\n  x the name `Dashboard` is defined multiple times\n     ,-[/dev-server/src/pages/Dashboard.tsx:22:1]\n  19 | \n  20 | const ResponsiveGridLayout = WidthProvider(Responsive);\n  21 | \n  22 | const Dashboard = () => {\n     :       ^^^^|^^^^\n     :           `-- previous definition of `Dashboard` here\n  23 |   const { user, isAdmin } = useUser();\n  24 |   const supabase = useSupabaseClient();\n  25 |   const { selectedYear, setSelectedYear } = useFinancialYear();\n  26 |   const [layouts, setLayouts] = useState(null);\n  27 |   const [isEditing, setIsEditing] = useState(false);\n  28 | \n  29 |   // Fetch saved layout\n  30 |   useEffect(() => {\n  31 |     const fetchLayout = async () => {\n  32 |       const { data, error } = await supabase\n  33 |         .from('dashboard_layouts')\n  34 |         .select('layout')\n  35 |         .eq('is_active', true)\n  36 |         .single();\n  37 |       \n  38 |       if (data) setLayouts(JSON.parse(data.layout));\n  39 |     };\n  40 |     fetchLayout();\n  41 |   }, []);\n  42 | \n  43 |   const saveLayout = async (newLayout) => {\n  44 |     const { error } = await supabase\n  45 |       .from('dashboard_layouts')\n  46 |       .upsert({\n  47 |         layout: JSON.stringify(newLayout),\n  48 |         created_by: user.id,\n  49 |         is_active: true\n  50 |       });\n  51 | \n  52 |     if (!error) {\n  53 |       setIsEditing(false);\n  54 |       // Show success toast\n  55 |     }\n  56 |   };\n  57 | \n  58 |   return (\n  59 |     <div data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"div\" data-component-line=\"59\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22p-4%20bg-pastel-moss%20min-h-screen%22%7D\" className=\"p-4 bg-pastel-moss min-h-screen\">\n  60 |       <div data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"div\" data-component-line=\"60\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22flex%20justify-between%20items-center%20mb-4%22%7D\" className=\"flex justify-between items-center mb-4\">\n  61 |         <select data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"select\" data-component-line=\"61\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22p-2%20border%20rounded%20bg-white%22%7D\"\n  62 |           value={selectedYear}\n  63 |           onChange={(e) => setSelectedYear(e.target.value)}\n  64 |           className=\"p-2 border rounded bg-white\"\n  65 |         >\n  66 |           {Array.from({ length: 5 }, (_, i) => {\n  67 |             const year = new Date().getFullYear() - 2 + i;\n  68 |             return (\n  69 |               <option data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"option\" data-component-line=\"69\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\" key={year} value={year}>\n  70 |                 {`FY ${year}-${year + 1}`}\n  71 |               </option>\n  72 |             );\n  73 |           })}\n  74 |         </select>\n  75 | \n  76 |         {isAdmin && (\n  77 |           <button data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"button\" data-component-line=\"77\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22bg-leaf-green%20text-forest-green%20px-4%20py-2%20rounded%22%7D\"\n  78 |             onClick={() => setIsEditing(!isEditing)}\n  79 |             className=\"bg-leaf-green text-forest-green px-4 py-2 rounded\"\n  80 |           >\n  81 |             {isEditing ? 'Save Layout' : 'Configure Layout'}\n  82 |           </button>\n  83 |         )}\n  84 |       </div>\n  85 | \n  86 |       <ResponsiveGridLayout data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"ResponsiveGridLayout\" data-component-line=\"86\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22layout%22%7D\"\n  87 |         className=\"layout\"\n  88 |         layouts={layouts}\n  89 |         breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}\n  90 |         cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}\n  91 |         rowHeight={100}\n  92 |         isDraggable={isEditing}\n  93 |         isResizable={isEditing}\n  94 |         onLayoutChange={(layout) => {\n  95 |           if (isEditing) setLayouts({ ...layouts, lg: layout });\n  96 |         }}\n  97 |       >\n  98 |         <div data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"div\" data-component-line=\"98\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\" key=\"metrics\" data-grid={{ x: 0, y: 0, w: 12, h: 2 }}>\n  99 |           <MetricsGrid data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"MetricsGrid\" data-component-line=\"99\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\" />\n 100 |         </div>\n 101 |         <div data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"div\" data-component-line=\"101\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\" key=\"invoiceTable\" data-grid={{ x: 0, y: 2, w: 8, h: 4 }}>\n 102 |           <InvoiceTable data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"InvoiceTable\" data-component-line=\"102\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\" />\n 103 |         </div>\n 104 |         <div data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"div\" data-component-line=\"104\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\" key=\"salesChart\" data-grid={{ x: 8, y: 2, w: 4, h: 4 }}>\n 105 |           <SalesVsPaymentsChart data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"SalesVsPaymentsChart\" data-component-line=\"105\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\" />\n 106 |         </div>\n 107 |       </ResponsiveGridLayout>\n 108 |     </div>\n 109 |   );\n 110 | };\n 111 | \n 112 | export default Dashboard;\n 113 | \n 114 | \n 115 | export default Dashboard;\n 116 | \n 117 | export default function Dashboard({ year }: DashboardProps) {\n     :                         ^^^^|^^^^\n     :                             `-- `Dashboard` redefined here\n 118 |   const { selectedYear } = useFinancialYear();\n 119 |   const [startYear, endYear] = selectedYear.split(\"-\");\n 120 |   const startDate = `${startYear}-04-01`;\n     `----\n  x the name `default` is exported multiple times\n     ,-[/dev-server/src/pages/Dashboard.tsx:112:1]\n 109 |   );\n 110 | };\n 111 | \n 112 | export default Dashboard;\n     : ^^^^^^^^^^^^|^^^^^^^^^^^^\n     :             `-- previous exported here\n 113 | \n 114 | \n 115 | export default Dashboard;\n     : ^^^^^^^^^^^^|^^^^^^^^^^^^\n     :             `-- exported more than once\n 116 | \n 117 | export default function Dashboard({ year }: DashboardProps) {\n 118 |   const { selectedYear } = useFinancialYear();\n     `----\n\nAdvice:   > Exported identifiers must be unique\n  x the name `default` is exported multiple times\n     ,-[/dev-server/src/pages/Dashboard.tsx:115:1]\n 112 |     export default Dashboard;\n 113 |     \n 114 |     \n 115 |     export default Dashboard;\n     :     ^^^^^^^^^^^^|^^^^^^^^^^^^\n     :                 `-- previous exported here\n 116 |     \n 117 | ,-> export default function Dashboard({ year }: DashboardProps) {\n 118 | |     const { selectedYear } = useFinancialYear();\n 119 | |     const [startYear, endYear] = selectedYear.split(\"-\");\n 120 | |     const startDate = `${startYear}-04-01`;\n 121 | |     const endDate = `${Number(startYear) + 1}-03-31`;\n 122 | |   \n 123 | |     const { data: invoices, isLoading } = useQuery({\n 124 | |       queryKey: [\"dashboard-data\", selectedYear],\n 125 | |       queryFn: async () => {\n 126 | |         const { data, error } = await supabase\n 127 | |           .from(\"invoiceTable\")\n 128 | |           .select(`\n 129 | |             *,\n 130 | |             customerMaster!invoiceTable_invCustid_fkey (\n 131 | |               custBusinessname,\n 132 | |               custCreditperiod,\n 133 | |               custWhatsapp,\n 134 | |               custGST,\n 135 | |               custPhone\n 136 | |             ),\n 137 | |             paymentTransactions (\n 138 | |               paymentId,\n 139 | |               amount,\n 140 | |               paymentDate\n 141 | |             )\n 142 | |           `)\n 143 | |           .gte(\"invDate\", startDate)\n 144 | |           .lte(\"invDate\", endDate);\n 145 | |   \n 146 | |         if (error) throw error;\n 147 | |         return data as Invoice[];\n 148 | |       }\n 149 | |     });\n 150 | |   \n 151 | |     const totalSales = invoices?.reduce((sum, inv) => sum + inv.invTotal, 0) ?? 0;\n 152 | |     const totalPayments = invoices?.reduce((sum, inv) => \n 153 | |       sum + (inv.paymentTransactions?.reduce((pSum, p) => pSum + p.amount, 0) || 0), \n 154 | |     0) ?? 0;\n 155 | |     const pendingPayments = totalSales - totalPayments;\n 156 | |     const overdueInvoices = invoices?.filter(inv => \n 157 | |       new Date(inv.invDuedate) < new Date() && \n 158 | |       (inv.invTotal - (inv.paymentTransactions?.reduce((sum, p) => sum + p.amount, 0) || 0)) > 0\n 159 | |     ).length ?? 0;\n 160 | |   \n 161 | |     return (\n 162 | |       <div data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"div\" data-component-line=\"162\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22space-y-6%22%7D\" className=\"space-y-6\">\n 163 | |         <div data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"div\" data-component-line=\"163\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22flex%20justify-between%20items-center%22%7D\" className=\"flex justify-between items-center\">\n 164 | |           <h2 data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"h2\" data-component-line=\"164\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22text%22%3A%22Dashboard%22%2C%22className%22%3A%22text-3xl%20font-bold%20tracking-tight%22%7D\" className=\"text-3xl font-bold tracking-tight\">Dashboard</h2>\n 165 | |           <FinancialYearSelector data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"FinancialYearSelector\" data-component-line=\"165\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\" />\n 166 | |         </div>\n 167 | |   \n 168 | |         <div data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"div\" data-component-line=\"168\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22grid%20gap-4%20md%3Agrid-cols-2%20lg%3Agrid-cols-4%22%7D\" className=\"grid gap-4 md:grid-cols-2 lg:grid-cols-4\">\n 169 | |           <MetricsCard data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"MetricsCard\" data-component-line=\"169\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\"\n 170 | |             title=\"Total Sales\"\n 171 | |             value={totalSales}\n 172 | |             icon={<BanknoteIcon data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"BanknoteIcon\" data-component-line=\"172\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22h-6%20w-6%22%7D\" className=\"h-6 w-6\" />}\n 173 | |           />\n 174 | |           <MetricsCard data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"MetricsCard\" data-component-line=\"174\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\"\n 175 | |             title=\"Pending Payments\"\n 176 | |             value={pendingPayments}\n 177 | |             icon={<AlertCircleIcon data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"AlertCircleIcon\" data-component-line=\"177\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22h-6%20w-6%22%7D\" className=\"h-6 w-6\" />}\n 178 | |           />\n 179 | |           <MetricsCard data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"MetricsCard\" data-component-line=\"179\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\"\n 180 | |             title=\"Total Invoices\"\n 181 | |             value={invoices?.length ?? 0}\n 182 | |             icon={<FileTextIcon data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"FileTextIcon\" data-component-line=\"182\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22h-6%20w-6%22%7D\" className=\"h-6 w-6\" />}\n 183 | |             isMonetary={false}\n 184 | |           />\n 185 | |           <MetricsCard data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"MetricsCard\" data-component-line=\"185\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\"\n 186 | |             title=\"Overdue Invoices\"\n 187 | |             value={overdueInvoices}\n 188 | |             icon={<CheckCircleIcon data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"CheckCircleIcon\" data-component-line=\"188\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22h-6%20w-6%22%7D\" className=\"h-6 w-6\" />}\n 189 | |             isMonetary={false}\n 190 | |           />\n 191 | |         </div>\n 192 | |   \n 193 | |         <div data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"div\" data-component-line=\"193\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22grid%20gap-4%20grid-cols-1%20md%3Agrid-cols-2%22%7D\" className=\"grid gap-4 grid-cols-1 md:grid-cols-2\">\n 194 | |           <SalesVsPaymentsChart data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"SalesVsPaymentsChart\" data-component-line=\"194\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\" selectedYear={selectedYear} />\n 195 | |           <PaymentTracking data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"PaymentTracking\" data-component-line=\"195\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\" />\n 196 | |         </div>\n 197 | |   \n 198 | |         <div data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"div\" data-component-line=\"198\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22mt-6%22%7D\" className=\"mt-6\">\n 199 | |           <h3 data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"h3\" data-component-line=\"199\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22text%22%3A%22Recent%20Invoices%22%2C%22className%22%3A%22text-xl%20font-semibold%20mb-4%22%7D\" className=\"text-xl font-semibold mb-4\">Recent Invoices</h3>\n 200 | |           <InvoiceTable data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"InvoiceTable\" data-component-line=\"200\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\" \n 201 | |             data={invoices || []} \n 202 | |             isLoading={isLoading}\n 203 | |             visibleColumns={[\n 204 | |               'invNumber',\n 205 | |               'customerBusinessname',\n 206 | |               'invTotal',\n 207 | |               'invDate',\n 208 | |               'invDuedate',\n 209 | |               'status'\n 210 | |             ]}\n 211 | |           />\n 212 | |         </div>\n 213 | |       </div>\n 214 | |     );\n 215 | |-> }\n     : `---- exported more than once\n     `----\n\nAdvice:   > Exported identifiers must be unique\n\n\nStack backtrace:\n   0: <unknown>\n   1: <unknown>\n   2: <unknown>\n   3: <unknown>\n   4: <unknown>\n   5: _ZZN4node14ThreadPoolWork12ScheduleWorkEvENUlP9uv_work_sE_4_FUNES2_\n   6: worker\n             at /home/iojs/build/ws/out/../deps/uv/src/threadpool.c:122:5\n   7: <unknown>\n   8: <unknown>",
+  "pluginCode": "import { useQuery } from \"@tanstack/react-query\";\nimport { supabase } from \"@/integrations/supabase/client\";\nimport { MetricsCard } from \"@/components/MetricsCard\";\nimport { FinancialYearSelector } from \"@/components/FinancialYearSelector\";\nimport { useFinancialYear } from \"@/contexts/FinancialYearContext\";\nimport { BanknoteIcon, FileTextIcon, AlertCircleIcon, CheckCircleIcon } from \"lucide-react\";\nimport type { DashboardProps, Invoice } from \"@/types/dashboard\";\nimport { SalesVsPaymentsChart } from \"@/components/SalesVsPaymentsChart\";\nimport { PaymentTracking } from \"@/components/dashboard/PaymentTracking\";\nimport { InvoiceTable } from \"@/components/InvoiceTable\";\n// src/components/Dashboard.tsx\nimport { useEffect, useState } from 'react';\nimport { GridLayout, Responsive, WidthProvider } from 'react-grid-layout';\nimport { useSupabaseClient } from '@supabase/auth-helpers-react';\nimport { useFinancialYear } from '@/context/FinancialYearContext';\nimport { useUser } from '@/hooks/useUser';\nimport 'react-grid-layout/css/styles.css';\nimport 'react-resizable/css/styles.css';\n\nconst ResponsiveGridLayout = WidthProvider(Responsive);\n\nconst Dashboard = () => {\n  const { user, isAdmin } = useUser();\n  const supabase = useSupabaseClient();\n  const { selectedYear, setSelectedYear } = useFinancialYear();\n  const [layouts, setLayouts] = useState(null);\n  const [isEditing, setIsEditing] = useState(false);\n\n  // Fetch saved layout\n  useEffect(() => {\n    const fetchLayout = async () => {\n      const { data, error } = await supabase\n        .from('dashboard_layouts')\n        .select('layout')\n        .eq('is_active', true)\n        .single();\n      \n      if (data) setLayouts(JSON.parse(data.layout));\n    };\n    fetchLayout();\n  }, []);\n\n  const saveLayout = async (newLayout) => {\n    const { error } = await supabase\n      .from('dashboard_layouts')\n      .upsert({\n        layout: JSON.stringify(newLayout),\n        created_by: user.id,\n        is_active: true\n      });\n\n    if (!error) {\n      setIsEditing(false);\n      // Show success toast\n    }\n  };\n\n  return (\n    <div data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"div\" data-component-line=\"59\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22p-4%20bg-pastel-moss%20min-h-screen%22%7D\" className=\"p-4 bg-pastel-moss min-h-screen\">\n      <div data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"div\" data-component-line=\"60\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22flex%20justify-between%20items-center%20mb-4%22%7D\" className=\"flex justify-between items-center mb-4\">\n        <select data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"select\" data-component-line=\"61\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22p-2%20border%20rounded%20bg-white%22%7D\"\n          value={selectedYear}\n          onChange={(e) => setSelectedYear(e.target.value)}\n          className=\"p-2 border rounded bg-white\"\n        >\n          {Array.from({ length: 5 }, (_, i) => {\n            const year = new Date().getFullYear() - 2 + i;\n            return (\n              <option data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"option\" data-component-line=\"69\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\" key={year} value={year}>\n                {`FY ${year}-${year + 1}`}\n              </option>\n            );\n          })}\n        </select>\n\n        {isAdmin && (\n          <button data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"button\" data-component-line=\"77\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22bg-leaf-green%20text-forest-green%20px-4%20py-2%20rounded%22%7D\"\n            onClick={() => setIsEditing(!isEditing)}\n            className=\"bg-leaf-green text-forest-green px-4 py-2 rounded\"\n          >\n            {isEditing ? 'Save Layout' : 'Configure Layout'}\n          </button>\n        )}\n      </div>\n\n      <ResponsiveGridLayout data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"ResponsiveGridLayout\" data-component-line=\"86\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22layout%22%7D\"\n        className=\"layout\"\n        layouts={layouts}\n        breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}\n        cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}\n        rowHeight={100}\n        isDraggable={isEditing}\n        isResizable={isEditing}\n        onLayoutChange={(layout) => {\n          if (isEditing) setLayouts({ ...layouts, lg: layout });\n        }}\n      >\n        <div data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"div\" data-component-line=\"98\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\" key=\"metrics\" data-grid={{ x: 0, y: 0, w: 12, h: 2 }}>\n          <MetricsGrid data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"MetricsGrid\" data-component-line=\"99\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\" />\n        </div>\n        <div data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"div\" data-component-line=\"101\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\" key=\"invoiceTable\" data-grid={{ x: 0, y: 2, w: 8, h: 4 }}>\n          <InvoiceTable data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"InvoiceTable\" data-component-line=\"102\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\" />\n        </div>\n        <div data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"div\" data-component-line=\"104\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\" key=\"salesChart\" data-grid={{ x: 8, y: 2, w: 4, h: 4 }}>\n          <SalesVsPaymentsChart data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"SalesVsPaymentsChart\" data-component-line=\"105\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\" />\n        </div>\n      </ResponsiveGridLayout>\n    </div>\n  );\n};\n\nexport default Dashboard;\n\n\nexport default Dashboard;\n\nexport default function Dashboard({ year }: DashboardProps) {\n  const { selectedYear } = useFinancialYear();\n  const [startYear, endYear] = selectedYear.split(\"-\");\n  const startDate = `${startYear}-04-01`;\n  const endDate = `${Number(startYear) + 1}-03-31`;\n\n  const { data: invoices, isLoading } = useQuery({\n    queryKey: [\"dashboard-data\", selectedYear],\n    queryFn: async () => {\n      const { data, error } = await supabase\n        .from(\"invoiceTable\")\n        .select(`\n          *,\n          customerMaster!invoiceTable_invCustid_fkey (\n            custBusinessname,\n            custCreditperiod,\n            custWhatsapp,\n            custGST,\n            custPhone\n          ),\n          paymentTransactions (\n            paymentId,\n            amount,\n            paymentDate\n          )\n        `)\n        .gte(\"invDate\", startDate)\n        .lte(\"invDate\", endDate);\n\n      if (error) throw error;\n      return data as Invoice[];\n    }\n  });\n\n  const totalSales = invoices?.reduce((sum, inv) => sum + inv.invTotal, 0) ?? 0;\n  const totalPayments = invoices?.reduce((sum, inv) => \n    sum + (inv.paymentTransactions?.reduce((pSum, p) => pSum + p.amount, 0) || 0), \n  0) ?? 0;\n  const pendingPayments = totalSales - totalPayments;\n  const overdueInvoices = invoices?.filter(inv => \n    new Date(inv.invDuedate) < new Date() && \n    (inv.invTotal - (inv.paymentTransactions?.reduce((sum, p) => sum + p.amount, 0) || 0)) > 0\n  ).length ?? 0;\n\n  return (\n    <div data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"div\" data-component-line=\"162\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22space-y-6%22%7D\" className=\"space-y-6\">\n      <div data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"div\" data-component-line=\"163\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22flex%20justify-between%20items-center%22%7D\" className=\"flex justify-between items-center\">\n        <h2 data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"h2\" data-component-line=\"164\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22text%22%3A%22Dashboard%22%2C%22className%22%3A%22text-3xl%20font-bold%20tracking-tight%22%7D\" className=\"text-3xl font-bold tracking-tight\">Dashboard</h2>\n        <FinancialYearSelector data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"FinancialYearSelector\" data-component-line=\"165\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\" />\n      </div>\n\n      <div data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"div\" data-component-line=\"168\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22grid%20gap-4%20md%3Agrid-cols-2%20lg%3Agrid-cols-4%22%7D\" className=\"grid gap-4 md:grid-cols-2 lg:grid-cols-4\">\n        <MetricsCard data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"MetricsCard\" data-component-line=\"169\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\"\n          title=\"Total Sales\"\n          value={totalSales}\n          icon={<BanknoteIcon data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"BanknoteIcon\" data-component-line=\"172\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22h-6%20w-6%22%7D\" className=\"h-6 w-6\" />}\n        />\n        <MetricsCard data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"MetricsCard\" data-component-line=\"174\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\"\n          title=\"Pending Payments\"\n          value={pendingPayments}\n          icon={<AlertCircleIcon data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"AlertCircleIcon\" data-component-line=\"177\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22h-6%20w-6%22%7D\" className=\"h-6 w-6\" />}\n        />\n        <MetricsCard data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"MetricsCard\" data-component-line=\"179\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\"\n          title=\"Total Invoices\"\n          value={invoices?.length ?? 0}\n          icon={<FileTextIcon data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"FileTextIcon\" data-component-line=\"182\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22h-6%20w-6%22%7D\" className=\"h-6 w-6\" />}\n          isMonetary={false}\n        />\n        <MetricsCard data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"MetricsCard\" data-component-line=\"185\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\"\n          title=\"Overdue Invoices\"\n          value={overdueInvoices}\n          icon={<CheckCircleIcon data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"CheckCircleIcon\" data-component-line=\"188\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22h-6%20w-6%22%7D\" className=\"h-6 w-6\" />}\n          isMonetary={false}\n        />\n      </div>\n\n      <div data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"div\" data-component-line=\"193\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22grid%20gap-4%20grid-cols-1%20md%3Agrid-cols-2%22%7D\" className=\"grid gap-4 grid-cols-1 md:grid-cols-2\">\n        <SalesVsPaymentsChart data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"SalesVsPaymentsChart\" data-component-line=\"194\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\" selectedYear={selectedYear} />\n        <PaymentTracking data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"PaymentTracking\" data-component-line=\"195\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\" />\n      </div>\n\n      <div data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"div\" data-component-line=\"198\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22className%22%3A%22mt-6%22%7D\" className=\"mt-6\">\n        <h3 data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"h3\" data-component-line=\"199\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%22text%22%3A%22Recent%20Invoices%22%2C%22className%22%3A%22text-xl%20font-semibold%20mb-4%22%7D\" className=\"text-xl font-semibold mb-4\">Recent Invoices</h3>\n        <InvoiceTable data-component-path=\"src/pages/Dashboard.tsx\" data-component-name=\"InvoiceTable\" data-component-line=\"200\" data-component-file=\"Dashboard.tsx\" data-component-content=\"%7B%7D\" \n          data={invoices || []} \n          isLoading={isLoading}\n          visibleColumns={[\n            'invNumber',\n            'customerBusinessname',\n            'invTotal',\n            'invDate',\n            'invDuedate',\n            'status'\n          ]}\n        />\n      </div>\n    </div>\n  );\n}"
+}
+
+Runtime error
+
+today at 4:48 PM
+
+  x the name `createContext` is defined multiple times
+   ,-[/dev-server/src/contexts/FinancialYearContext.tsx:2:1]
+ 1 | // src/context/FinancialYearContext.tsx
+ 2 | import { createContext, useContext, useState } from 'react';
+   :          ^^^^^^|^^^^^^
+   :                `-- previous definition of `createContext` here
+ 3 | // src/contexts/FinancialYearContext.tsx
+ 4 | // (Keep existing implementation but update imports to match correct paths)
+ 5 | import { createContext, useContext, useState } from 'react';
+   :          ^^^^^^|^^^^^^
+   :                `-- `createContext` redefined here
+ 6 | 
+ 7 | interface FinancialYearContextType {
+ 8 |   selectedYear: string;
+   `----
+  x the name `useContext` is defined multiple times
+   ,-[/dev-server/src/contexts/FinancialYearContext.tsx:2:1]
+ 1 | // src/context/FinancialYearContext.tsx
+ 2 | import { createContext, useContext, useState } from 'react';
+   :                         ^^^^^|^^^^
+   :                              `-- previous definition of `useContext` here
+ 3 | // src/contexts/FinancialYearContext.tsx
+ 4 | // (Keep existing implementation but update imports to match correct paths)
+ 5 | import { createContext, useContext, useState } from 'react';
+   :                         ^^^^^|^^^^
+   :                              `-- `useContext` redefined here
+ 6 | 
+ 7 | interface FinancialYearContextType {
+ 8 |   selectedYear: string;
+   `----
+  x the name `useState` is defined multiple times
+   ,-[/dev-server/src/contexts/FinancialYearContext.tsx:2:1]
+ 1 | // src/context/FinancialYearContext.tsx
+ 2 | import { createContext, useContext, useState } from 'react';
+   :                                     ^^^^|^^^
+   :                                         `-- previous definition of `useState` here
+ 3 | // src/contexts/FinancialYearContext.tsx
+ 4 | // (Keep existing implementation but update imports to match correct paths)
+ 5 | import { createContext, useContext, useState } from 'react';
+   :                                     ^^^^|^^^
+   :                                         `-- `useState` redefined here
+ 6 | 
+ 7 | interface FinancialYearContextType {
+ 8 |   selectedYear: string;
+   `----
+
+
+Stack backtrace:
+   0: <unknown>
+   1: <unknown>
+   2: <unknown>
+   3: <unknown>
+   4: <unknown>
+   5: _ZZN4node14ThreadPoolWork12ScheduleWorkEvENUlP9uv_work_sE_4_FUNES2_
+   6: worker
+             at /home/iojs/build/ws/out/../deps/uv/src/threadpool.c:122:5
+   7: <unknown>
+   8: <unknown>
+
+{
+  "message": "  x the name `createContext` is defined multiple times\n   ,-[/dev-server/src/contexts/FinancialYearContext.tsx:2:1]\n 1 | // src/context/FinancialYearContext.tsx\n 2 | import { createContext, useContext, useState } from 'react';\n   :          ^^^^^^|^^^^^^\n   :                `-- previous definition of `createContext` here\n 3 | // src/contexts/FinancialYearContext.tsx\n 4 | // (Keep existing implementation but update imports to match correct paths)\n 5 | import { createContext, useContext, useState } from 'react';\n   :          ^^^^^^|^^^^^^\n   :                `-- `createContext` redefined here\n 6 | \n 7 | interface FinancialYearContextType {\n 8 |   selectedYear: string;\n   `----\n  x the name `useContext` is defined multiple times\n   ,-[/dev-server/src/contexts/FinancialYearContext.tsx:2:1]\n 1 | // src/context/FinancialYearContext.tsx\n 2 | import { createContext, useContext, useState } from 'react';\n   :                         ^^^^^|^^^^\n   :                              `-- previous definition of `useContext` here\n 3 | // src/contexts/FinancialYearContext.tsx\n 4 | // (Keep existing implementation but update imports to match correct paths)\n 5 | import { createContext, useContext, useState } from 'react';\n   :                         ^^^^^|^^^^\n   :                              `-- `useContext` redefined here\n 6 | \n 7 | interface FinancialYearContextType {\n 8 |   selectedYear: string;\n   `----\n  x the name `useState` is defined multiple times\n   ,-[/dev-server/src/contexts/FinancialYearContext.tsx:2:1]\n 1 | // src/context/FinancialYearContext.tsx\n 2 | import { createContext, useContext, useState } from 'react';\n   :                                     ^^^^|^^^\n   :                                         `-- previous definition of `useState` here\n 3 | // src/contexts/FinancialYearContext.tsx\n 4 | // (Keep existing implementation but update imports to match correct paths)\n 5 | import { createContext, useContext, useState } from 'react';\n   :                                     ^^^^|^^^\n   :                                         `-- `useState` redefined here\n 6 | \n 7 | interface FinancialYearContextType {\n 8 |   selectedYear: string;\n   `----\n\n\nStack backtrace:\n   0: <unknown>\n   1: <unknown>\n   2: <unknown>\n   3: <unknown>\n   4: <unknown>\n   5: _ZZN4node14ThreadPoolWork12ScheduleWorkEvENUlP9uv_work_sE_4_FUNES2_\n   6: worker\n             at /home/iojs/build/ws/out/../deps/uv/src/threadpool.c:122:5\n   7: <unknown>\n   8: <unknown>",
+  "plugin": "vite:react-swc",
+  "pluginCode": "// src/context/FinancialYearContext.tsx\nimport { createContext, useContext, useState } from 'react';\n// src/contexts/FinancialYearContext.tsx\n// (Keep existing implementation but update imports to match correct paths)\nimport { createContext, useContext, useState } from 'react';\n\ninterface FinancialYearContextType {\n  selectedYear: string;\n  setSelectedYear: (year: string) => void;\n  getFinancialYearDates: () => { startDate: Date; endDate: Date };\n}\n\nconst FinancialYearContext = createContext<FinancialYearContextType | undefined>(undefined);\n\nexport const FinancialYearProvider = ({ children }) => {\n  const [selectedYear, setSelectedYear] = useState(() => {\n    const today = new Date();\n    const currentMonth = today.getMonth();\n    const currentYear = today.getFullYear();\n    return currentMonth >= 3 ? currentYear.toString() : (currentYear - 1).toString();\n  });\n\n  const getFinancialYearDates = () => {\n    const startDate = new Date(`${selectedYear}-04-01`);\n    const endDate = new Date(`${parseInt(selectedYear) + 1}-03-31`);\n    return { startDate, endDate };\n  };\n\n  return (\n    <FinancialYearContext.Provider value={{ selectedYear, setSelectedYear, getFinancialYearDates }}>\n      {children}\n    </FinancialYearContext.Provider>\n  );\n};\n\nexport const useFinancialYear = () => {\n  const context = useContext(FinancialYearContext);\n  if (!context) throw new Error('useFinancialYear must be used within FinancialYearProvider');\n  return context;\n};\n",
+  "stack": "             at /home/iojs/build/ws/out/../deps/uv/src/threadpool.c:122:5",
+  "id": "/dev-server/src/contexts/FinancialYearContext.tsx",
+  "error_type": "immediate_runtime",
+  "frame": ""
+}
+
+Build error
+
+today at 2:31 PM
+
+src/components/InvoiceDetailsPopup.tsx(43,14): error TS2352: Conversion of type '{ fy: string; invAddamount: number; invAlert: string; invBalanceAmount: number; invCustid: number; invDate: string; invDuedate: string; invGst: number; invId: number; invMarkcleared: boolean; invMessage1: string; ... 12 more ...; paymentTransactions: { ...; }[]; }' to type 'Invoice' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Types of property 'paymentTransactions' are incompatible.
+    Type '{ paymentId: number; amount: number; paymentDate: string; }[]' is not comparable to type 'PaymentTransaction[]'.
+      Type '{ paymentId: number; amount: number; paymentDate: string; }' is missing the following properties from type 'PaymentTransaction': invId, transactionId, paymentMode
+src/pages/Dashboard.tsx(42,14): error TS2352: Conversion of type '{ fy: string; invAddamount: number; invAlert: string; invBalanceAmount: number; invCustid: number; invDate: string; invDuedate: string; invGst: number; invId: number; invMarkcleared: boolean; invMessage1: string; ... 12 more ...; paymentTransactions: { ...; }[]; }[]' to type 'Invoice[]' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ fy: string; invAddamount: number; invAlert: string; invBalanceAmount: number; invCustid: number; invDate: string; invDuedate: string; invGst: number; invId: number; invMarkcleared: boolean; invMessage1: string; ... 12 more ...; paymentTransactions: { ...; }[]; }' is not comparable to type 'Invoice'.
+    Types of property 'paymentTransactions' are incompatible.
+      Type '{ paymentId: number; amount: number; paymentDate: string; }[]' is not comparable to type 'PaymentTransaction[]'.
+        Type '{ paymentId: number; amount: number; paymentDate: string; }' is missing the following properties from type 'PaymentTransaction': invId, transactionId, paymentMode
+src/pages/Dashboard.tsx(96,11): error TS2322: Type 'import("/dev-server/src/types/dashboard").Invoice[]' is not assignable to type 'import("/dev-server/src/types/types").Invoice[]'.
+  Type 'import("/dev-server/src/types/dashboard").Invoice' is not assignable to type 'import("/dev-server/src/types/types").Invoice'.
+    Types of property 'customerMaster' are incompatible.
+      Type 'import("/dev-server/src/types/dashboard").CustomerMaster' is not assignable to type 'import("/dev-server/src/types/types").CustomerMaster'.
+        Property 'custCreditperiod' is optional in type 'CustomerMaster' but required in type 'CustomerMaster'.
+

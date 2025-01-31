@@ -109,8 +109,14 @@ export default function Dashboard() {
 
   const currentWidgets = layoutData?.layout ? 
     defaultWidgets.map(widget => {
-      const layoutItem = Array.isArray(layoutData.layout) ? 
-        (layoutData.layout as LayoutItem[]).find(l => l.i === widget.id) : 
+      const layoutArray = layoutData.layout as Json[];
+      const layoutItem = Array.isArray(layoutArray) ? 
+        layoutArray.find(l => 
+          typeof l === 'object' && 
+          l !== null && 
+          'i' in l && 
+          l.i === widget.id
+        ) as LayoutItem | undefined : 
         undefined;
       
       return {

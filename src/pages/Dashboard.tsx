@@ -2,8 +2,6 @@ import React from 'react';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/use-auth';
-import { DashboardWidget } from '@/types/dashboard';
-import { Layout } from 'react-grid-layout';
 import GridLayout from 'react-grid-layout';
 import { Card } from '@/components/ui/card';
 import { InvoiceTable } from '@/components/dashboard/InvoiceTable';
@@ -13,8 +11,19 @@ import { PaymentHistory } from '@/components/dashboard/PaymentHistory';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 
+interface DashboardWidget {
+  i: string;
+  id: string;
+  content: React.ReactNode;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+}
+
 const defaultWidgets: DashboardWidget[] = [
   {
+    i: 'metrics',
     id: 'metrics',
     content: <MetricsCards />,
     x: 0,
@@ -23,6 +32,7 @@ const defaultWidgets: DashboardWidget[] = [
     h: 2,
   },
   {
+    i: 'invoices',
     id: 'invoices',
     content: <InvoiceTable />,
     x: 0,
@@ -31,6 +41,7 @@ const defaultWidgets: DashboardWidget[] = [
     h: 4,
   },
   {
+    i: 'customers',
     id: 'customers',
     content: <CustomerList />,
     x: 8,
@@ -39,6 +50,7 @@ const defaultWidgets: DashboardWidget[] = [
     h: 4,
   },
   {
+    i: 'payments',
     id: 'payments',
     content: <PaymentHistory />,
     x: 0,
@@ -80,9 +92,11 @@ export default function Dashboard() {
     },
   });
 
-  const currentLayout = layoutData?.layout ? JSON.parse(layoutData.layout) as DashboardWidget[] : defaultWidgets;
+  const currentLayout = layoutData?.layout ? 
+    JSON.parse(layoutData.layout) as DashboardWidget[] : 
+    defaultWidgets;
 
-  const handleLayoutChange = (layout: Layout[]) => {
+  const handleLayoutChange = (layout: GridLayout.Layout[]) => {
     const updatedWidgets = currentLayout.map((widget, index) => ({
       ...widget,
       ...layout[index],

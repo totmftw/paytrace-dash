@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, FC } from "react";
 import dayjs from "dayjs";
 
 interface FinancialYearContextType {
@@ -10,8 +10,8 @@ interface FinancialYearContextType {
 
 export const FinancialYearContext = createContext<FinancialYearContextType | undefined>(undefined);
 
-export function FinancialYearProvider({ children }: { children: React.ReactNode }) {
-  const [selectedYear, setSelectedYear] = useState(() => {
+export const FinancialYearProvider: FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [selectedYear, setSelectedYear] = useState<string>(() => {
     const now = dayjs();
     const year = now.month() >= 3 ? now.year() : now.year() - 1;
     return `${year}-${year + 1}`;
@@ -21,23 +21,16 @@ export function FinancialYearProvider({ children }: { children: React.ReactNode 
   const endDate = dayjs(`${selectedYear.split('-')[1]}-03-31`).toDate();
 
   return (
-    <FinancialYearContext.Provider 
-      value={{ 
-        selectedYear, 
-        setSelectedYear,
-        startDate,
-        endDate
-      }}
-    >
+    <FinancialYearContext.Provider value={{ selectedYear, setSelectedYear, startDate, endDate }}>
       {children}
     </FinancialYearContext.Provider>
   );
-}
+};
 
-export function useFinancialYear() {
+export const useFinancialYear = () => {
   const context = useContext(FinancialYearContext);
   if (!context) {
     throw new Error("useFinancialYear must be used within a FinancialYearProvider");
   }
   return context;
-}
+};

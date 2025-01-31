@@ -1,86 +1,75 @@
 import React, { useState } from "react";
-import { Responsive, WidthProvider } from "react-grid-layout";
+import GridLayout from "react-grid-layout";
 import { Button } from "@/components/ui/button";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
-const ResponsiveGridLayout = WidthProvider(Responsive);
-
 interface DashboardWidget {
   id: string;
+  component: ReactElement;
   x: number;
   y: number;
   w: number;
   h: number;
-  content: React.ReactNode;
 }
 
 interface DashboardGridLayoutProps {
   widgets: DashboardWidget[];
-  onApply?: (layout: any) => void;
+  layout: LayoutItem[];
+  onLayoutChange: (newLayout: LayoutItem[]) => void;
+  isEditMode: boolean;
 }
 
-export function DashboardGridLayout({ widgets, onApply }: DashboardGridLayoutProps) {
+export function DashboardGridLayout({
+  widgets,
+  layout,
+  onLayoutChange,
+  isEditMode,
+}: DashboardGridLayoutProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [currentLayout, setCurrentLayout] = useState<any[]>(widgets.map((widget) => ({
-    i: widget.id,
-    x: widget.x,
-    y: widget.y,
-    w: widget.w,
-    h: widget.h,
-  })));
-
-  const handleLayoutChange = (layout: any) => {
-    setCurrentLayout(layout);
-  };
-
-  const handleApply = () => {
-    if (onApply) {
-      onApply(currentLayout);
-      setIsEditing(false);
-    }
-  };
 
   return (
-    <div>
-      <div className="mb-4 flex justify-end">
-        <Button
-          variant={isEditing ? "destructive" : "outline"}
-          onClick={() => setIsEditing(!isEditing)}
-        >
-          {isEditing ? "Cancel" : "Configure Layout"}
-        </Button>
-        {isEditing && (
+    <div className="dashboard-container">
+      <div className="toolbar">
+        {isEditMode && (
           <Button
-            onClick={handleApply}
-            className="ml-2"
+            variant={isEditing ? "destructive" : "outline"}
+            onClick={() => setIsEditing(!isEditing)}
           >
+            {isEditing ? "Cancel" : "Edit Layout"}
+          </Button>
+        )}
+        {isEditing && (
+          <Button onClick={() => onLayoutChange(layout)} className="apply-btn">
             Apply Changes
           </Button>
         )}
       </div>
-      <ResponsiveGridLayout
+      <GridLayout
         className="layout"
-        layouts={{ lg: currentLayout }}
-        breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
-        cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
+        layout={layout}
+        cols={12}
         rowHeight={30}
+        width={window.innerWidth - 200}
         margin={[10, 10]}
-        compactType="vertical"
         isDraggable={isEditing}
         isResizable={isEditing}
         draggableHandle=".drag-handle"
-        onLayoutChange={(layout) => handleLayoutChange(layout)}
+        onLayoutChange={onLayoutChange}
       >
         {widgets.map((widget) => (
-          <div key={widget.id} className="bg-white p-4 rounded-lg border shadow-sm">
-            {isEditing && (
-              <div className="drag-handle h-2 w-12 mx-auto mb-2 bg-gray-200 rounded cursor-move" />
+          <div key={widget.id} className="widget-container">
+            {isEditing ? (
+              <div className="drag-handle" />
+            ) : (
+              <div className="widget-header">
+                <h3>{widget.id.replace(/-/g, " ")}</h3>
+              </div>
             )}
-            {widget.content}
+            {widget.component}
           </div>
         ))}
-      </ResponsiveGridLayout>
+      </GridLayout>
     </div>
   );
 }

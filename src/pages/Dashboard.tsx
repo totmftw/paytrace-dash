@@ -3,14 +3,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { DashboardGridLayout } from "@/components/DashboardGridLayout";
-import { PaymentMetrics } from "@/components/dashboard/PaymentMetrics";
-import { SalesOverview } from "@/components/dashboard/SalesOverview";
-import { CustomerStats } from "@/components/dashboard/CustomerStats";
-import { PaymentTracking } from "@/components/dashboard/PaymentTracking";
-import { Json } from "@/integrations/supabase/types";
-import { LayoutProvider } from "@/hooks/useLayouts";
 import { FinancialYearFilter } from "@/components/dashboard/FinancialYearFilter";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
+import { ComponentDataProvider } from "@/contexts/ComponentDataContext";
+import { ReactElement, createContext, useContext } from "react";
+import { PaymentMetrics } from "@/components/dashboard/PaymentMetrics";
+import { SalesOverview } from "@/components/dashboard/SalesOverview";
+import { PaymentTracking } from "@/components/dashboard/PaymentTracking";
+import { InvoiceTable } from "@/components/dashboard/InvoiceTable";
+import { SalesVsPaymentsChart } from "@/components/dashboard/SalesVsPaymentsChart";
 
 interface LayoutItem {
   i: string;
@@ -21,45 +22,33 @@ interface LayoutItem {
 }
 
 const defaultWidgets = [
-  {
-    id: "payment-metrics",
-    x: 0,
-    y: 0,
-    w: 12,
-    h: 4,
-    content: <PaymentMetrics />
-  },
-  {
-    id: "sales-overview",
-    x: 0,
-    y: 4,
-    w: 12,
-    h: 4,
-    content: <SalesOverview />
-  },
-  {
-    id: "customer-stats",
-    x: 0,
-    y: 8,
-    w: 6,
-    h: 4,
-    content: <CustomerStats />
-  },
-  {
-    id: "payment-tracking",
-    x: 6,
-    y: 8,
-    w: 6,
-    h: 4,
-    content: <PaymentTracking />
-  }
+  { id: "payment-metrics", x: 0, y: 0, w: 6, h: 4 },
+  { id: "sales-overview", x: 6, y: 0, w: 6, h: 4 },
+  { id: "payment-tracking", x: 0, y: 4, w: 6, h: 4 },
+  { id: "invoice-table", x: 6, y: 4, w: 6, h: 4 },
+  { id: "sales-vs-payments", x: 0, y: 8, w: 12, h: 6 },
 ];
+
+interface DashboardWidget {
+  id: string;
+  component: ReactElement;
+}
+
+const widgetMap: { [key: string]: ReactElement } = {
+  "payment-metrics": <PaymentMetrics />,
+  "sales-overview": <SalesOverview />,
+  "payment-tracking": <PaymentTracking />,
+  "invoice-table": <InvoiceTable />,
+  "sales-vs-payments": <SalesVsPaymentsChart />,
+};
 
 export default function Dashboard() {
   const { user } = useAuth();
   const { toast } = useToast();
   const isITAdmin = user?.role === "it_admin";
+  const { selectedYear } = useFinancialYear();
 
+  // Query to fetch user-specific layout from Supabase
   const { data: layoutData } = useQuery({
     queryKey: ["dashboard-layout", user?.id],
     queryFn: async () => {
@@ -70,85 +59,49 @@ export default function Dashboard() {
         .eq("created_by", user.id)
         .eq("is_active", true)
         .maybeSingle();
-      
-      if (error) {
-        console.error("Error fetching layout:", error);
-        return null;
-      }
-
+      if (error) throw error;
       return data;
     },
     enabled: !!user,
   });
 
+  // Mutation to update the layout in Supabase
   const updateLayoutMutation = useMutation({
-    mutationFn: async (newLayout: any) => {
+    mutationFn: async (newLayout: LayoutItem[]) => {
       if (!user) throw new Error("No user");
-      
       const { error } = await supabase
         .from("dashboard_layouts")
         .upsert({
           created_by: user.id,
           layout: newLayout,
-          is_active: true
+          is_active: true,
         });
-
-      if (error) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "Failed to save layout"
-        });
-        throw error;
-      }
-
+      if (error) throw error;
       toast({
         title: "Success",
-        description: "Layout saved successfully"
+        description: "Layout saved successfully",
       });
     },
   });
 
-  const currentWidgets = layoutData?.layout ? 
-    defaultWidgets.map(widget => {
-      const layoutArray = layoutData.layout as Json[];
-      const layoutItem = Array.isArray(layoutArray) ? 
-        layoutArray.find(l => 
-          typeof l === 'object' && 
-          l !== null && 
-          'i' in l && 
-          'x' in l &&
-          'y' in l &&
-          'w' in l &&
-          'h' in l &&
-          l.i === widget.id
-        ) as unknown as LayoutItem | undefined : 
-        undefined;
-      
-      return {
-        ...widget,
-        ...(layoutItem || {})
-      };
-    }) : 
-    defaultWidgets;
+  const currentLayout = layoutData?.layout
+    ? (layoutData.layout as LayoutItem[])
+    : defaultWidgets;
+
+  const widgets = defaultWidgets.map((widget) => ({
+    ...widget,
+    component: widgetMap[widget.id],
+  }));
 
   return (
-    <LayoutProvider>
-      <div className="flex flex-col h-screen">
-        <header className="p-4">
-          <FinancialYearFilter />
-        </header>
-        <main className="flex-1 p-4">
-          <div className="h-full overflow-y-auto overflow-x-hidden bg-[#E8F3E8]">
-            <div className="container mx-auto p-6">
-              <DashboardGridLayout 
-                widgets={currentWidgets} 
-                onApply={updateLayoutMutation.mutate}
-              />
-            </div>
-          </div>
-        </main>
-      </div>
-    </LayoutProvider>
+    <ComponentDataProvider value={{ selectedYear }}>
+      <FinancialYearFilter />
+      <DashboardGridLayout
+        widgets={widgets}
+        layout={currentLayout}
+        onLayoutChange={updateLayoutMutation.mutate}
+        isEditMode={isITAdmin}
+      />
+    </ComponentDataProvider>
   );
 }

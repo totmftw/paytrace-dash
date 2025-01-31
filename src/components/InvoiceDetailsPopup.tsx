@@ -1,7 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { formatCurrency } from "@/lib/utils";
-import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import React from "react";
 
 interface InvoiceDetailsPopupProps {
@@ -25,7 +24,10 @@ export function InvoiceDetailsPopup({
           customerMaster!invoiceTable_invCustid_fkey (
             custBusinessname
           ),
-          paymentTransactions (*)
+          paymentTransactions:paymentTransactions (
+            amount,
+            paymentDate
+          )
         `)
         .eq("invId", invoiceId)
         .single();
@@ -53,52 +55,39 @@ export function InvoiceDetailsPopup({
               <div className="col-span-2 md:col-span-1">
                 <dt className="text-sm text-gray-600">Date</dt>
                 <dd className="text-gray-900">
-                  {data?.invDate ? new Date(data.invDate).toLocaleDateString() : '-'}
+                  {new Date(data?.invDate).toLocaleDateString()}
                 </dd>
               </div>
               <div className="col-span-2 md:col-span-1">
                 <dt className="text-sm text-gray-600">Customer</dt>
                 <dd className="text-gray-900">
-                  {data?.customerMaster?.custBusinessname || '-'}
+                  {data?.customerMaster?.custBusinessname}
                 </dd>
               </div>
               <div className="col-span-2 md:col-span-1">
                 <dt className="text-sm text-gray-600">Total</dt>
-                <dd className="text-gray-900">
-                  {data?.invTotal ? formatCurrency(data.invTotal) : '-'}
-                </dd>
+                <dd className="text-gray-900">{data?.invTotal}</dd>
               </div>
               <div className="col-span-2 md:col-span-1">
                 <dt className="text-sm text-gray-600">Due Date</dt>
                 <dd className="text-gray-900">
-                  {data?.invDuedate ? new Date(data.invDuedate).toLocaleDateString() : '-'}
+                  {new Date(data?.invDuedate).toLocaleDateString()}
                 </dd>
               </div>
             </dl>
             <h4 className="text-sm font-bold mt-4">Payments Made</h4>
             <ul>
               {data?.paymentTransactions?.map((payment) => (
-                <li
-                  key={payment.paymentId}
-                  className="text-gray-700 text-sm flex items-center py-1"
-                >
-                  {formatCurrency(payment.amount)}{" "}
-                  <span className="text-gray-500 ml-2">
-                    {new Date(payment.paymentDate).toLocaleDateString()}
-                  </span>
+                <li key={payment.paymentId}>
+                  ₹{payment.amount} -{" "}
+                  {new Date(payment.paymentDate).toLocaleDateString()}
                 </li>
               ))}
-              {!data?.paymentTransactions?.length && (
-                <li className="text-gray-600 text-sm">No payments made</li>
-              )}
             </ul>
           </div>
         )}
         <div className="mt-4 flex justify-end">
-          <button
-            onClick={onClose}
-            className="bg-white rounded-md px-4 py-2 shadow text-gray-700 hover:bg-gray-100 transition"
-          >
+          <button onClick={onClose} className="bg-white rounded-md px-4 py-2">
             Close
           </button>
         </div>

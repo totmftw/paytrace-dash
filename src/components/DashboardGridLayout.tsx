@@ -1,69 +1,60 @@
-import React, { useState } from "react";
-import GridLayout from "react-grid-layout";
-import { Button } from "@/components/ui/button";
-import "react-grid-layout/css/styles.css";
-import "react-resizable/css/styles.css";
-
-interface DashboardWidget {
-  id: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-  content: JSX.Element;
-}
+import React, { useState } from 'react';
+import GridLayout, { Layout } from 'react-grid-layout';
+import { Button } from '@/components/ui/button';
+import { DashboardWidget } from '@/types/dashboard';
+import 'react-grid-layout/css/styles.css';
+import 'react-resizable/css/styles.css';
 
 interface DashboardGridLayoutProps {
   widgets: DashboardWidget[];
-  onApply?: (layout: any) => void;
+  onLayoutChange: (layout: Layout[]) => void;
+  isEditMode: boolean;
 }
 
-export function DashboardGridLayout({ widgets, onApply }: DashboardGridLayoutProps) {
+export function DashboardGridLayout({ widgets, onLayoutChange, isEditMode }: DashboardGridLayoutProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const initialized = React.useRef(false);
-  const [currentLayout, setCurrentLayout] = useState<any[]>(widgets.map((widget) => ({
-    i: widget.id,
-    x: widget.x,
-    y: widget.y,
-    w: widget.w,
-    h: widget.h,
-  })));
+  const [currentLayout, setCurrentLayout] = useState<Layout[]>(
+    widgets.map((widget) => ({
+      i: widget.id,
+      x: widget.x,
+      y: widget.y,
+      w: widget.w,
+      h: widget.h,
+    }))
+  );
 
-  const handleLayoutChange = (layout: any) => {
+  const handleLayoutChange = (layout: Layout[]) => {
     setCurrentLayout(layout);
   };
 
   const handleApply = () => {
-    if (onApply) {
-      onApply(currentLayout);
-      setIsEditing(false);
-    }
+    onLayoutChange(currentLayout);
+    setIsEditing(false);
   };
 
   return (
     <div>
-      <div className="mb-4 flex justify-end">
-        <Button
-          variant={isEditing ? "destructive" : "outline"}
-          onClick={() => setIsEditing(!isEditing)}
-        >
-          {isEditing ? "Cancel" : "Configure Layout"}
-        </Button>
-        {isEditing && (
+      {isEditMode && (
+        <div className="mb-4 flex justify-end gap-2">
           <Button
-            onClick={handleApply}
-            className="ml-2"
+            variant={isEditing ? 'destructive' : 'outline'}
+            onClick={() => setIsEditing(!isEditing)}
           >
-            Apply Changes
+            {isEditing ? 'Cancel' : 'Configure Layout'}
           </Button>
-        )}
-      </div>
+          {isEditing && (
+            <Button onClick={handleApply}>
+              Apply Changes
+            </Button>
+          )}
+        </div>
+      )}
       <GridLayout
         className="layout"
         layout={currentLayout}
         cols={12}
         rowHeight={30}
-        width={window.innerWidth - 200}
+        width={1200}
         margin={[10, 10]}
         compactType="vertical"
         isDraggable={isEditing}

@@ -2,11 +2,17 @@ import { ReactElement } from 'react';
 
 export interface DashboardWidget {
   id: string;
+  content: ReactElement;
   x: number;
   y: number;
   w: number;
   h: number;
-  content: ReactElement;
+}
+
+export interface PaymentTransaction {
+  paymentId: number;
+  amount: number;
+  paymentDate: string;
 }
 
 export interface Invoice {
@@ -16,22 +22,8 @@ export interface Invoice {
   invDuedate: string;
   invTotal: number;
   invBalanceAmount: number;
-  invPaymentStatus: string;
   customerMaster: {
     custBusinessname: string;
   };
-  paymentTransactions?: {
-    amount: number;
-    paymentDate: string;
-  }[];
-}
-
-export interface MetricsSummary {
-  pendingAmount: number;
-  outstandingAmount: number;
-  totalSales: number;
-  totalOrders: number;
-  pendingInvoices: Invoice[];
-  outstandingInvoices: Invoice[];
-  allInvoices: Invoice[];
+  paymentTransactions?: PaymentTransaction[];
 }

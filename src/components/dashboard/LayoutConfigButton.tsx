@@ -1,21 +1,30 @@
+import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { Modal } from '@chakra-ui/react';
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export function LayoutConfigButton() {
   const { user } = useAuth();
   const [isConfigOpen, setIsConfigOpen] = React.useState(false);
 
-  if (!user?.isITAdmin) return null;
+  if (user?.role !== 'it_admin') return null;
 
   return (
     <div>
       <Button onClick={() => setIsConfigOpen(true)}>Configure Layout</Button>
-      <Modal isOpen={isConfigOpen} onClose={() => setIsConfigOpen(false)}>
-        <ModalContent>
-          <ModalHeader>Layout Configuration</ModalHeader>
+      <Dialog open={isConfigOpen} onOpenChange={setIsConfigOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Layout Configuration</DialogTitle>
+          </DialogHeader>
           {/* Add layout configuration controls here */}
-        </ModalContent>
-      </Modal>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

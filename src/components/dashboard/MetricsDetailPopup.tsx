@@ -1,5 +1,12 @@
-// src/components/Dashboard/MetricsDetailPopup.tsx
-import { Modal } from '@chakra-ui/react';
+import React from 'react';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 import { DataTable } from '@/components/ui/data-table';
 
 interface MetricsDetailPopupProps {
@@ -7,25 +14,29 @@ interface MetricsDetailPopupProps {
   onClose: () => void;
   data: any[];
   columns: any[];
+  title?: string;
 }
 
-const MetricsDetailPopup: React.FC<MetricsDetailPopupProps> = ({
+export const MetricsDetailPopup: React.FC<MetricsDetailPopupProps> = ({
   isOpen,
   onClose,
   data,
   columns,
+  title = "Data Details"
 }) => {
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="xl">
-      <ModalContent>
-        <ModalHeader>Data Details</ModalHeader>
-        <ModalBody>
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        <div className="py-4">
           <DataTable data={data} columns={columns} />
-        </ModalBody>
-        <ModalFooter>
+        </div>
+        <DialogFooter>
           <Button onClick={onClose}>Close</Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 };

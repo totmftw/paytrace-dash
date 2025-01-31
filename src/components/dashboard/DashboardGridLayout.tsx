@@ -1,53 +1,86 @@
-// src/components/Dashboard/DashboardGridLayout.tsx
-import { Grid, GridItem } from '@chakra-ui/react';
-import React, { useEffect } from 'react';
-import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { updateWidgetLayout } from '@/store/slices/widgetLayout';
+import React, { useState } from "react";
+import { Responsive, WidthProvider } from "react-grid-layout";
+import { Button } from "@/components/ui/button";
+import "react-grid-layout/css/styles.css";
+import "react-resizable/css/styles.css";
 
-const DashboardGridLayout: React.FC<{
+const ResponsiveGridLayout = WidthProvider(Responsive);
+
+interface DashboardWidget {
+  id: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  content: React.ReactNode;
+}
+
+interface DashboardGridLayoutProps {
   widgets: DashboardWidget[];
-  onApply: (newLayout: any) => void;
-}> = ({ widgets, onApply }) => {
-  const { layout, drag, resize } = useAppSelector((state) => state.widgetLayout);
-  const dispatch = useAppDispatch();
+  onApply?: (layout: any) => void;
+}
 
-  const handleGridChange = (newLayout: any) => {
-    dispatch(updateWidgetLayout(newLayout));
+export function DashboardGridLayout({ widgets, onApply }: DashboardGridLayoutProps) {
+  const [isEditing, setIsEditing] = useState(false);
+  const [currentLayout, setCurrentLayout] = useState<any[]>(widgets.map((widget) => ({
+    i: widget.id,
+    x: widget.x,
+    y: widget.y,
+    w: widget.w,
+    h: widget.h,
+  })));
+
+  const handleLayoutChange = (layout: any) => {
+    setCurrentLayout(layout);
+  };
+
+  const handleApply = () => {
+    if (onApply) {
+      onApply(currentLayout);
+      setIsEditing(false);
+    }
   };
 
   return (
-    <Grid
-      templateColumns={`repeat(${widgets.length}, minmax(250px, 1fr))`}
-      gap={4}
-      p={4}
-    >
-      {widgets.map((widget, index) => (
-        <ReactGridLayout
-          width={1200}
-          cols={12}
-          rowHeight={30}
-          draggableCancel=".react-grid-item>.placeholder"
-          key={index}
-          layout={layout}
+    <div>
+      <div className="mb-4 flex justify-end">
+        <Button
+          variant={isEditing ? "destructive" : "outline"}
+          onClick={() => setIsEditing(!isEditing)}
         >
-          <Draggable
-            onDrag={(x, y) => handleGridChange([{ ...widget, x, y }])}
-            key={widget.id}
+          {isEditing ? "Cancel" : "Configure Layout"}
+        </Button>
+        {isEditing && (
+          <Button
+            onClick={handleApply}
+            className="ml-2"
           >
-            <ReactResizable
-              width={widget.w * 100}
-              height={widget.h * 30}
-              onResize={(e, { size }) => handleGridChange([
-                { ...widget, w: size.width / 100, h: size.height / 30 }
-              ])}
-            >
-              <GridItem>
-                {React.createElement(widget.content)}
-              </GridItem>
-            </ReactResizable>
-          </Draggable>
-        </ReactGridLayout>
-      ))}
-    </Grid>
+            Apply Changes
+          </Button>
+        )}
+      </div>
+      <ResponsiveGridLayout
+        className="layout"
+        layouts={{ lg: currentLayout }}
+        breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
+        cols={{ lg: 12, md: 10, sm: 6, xs: 4, xxs: 2 }}
+        rowHeight={30}
+        margin={[10, 10]}
+        compactType="vertical"
+        isDraggable={isEditing}
+        isResizable={isEditing}
+        draggableHandle=".drag-handle"
+        onLayoutChange={(layout) => handleLayoutChange(layout)}
+      >
+        {widgets.map((widget) => (
+          <div key={widget.id} className="bg-white p-4 rounded-lg border shadow-sm">
+            {isEditing && (
+              <div className="drag-handle h-2 w-12 mx-auto mb-2 bg-gray-200 rounded cursor-move" />
+            )}
+            {widget.content}
+          </div>
+        ))}
+      </ResponsiveGridLayout>
+    </div>
   );
-};
+}

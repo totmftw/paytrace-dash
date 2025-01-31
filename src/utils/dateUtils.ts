@@ -1,19 +1,21 @@
-// src/utils/dateUtils.ts
-import dayjs from "dayjs";
+import dayjs from 'dayjs';
+import isBetween from 'dayjs/plugin/isBetween';
 
-export const formatDate = (date: string) => dayjs(date).format("DD MMM YYYY");
+dayjs.extend(isBetween);
 
-export const isDateWithinFinancialYear = (date: string, financialYear: string) => {
-  const [startYear, endYear] = financialYear.split("-");
-  const startDate = dayjs(`${startYear}-04-01`);
-  const endDate = dayjs(`${endYear}-03-31`);
-  return dayjs(date).isBetween(startDate, endDate, null, "[]");
+export const isDateBetween = (date: Date, start: Date, end: Date): boolean => {
+  return dayjs(date).isBetween(start, end, 'day', '[]');
 };
 
-export const getFinancialYearRange = (financialYear: string) => {
-  const [startYear, endYear] = financialYear.split("-");
-  return {
-    start: dayjs(`${startYear}-04-01`).toDate(),
-    end: dayjs(`${endYear}-03-31`).toDate(),
-  };
+// Additional utility functions can be added here
+export const formatDate = (date: Date): string => {
+  return dayjs(date).format('YYYY-MM-DD');
+};
+
+export const parseDate = (dateString: string): Date => {
+  return dayjs(dateString).toDate();
+};
+
+export const isToday = (date: Date): boolean => {
+  return dayjs(date).isSame(dayjs(), 'day');
 };

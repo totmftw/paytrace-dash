@@ -1,90 +1,37 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { CustomerSelector } from "./CustomerSelector";
-import { DataTable } from "@/components/ui/data-table";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
-import type { LedgerEntry } from "@/types/types";
 
-interface CustomerLedgerTableProps {
-  onCustomerClick?: (customer: any) => void;
-}
-
-export function CustomerLedgerTable({ onCustomerClick }: CustomerLedgerTableProps) {
-  const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
-  const { selectedYear, getFYDates } = useFinancialYear();
-  const { start, end } = getFYDates();
-
-  const { data: ledgerData = [], isLoading } = useQuery({
-    queryKey: ["customer-ledger", selectedCustomerId, selectedYear],
-    queryFn: async () => {
-      if (!selectedCustomerId) return [];
-
-      const { data, error } = await supabase
-        .rpc('get_customer_ledger_with_details', {
-          p_customer_id: selectedCustomerId,
-          p_start_date: start.toISOString().split('T')[0],
-          p_end_date: end.toISOString().split('T')[0]
-        });
-
-      if (error) throw error;
-      return data as LedgerEntry[];
-    },
-    enabled: !!selectedCustomerId,
+export function CustomerLedgerTable() {
+  const { startDate, endDate } = useFinancialYear();
+  
+  // Fetch data based on the financial year
+  const { data, error, isLoading } = useQuery(['customerLedger', startDate, endDate], () => {
+    return fetch(`/api/customerLedger?start=${startDate}&end=${endDate}`).then(res => res.json());
   });
 
-  const columns = [
-    {
-      key: "transaction_date",
-      header: "Date",
-      cell: (row: LedgerEntry) => new Date(row.transaction_date).toLocaleDateString()
-    },
-    {
-      key: "transaction_type",
-      header: "Type"
-    },
-    {
-      key: "reference_number",
-      header: "Reference"
-    },
-    {
-      key: "debit_amount",
-      header: "Debit",
-      cell: (row: LedgerEntry) => row.debit_amount.toFixed(2)
-    },
-    {
-      key: "credit_amount",
-      header: "Credit",
-      cell: (row: LedgerEntry) => row.credit_amount.toFixed(2)
-    },
-    {
-      key: "balance",
-      header: "Balance",
-      cell: (row: LedgerEntry) => row.balance.toFixed(2)
-    }
-  ];
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error loading data</div>;
 
   return (
-    <Card className="bg-[#E8F3E8]">
-      <CardHeader>
-        <CardTitle className="text-[#1B4D3E]">Customer Ledger</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-4">
-          <CustomerSelector
-            selectedCustomerId={selectedCustomerId}
-            onSelect={setSelectedCustomerId}
-          />
-          <div className="rounded-md border border-[#4A7862]">
-            <DataTable
-              columns={columns}
-              data={ledgerData}
-              isLoading={isLoading}
-            />
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+    <div>
+      <h2>Customer Ledger</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Customer</th>
+            <th>Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          {data.map((entry) => (
+            <tr key={entry.id}>
+              <td>{entry.date}</td>
+              <td>{entry.customer}</td>
+              <td>{entry.amount}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }

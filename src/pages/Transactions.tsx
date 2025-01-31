@@ -1,15 +1,15 @@
 import { useNavigate } from "react-router-dom";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 import InvoiceTab from "@/components/transactions/InvoiceTab";
 import PaymentTab from "@/components/transactions/PaymentTab";
 import LedgerTab from "@/components/transactions/LedgerTab";
-import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 export default function Transactions() {
   const navigate = useNavigate();
-  const { selectedYear, availableYears, setSelectedYear } = useFinancialYear();
+  const { selectedYear } = useFinancialYear();
   const isMobile = useIsMobile();
 
   return (
@@ -24,11 +24,9 @@ export default function Transactions() {
 
       <Tabs defaultValue="invoices" className="space-y-4">
         <TabsList>
-          {["invoices", "payments", "ledger"].map((tab) => (
-            <TabsTrigger key={tab} value={tab}>
-              {tab.charAt(0).toUpperCase() + tab.slice(1)}
-            </TabsTrigger>
-          ))}
+          <TabsTrigger value="invoices">Invoices</TabsTrigger>
+          <TabsTrigger value="payments">Payments</TabsTrigger>
+          <TabsTrigger value="ledger">Ledger</TabsTrigger>
         </TabsList>
         <TabsContent value="invoices">
           <InvoiceTab year={selectedYear} />

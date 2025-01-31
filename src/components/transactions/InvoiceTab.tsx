@@ -2,16 +2,12 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { TransactionInvoiceTable } from "./TransactionInvoiceTable";
-import AddInvoiceButton from "../buttons/AddInvoiceButton";
-import DownloadTemplateButton from "../buttons/DownloadTemplateButton";
-import UploadInvoiceButton from "../buttons/UploadInvoiceButton";
-import { useFinancialYear } from "@/contexts/FinancialYearContext";
-import { useToast } from "@/components/ui/use-toast";
+import { AddInvoiceButton } from "../buttons/AddInvoiceButton";
+import { DownloadTemplateButton } from "../buttons/DownloadTemplateButton";
+import { UploadInvoiceButton } from "../buttons/UploadInvoiceButton";
 
 export default function InvoiceTab({ year }: { year: string }) {
-  const { toast } = useToast();
-
-  const { data: invoices, isLoading, error } = useQuery({
+  const { data: invoices, isLoading } = useQuery({
     queryKey: ["invoices", year],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -25,36 +21,19 @@ export default function InvoiceTab({ year }: { year: string }) {
     },
   });
 
-  if (error) {
-    toast({
-      variant: "destructive",
-      title: "Error",
-      description: "Failed to load invoices",
-    });
-    return <div>Failed to load invoices</div>;
-  }
-
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4">
         <AddInvoiceButton />
-        <DownloadTemplateButton 
-          columns={[
-            { label: "Invoice Number", key: "invNumber" },
-            { label: "Customer ID", key: "invCustid" },
-            { label: "Invoice Date", key: "invDate" },
-            { label: "Due Date", key: "invDuedate" },
-            { label: "Total", key: "invTotal" },
-            { label: "Status", key: "invPaymentStatus" },
-          ]}
-          tableName="invoiceTable"
-        />
-        <UploadInvoiceButton tableName="invoiceTable" />
+        <DownloadTemplateButton tableName="invoiceTable" />
+        <UploadInvoiceButton />
       </div>
       
       <TransactionInvoiceTable 
         data={invoices || []}
         isLoading={isLoading}
+        onCustomerClick={() => {}}
+        onInvoiceClick={() => {}}
       />
     </div>
   );

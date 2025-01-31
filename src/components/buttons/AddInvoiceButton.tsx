@@ -1,5 +1,5 @@
 import { useState, useEffect, useReducer } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,9 +7,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { toast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import { LoadingSpinner } from "@/components/ui/LoadingSpinner";
+import { supabase } from "@/integrations/supabase/client";
 
 const schema = z.object({
   invNumber: z.string().min(1, "Invoice number is required"),
@@ -177,7 +177,151 @@ export function AddInvoiceButton() {
                 {errors.invNumber?.message}
               </span>
             </div>
-            {/* Repeat similar blocks for all fields */}
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right" htmlFor="invCustid">
+                Customer
+              </Label>
+              <Controller
+                name="invCustid"
+                control={control}
+                render={({ field }) => (
+                  <Select {...field}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Customer" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {customers.map(customer => (
+                        <SelectItem key={customer.id} value={customer.id}>
+                          {customer.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              <span className="text-red-500 text-sm">
+                {errors.invCustid?.message}
+              </span>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right" htmlFor="invDate">
+                Invoice Date
+              </Label>
+              <Controller
+                name="invDate"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    type="date"
+                    id="invDate"
+                    {...field}
+                  />
+                )}
+              />
+              <span className="text-red-500 text-sm">
+                {errors.invDate?.message}
+              </span>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right" htmlFor="invDuedate">
+                Due Date
+              </Label>
+              <Controller
+                name="invDuedate"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    type="date"
+                    id="invDuedate"
+                    {...field}
+                  />
+                )}
+              />
+              <span className="text-red-500 text-sm">
+                {errors.invDuedate?.message}
+              </span>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right" htmlFor="invValue">
+                Value
+              </Label>
+              <Controller
+                name="invValue"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    type="text"
+                    id="invValue"
+                    {...field}
+                  />
+                )}
+              />
+              <span className="text-red-500 text-sm">
+                {errors.invValue?.message}
+              </span>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right" htmlFor="invGst">
+                GST
+              </Label>
+              <Controller
+                name="invGst"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    type="text"
+                    id="invGst"
+                    {...field}
+                  />
+                )}
+              />
+              <span className="text-red-500 text-sm">
+                {errors.invGst?.message}
+              </span>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right" htmlFor="invTotal">
+                Total
+              </Label>
+              <Controller
+                name="invTotal"
+                control={control}
+                render={({ field }) => (
+                  <Input
+                    type="text"
+                    id="invTotal"
+                    {...field}
+                  />
+                )}
+              />
+              <span className="text-red-500 text-sm">
+                {errors.invTotal?.message}
+              </span>
+            </div>
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label className="text-right" htmlFor="invPaymentStatus">
+                Payment Status
+              </Label>
+              <Controller
+                name="invPaymentStatus"
+                control={control}
+                render={({ field }) => (
+                  <Select {...field}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="paid">Paid</SelectItem>
+                      <SelectItem value="partial">Partial</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              <span className="text-red-500 text-sm">
+                {errors.invPaymentStatus?.message}
+              </span>
+            </div>
           </div>
 
           <DialogFooter>

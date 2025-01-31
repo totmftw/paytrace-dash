@@ -24,7 +24,7 @@ export function PaymentReminders() {
         .from("invoiceTable")
         .select(`
           *,
-          customerMaster:customerMaster!invoiceTable_invCustid_fkey (
+          customerMaster (
             custBusinessname,
             custCreditperiod,
             custWhatsapp
@@ -62,6 +62,9 @@ export function PaymentReminders() {
       });
     },
     enabled: !!user,
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
+    refetchInterval: 300000,
   });
 
   const sendReminderMutation = useMutation({
@@ -76,6 +79,7 @@ export function PaymentReminders() {
       message: string; 
       reminderNumber: 1 | 2 | 3;
     }) => {
+      // First get the active WhatsApp config
       const { data: configs, error: configError } = await supabase
         .from('whatsapp_config')
         .select('*')
@@ -93,7 +97,7 @@ export function PaymentReminders() {
           phone,
           message,
           reminderNumber,
-          config: configs[0]
+          config: configs[0]  // Pass the active config to the edge function
         },
       });
 

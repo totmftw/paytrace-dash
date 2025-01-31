@@ -1,12 +1,15 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import {
   ColumnDef,
+  ColumnFiltersState,
+  SortingState,
+  VisibilityState,
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  useReactTable
+  useReactTable,
 } from "@tanstack/react-table";
 import {
   Table,
@@ -17,78 +20,88 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { PDFExport } from "@/components/buttons/PDFExport";
-import { useColumnConfig } from "@/contexts/ColumnConfigContext";
-import { Invoice } from "@/types/types";
-import { formatCurrency } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Skeleton } from "@/components/ui/skeleton";
+import { formatCurrency } from "@/lib/utils";
 
 interface TransactionInvoiceTableProps {
-  data: Invoice[];
+  data: any[];
   onCustomerClick: (customer: any) => void;
-  onInvoiceClick: (invoice: Invoice) => void;
-  isLoading?: boolean;
+  onInvoiceClick: (invoice: any) => void;
 }
 
 export function TransactionInvoiceTable({
   data,
   onCustomerClick,
   onInvoiceClick,
-  isLoading = false,
 }: TransactionInvoiceTableProps) {
-  const { visibleColumns } = useColumnConfig();
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+  const [rowSelection, setRowSelection] = useState({});
 
-  const pdfData = data.map(invoice => ({
-    date: invoice.invDate || '',
-    description: `Invoice #${invoice.invNumber}`,
-    amount: invoice.invTotal,
-    balance: invoice.invBalanceAmount || 0
-  }));
-
-  const columns = [
+  const columns: ColumnDef<any>[] = [
     {
-      id: "invNumber",
+      accessorKey: "customerMaster.custBusinessname",
+      header: "Business Name",
+      cell: ({ row }) => {
+        const businessName = row.original.customerMaster?.custBusinessname;
+        return businessName ? (
+          <Button
+            variant="link"
+            className="text-table-link hover:text-table-link/80"
+            onClick={() => onCustomerClick(row.original.customerMaster)}
+          >
+            {businessName}
+          </Button>
+        ) : (
+          "N/A"
+        );
+      },
+    },
+    {
+      accessorKey: "invNumber",
       header: "Invoice Number",
       cell: ({ row }) => {
+        const invNumber = row.getValue("invNumber");
+        const displayNumber = Array.isArray(invNumber) 
+          ? invNumber.join("-")
+          : typeof invNumber === 'string' 
+            ? invNumber 
+            : String(invNumber);
+            
         return (
           <Button
             variant="link"
             onClick={() => onInvoiceClick(row.original)}
           >
-            {row.getValue("invNumber")}
+            {displayNumber}
           </Button>
         );
       },
     },
     {
-      id: "invDate",
+      accessorKey: "invDate",
       header: "Invoice Date",
-      cell: ({ row }) => {
-        const date = row.getValue("invDate");
-        return date ? new Date(date as string).toLocaleDateString() : "-";
-      },
+      cell: ({ row }) => new Date(row.getValue("invDate")).toLocaleDateString(),
     },
     {
-      id: "invDuedate",
+      accessorKey: "invDuedate",
       header: "Due Date",
-      cell: ({ row }) => {
-        const date = row.getValue("invDuedate");
-        return date ? new Date(date as string).toLocaleDateString() : "-";
-      },
+      cell: ({ row }) => new Date(row.getValue("invDuedate")).toLocaleDateString(),
     },
     {
-      id: "invTotal",
+      accessorKey: "invTotal",
       header: "Total Amount",
-      cell: ({ row }) => formatCurrency(row.getValue("invTotal") as number),
+      cell: ({ row }) => formatCurrency(row.getValue("invTotal")),
     },
     {
-      id: "invBalanceAmount",
+      accessorKey: "invBalanceAmount",
       header: "Balance Amount",
-      cell: ({ row }) => formatCurrency(row.getValue("invBalanceAmount") as number),
+      cell: ({ row }) => formatCurrency(row.getValue("invBalanceAmount")),
     },
     {
-      id: "invPaymentStatus",
+      accessorKey: "invPaymentStatus",
       header: "Payment Status",
       cell: ({ row }) => {
         const status = row.getValue("invPaymentStatus") as string;
@@ -111,94 +124,84 @@ export function TransactionInvoiceTable({
 
   const table = useReactTable({
     data,
-    columns: columns.filter((col) => visibleColumns.includes(col.id)),
+    columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    onColumnVisibilityChange: setColumnVisibility,
+    onRowSelectionChange: setRowSelection,
+    state: {
+      sorting,
+      columnFilters,
+      columnVisibility,
+      rowSelection,
+    },
   });
-
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-end space-x-2">
-          <Skeleton className="h-10 w-32" />
-          <Skeleton className="h-10 w-32" />
-        </div>
-        <div className="border rounded-md">
-          <div className="h-[400px] flex items-center justify-center">
-            <div className="space-y-4">
-              <Skeleton className="h-4 w-[250px]" />
-              <Skeleton className="h-4 w-[200px]" />
-              <Skeleton className="h-4 w-[150px]" />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-end space-x-2">
-        <PDFExport data={pdfData} />
-        <Button
-          variant="ghost"
-          onClick={() => {
-            // Configure columns logic
-          }}
-        >
-          Configure Columns
-        </Button>
+      <div className="flex items-center gap-4">
+        <Input
+          placeholder="Filter business names..."
+          value={(table.getColumn("customerMaster.custBusinessname")?.getFilterValue() as string) ?? ""}
+          onChange={(event) =>
+            table.getColumn("customerMaster.custBusinessname")?.setFilterValue(event.target.value)
+          }
+          className="max-w-sm"
+        />
       </div>
+
       <ScrollArea className="h-[calc(100vh-300px)]">
-        <Table>
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && "selected"}
-                >
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
                   ))}
                 </TableRow>
-              ))
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="h-24 text-center"
-                >
-                  No results.
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="h-24 text-center"
+                  >
+                    No results.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </ScrollArea>
+
       <div className="flex items-center justify-end space-x-2">
         <Button
           variant="outline"
@@ -220,4 +223,3 @@ export function TransactionInvoiceTable({
     </div>
   );
 }
-

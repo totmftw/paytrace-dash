@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -29,10 +29,9 @@ const getBaseNavigation = () => [
 interface AppSidebarProps {
   isCollapsed: boolean;
   toggleSidebar: () => void;
-  setColumnConfigOpen?: (open: boolean) => void;
 }
 
-export function AppSidebar({ isCollapsed, toggleSidebar, setColumnConfigOpen }: AppSidebarProps) {
+export function AppSidebar({ isCollapsed, toggleSidebar }: AppSidebarProps) {
   const { data: userProfile } = useQuery({
     queryKey: ['userProfile'],
     queryFn: async () => {
@@ -55,7 +54,8 @@ export function AppSidebar({ isCollapsed, toggleSidebar, setColumnConfigOpen }: 
     ...getBaseNavigation(),
     ...(isAdmin ? [
       { name: "Products", href: "/products", icon: Package },
-   
+      { name: "Invoices", href: "/invoices", icon: FileText },
+      { name: "Payments", href: "/payments", icon: CreditCard },
     ] : [])
   ];
 
@@ -104,13 +104,6 @@ export function AppSidebar({ isCollapsed, toggleSidebar, setColumnConfigOpen }: 
               ))}
             </ul>
           </li>
-          {isAdmin && setColumnConfigOpen && (
-            <li className="px-2">
-              <Button variant="ghost" onClick={() => setColumnConfigOpen(true)}>
-                Configure Columns
-              </Button>
-            </li>
-          )}
         </ul>
       </nav>
     </div>

@@ -1,109 +1,190 @@
-// src/pages/Dashboard.tsx
-import { useState, useEffect } from 'react';
-import { useFinancialYear } from '../contexts/FinancialYearContext';
-import { useAuth } from '../contexts/AuthContext';
-import { FinancialYearSelector } from '../components/FinancialYearSelector';
-import { MetricsGrid } from '../components/dashboard/MetricsGrid';
-import { InvoiceTable } from '../components/InvoiceTable';
-import { SalesVsPaymentsChart } from '../components/SalesVsPaymentsChart';
-import { LayoutConfig } from '../components/dashboard/LayoutConfig';
-import { Layout } from 'react-grid-layout';
-import 'react-grid-layout/css/styles.css';
-import 'react-resizable/css/styles.css';
-// src/pages/Dashboard.tsx
-import { useAuth } from '../contexts/AuthContext';
-import { useFinancialYear } from '../contexts/FinancialYearContext';
-import { FinancialYearSelector } from '../components/FinancialYearSelector';
-import { MetricsGrid } from '../components/dashboard/MetricsGrid';
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { FinancialYearSelector } from "@/components/FinancialYearSelector";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Overview } from "@/components/dashboard/Overview";
+import { RecentSales } from "@/components/dashboard/RecentSales";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useFinancialYear } from "@/contexts/FinancialYearContext";
 
-const Dashboard = () => {
-  const { user } = useAuth();
+interface DashboardStats {
+  totalRevenue: number;
+  outstandingAmount: number;
+  activeCustomers: number;
+  pendingInvoices: number;
+}
+
+export default function Dashboard() {
+  const { toast } = useToast();
+  const navigate = useNavigate();
   const { selectedYear } = useFinancialYear();
 
-  // Add a console.log to debug
-  console.log('Dashboard rendering:', { user, selectedYear });
+  const { data: dashboardData, isLoading } = useQuery({
+    queryKey: ['dashboard-stats', selectedYear],
+    queryFn: async () => {
+      const startDate = new Date(Number(selectedYear), 3, 1); // Financial year starts from April
+      const endDate = new Date(Number(selectedYear) + 1, 2, 31); // Ends in March next year
 
-  return (
-    <div className="min-h-screen bg-gray-100 p-4">
-      <div className="max-w-7xl mx-auto">
-        <div className="mb-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-          <FinancialYearSelector />
-        </div>
-        <div className="grid gap-6">
-          <MetricsGrid />
-          {/* Add other components here */}
-        </div>
-      </div>
-    </div>
-  );
-};
+      // Get total revenue
+      const { data: invoices } = await supabase
+        .from('invoiceTable')
+        .select('invTotal')
+        .gte('invDate', startDate.toISOString())
+        .lte('invDate', endDate.toISOString());
 
-export default Dashboard;
+      // Get outstanding amount
+      const { data: outstanding } = await supabase
+        .from('invoiceTable')
+        .select('invBalanceAmount')
+        .gt('invBalanceAmount', 0)
+        .gte('invDate', startDate.toISOString())
+        .lte('invDate', endDate.toISOString());
 
-const Dashboard = () => {
-  const { user } = useAuth();
-  const { selectedYear } = useFinancialYear();
-  const [layout, setLayout] = useState<Layout[]>([]);
-  const [isEditing, setIsEditing] = useState(false);
+      // Get active customers
+      const { count: activeCustomers } = await supabase
+        .from('customerMaster')
+        .select('*', { count: 'exact', head: true })
+        .eq('custStatus', 'active');
 
-  return (
-    <div className="p-4">
-      <div className="flex justify-between items-center mb-4">
-        <FinancialYearSelector />
-        {user && user.role === 'admin' && (
-          <button
-            onClick={() => setIsEditing(!isEditing)}
-            className="bg-leaf-green text-forest-green px-4 py-2 rounded"
-          >
-            {isEditing ? 'Save Layout' : 'Configure Layout'}
-          </button>
-        )}
-      </div>
+      // Get pending invoices
+      const { count: pendingInvoices } = await supabase
+        .from('invoiceTable')
+        .select('*', { count: 'exact', head: true })
+        .gt('invBalanceAmount', 0)
+        .gte('invDate', startDate.toISOString())
+        .lte('invDate', endDate.toISOString());
+
+      return {
+        totalRevenue: invoices?.reduce((sum, inv) => sum + Number(inv.invTotal), 0) || 0,
+        outstandingAmount: outstanding?.reduce((sum, inv) => sum + Number(inv.invBalanceAmount), 0) || 0,
+        activeCustomers: activeCustomers || 0,
+        pendingInvoices: pendingInvoices || 0
+      } as DashboardStats;
+    }
+  });
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
-      <div className="grid gap-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <MetricsGrid />
-        </div>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="md:col-span-2">
-            <InvoiceTable />
-          </div>
-          <div>
-            <SalesVsPaymentsChart />
-          </div>
-        </div>
-      </div>
-
-      {isEditing && <LayoutConfig layout={layout} />}
-    </div>
-  );
-};
-// src/pages/Dashboard.tsx
-import { useAuth } from '../contexts/AuthContext';
-import { useFinancialYear } from '../contexts/FinancialYearContext';
-import { FinancialYearSelector } from '../components/FinancialYearSelector';
-
-const Dashboard = () => {
-  const { user } = useAuth();
-  const { selectedYear } = useFinancialYear();
-
-  if (!user) return null;
+      if (sessionError || !session) {
+        toast({
+          variant: "destructive",
+          title: "Authentication required",
+          description: "Please log in to view the dashboard",
+        });
+        navigate("/login");
+      }
+    };
+    
+    checkAuth();
+  }, [navigate, toast]);
 
   return (
-    <div className="p-4">
-      <div className="mb-4">
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
         <FinancialYearSelector />
       </div>
-      <div>
-        <h1>Welcome to Dashboard</h1>
-        {/* Add your dashboard components here */}
-      </div>
+
+      <Tabs defaultValue="overview" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="overview">Overview</TabsTrigger>
+          <TabsTrigger value="analytics">Analytics</TabsTrigger>
+          <TabsTrigger value="reports">Reports</TabsTrigger>
+        </TabsList>
+        <TabsContent value="overview" className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Total Revenue
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {isLoading ? "Loading..." : `₹${dashboardData?.totalRevenue.toLocaleString()}`}
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Outstanding Amount
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {isLoading ? "Loading..." : `₹${dashboardData?.outstandingAmount.toLocaleString()}`}
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Active Customers</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {isLoading ? "Loading..." : dashboardData?.activeCustomers}
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">
+                  Pending Invoices
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">
+                  {isLoading ? "Loading..." : dashboardData?.pendingInvoices}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+            <Card className="col-span-4">
+              <CardHeader>
+                <CardTitle>Overview</CardTitle>
+              </CardHeader>
+              <CardContent className="pl-2">
+                <Overview />
+              </CardContent>
+            </Card>
+            <Card className="col-span-3">
+              <CardHeader>
+                <CardTitle>Recent Sales</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <RecentSales />
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+        <TabsContent value="analytics" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Analytics Content</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Analytics dashboard content will be displayed here.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+        <TabsContent value="reports" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Reports</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>Reports and documentation will be displayed here.</p>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
-};
-
-
-
-export default Dashboard;
+}

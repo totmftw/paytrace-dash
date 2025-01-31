@@ -1,59 +1,98 @@
-import React from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
+import { useState } from "react";
+import { Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
-export interface Customer {
-  id: number;
-  custBusinessname: string;
-  custWhatsapp: number;
-}
-
-export interface CustomerSelectorProps {
+interface CustomerSelectorProps {
+  customers: Array<{
+    id: number;
+    custBusinessname: string;
+    custWhatsapp: number;
+  }>;
   selectedCustomerId: number | null;
   onSelect: (customerId: number) => void;
-  customers?: Customer[];
   isLoading?: boolean;
 }
 
-export function CustomerSelector({ 
-  selectedCustomerId, 
+export function CustomerSelector({
+  customers = [],
+  selectedCustomerId,
   onSelect,
-  customers: propCustomers,
-  isLoading: propIsLoading 
+  isLoading = false,
 }: CustomerSelectorProps) {
-  const { data: fetchedCustomers, isLoading: queryIsLoading } = useQuery({
-    queryKey: ['customers'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('customerMaster')
-        .select('id, custBusinessname');
-      if (error) throw error;
-      return data;
-    },
-    enabled: !propCustomers // Only fetch if customers aren't provided as props
-  });
+  const [open, setOpen] = useState(false);
+  
+  const selectedCustomer = customers?.find(
+    (customer) => customer.id === selectedCustomerId
+  );
 
-  const customers = propCustomers || fetchedCustomers;
-  const isLoading = propIsLoading || queryIsLoading;
-
-  if (isLoading) return <div>Loading...</div>;
+  if (isLoading) {
+    return (
+      <Button 
+        variant="outline" 
+        className="w-[300px] justify-between bg-[#90BE6D] text-[#1B4D3E]" 
+        disabled
+      >
+        Loading customers...
+        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+      </Button>
+    );
+  }
 
   return (
-    <Select
-      value={selectedCustomerId?.toString()}
-      onValueChange={(value) => onSelect(parseInt(value))}
-    >
-      <SelectTrigger>
-        <SelectValue placeholder="Select a customer" />
-      </SelectTrigger>
-      <SelectContent>
-        {customers?.map((customer) => (
-          <SelectItem key={customer.id} value={customer.id.toString()}>
-            {customer.custBusinessname}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-[300px] justify-between bg-[#90BE6D] text-[#1B4D3E] hover:bg-[#7CAE5B]"
+        >
+          {selectedCustomer
+            ? selectedCustomer.custBusinessname
+            : "Select customer..."}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[300px] p-0 bg-[#E8F3E8]">
+        <Command>
+          <CommandInput placeholder="Search customers..." className="text-[#1B4D3E]" />
+          <CommandEmpty>No customer found.</CommandEmpty>
+          <CommandGroup>
+            {customers.map((customer) => (
+              <CommandItem
+                key={customer.id}
+                value={customer.custBusinessname}
+                onSelect={() => {
+                  onSelect(customer.id);
+                  setOpen(false);
+                }}
+                className="text-[#1B4D3E] hover:bg-[#90BE6D]"
+              >
+                <Check
+                  className={cn(
+                    "mr-2 h-4 w-4",
+                    selectedCustomerId === customer.id ? "opacity-100" : "opacity-0"
+                  )}
+                />
+                {customer.custBusinessname}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }

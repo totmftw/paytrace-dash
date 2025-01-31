@@ -1,155 +1,251 @@
 import { useState } from "react";
-import { useFinancialYear } from "@/contexts/FinancialYearContext";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { AlertCircle, ArrowRight, X } from "lucide-react";
+import { formatCurrency } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Table } from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { PaymentDetailsTable } from "./PaymentDetailsTable";
+import { useFinancialYear } from "@/contexts/FinancialYearContext";
+import { useToast } from "@/hooks/use-toast";
 
-interface MetricsData {
-  pendingAmount: number;
-  outstandingAmount: number;
-  totalSales: number;
-  totalOrders: number;
-  pendingInvoices: any[];
-  outstandingInvoices: any[];
-  allInvoices: any[];
-}
-
-export function PaymentMetrics() {
+export const PaymentMetrics = () => {
   const { selectedYear } = useFinancialYear();
-  const [selectedData, setSelectedData] = useState<any[]>([]);
-  const [dialogTitle, setDialogTitle] = useState("");
+  const [showPendingPayments, setShowPendingPayments] = useState(false);
+  const [showOverduePayments, setShowOverduePayments] = useState(false);
+  const [showOrders, setShowOrders] = useState(false);
+  const { toast } = useToast();
 
-  const { data } = useQuery<MetricsData>({
+  const { data: metrics, error: metricsError } = useQuery({
     queryKey: ["payment-metrics", selectedYear],
     queryFn: async () => {
-      const { data: invoices, error } = await supabase
-        .from("invoiceTable")
-        .select(`
-          *,
-          customerMaster:customerMaster!invoiceTable_invCustid_fkey (
-            custBusinessname,
-            custCreditperiod
-          ),
-          paymentTransactions:paymentTransactions (
-            amount
-          )
-        `)
-        .gte("invDate", selectedYear.split('-')[0] + "-04-01")
-        .lte("invDate", selectedYear.split('-')[1] + "-03-31");
+      try {
+        const startDate = new Date(parseInt(selectedYear), 3, 1).toISOString();
+        const endDate = new Date(parseInt(selectedYear) + 1, 2, 31).toISOString();
 
-      if (error) throw error;
+        const { data: invoices, error } = await supabase
+          .from("invoiceTable")
+          .select(`
+            *,
+            customerMaster (
+              custBusinessname,
+              custCreditperiod
+            )
+          `)
+          .gte('invDate', startDate.split('T')[0])
+          .lte('invDate', endDate.split('T')[0])
+          .order('invDuedate', { ascending: true });
 
-      const today = new Date();
-      const pendingInvoices = invoices.filter(
-        (inv) => new Date(inv.invDuedate) > today
-      );
-      const outstandingInvoices = invoices.filter(
-        (inv) => new Date(inv.invDuedate) < today
-      );
+        if (error) throw error;
 
-      return {
-        pendingAmount: pendingInvoices.reduce((sum, inv) => sum + inv.invTotal, 0),
-        outstandingAmount: outstandingInvoices.reduce((sum, inv) => sum + inv.invTotal, 0),
-        totalSales: invoices.reduce((sum, inv) => sum + inv.invTotal, 0),
-        totalOrders: invoices.length,
-        pendingInvoices,
-        outstandingInvoices,
-        allInvoices: invoices,
-      };
+        const pendingPayments = {
+          amount: 0,
+          count: 0,
+          invoices: []
+        };
+
+        const overduePayments = {
+          amount: 0,
+          count: 0,
+          invoices: []
+        };
+
+        const orders = {
+          count: 0,
+          invoices: []
+        };
+
+        invoices?.forEach(invoice => {
+          const dueDate = new Date(invoice.invDuedate);
+          const amount = invoice.invTotal;
+
+          if (dueDate < new Date()) {
+            overduePayments.amount += Number(amount);
+            overduePayments.count++;
+            overduePayments.invoices.push(invoice);
+          } else if (!invoice.invMarkcleared) {
+            pendingPayments.amount += Number(amount);
+            pendingPayments.count++;
+            pendingPayments.invoices.push(invoice);
+          }
+
+          orders.count++;
+          orders.invoices.push(invoice);
+        });
+
+        return [
+          {
+            title: "Pending Payments",
+            amount: pendingPayments.amount,
+            status: "warning",
+            count: pendingPayments.count,
+            invoices: pendingPayments.invoices
+          },
+          {
+            title: "Overdue Payments",
+            amount: overduePayments.amount,
+            status: "danger",
+            count: overduePayments.count,
+            invoices: overduePayments.invoices
+          },
+          {
+            title: "Orders",
+            count: orders.count,
+            invoices: orders.invoices
+          }
+        ];
+      } catch (error: any) {
+        console.error('Error fetching metrics:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to fetch payment metrics. Please check your connection and try again.",
+        });
+        throw error;
+      }
     },
+    retry: 3,
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000),
   });
 
-  const handleMetricClick = (type: string) => {
-    if (!data) return;
-
-    switch (type) {
-      case "pending":
-        setSelectedData(data.pendingInvoices);
-        setDialogTitle("Pending Payments");
-        break;
-      case "outstanding":
-        setSelectedData(data.outstandingInvoices);
-        setDialogTitle("Outstanding Payments");
-        break;
-      case "sales":
-        setSelectedData(data.allInvoices);
-        setDialogTitle("Total Sales");
-        break;
-      case "orders":
-        setSelectedData(data.allInvoices);
-        setDialogTitle("Total Orders");
-        break;
-    }
-  };
-
-  return (
-    <>
-      <div className="grid grid-cols-2 gap-4">
-        <Card className="cursor-pointer" onClick={() => handleMetricClick("pending")}>
+  if (metricsError) {
+    return (
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
           <CardHeader>
-            <CardTitle>Pending Payments</CardTitle>
+            <CardTitle className="text-sm font-medium">Error Loading Metrics</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-2xl font-bold">₹{data?.pendingAmount.toLocaleString()}</p>
-          </CardContent>
-        </Card>
-        <Card className="cursor-pointer" onClick={() => handleMetricClick("outstanding")}>
-          <CardHeader>
-            <CardTitle>Outstanding Payments</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">₹{data?.outstandingAmount.toLocaleString()}</p>
-          </CardContent>
-        </Card>
-        <Card className="cursor-pointer" onClick={() => handleMetricClick("sales")}>
-          <CardHeader>
-            <CardTitle>Total Sales</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">₹{data?.totalSales.toLocaleString()}</p>
-          </CardContent>
-        </Card>
-        <Card className="cursor-pointer" onClick={() => handleMetricClick("orders")}>
-          <CardHeader>
-            <CardTitle>Total Orders</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold">{data?.totalOrders}</p>
+            <p className="text-sm text-muted-foreground">
+              Failed to load payment metrics. Please try again later.
+            </p>
           </CardContent>
         </Card>
       </div>
+    );
+  }
 
-      <Dialog open={selectedData.length > 0} onOpenChange={() => setSelectedData([])}>
-        <DialogContent className="max-w-4xl">
-          <DialogHeader>
-            <DialogTitle>{dialogTitle}</DialogTitle>
+  return (
+    <>
+      <div className="grid gap-4 md:grid-cols-3">
+        {metrics?.map((metric, index) => (
+          <Card key={metric.title}>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-medium text-black">
+                {metric.title}
+              </CardTitle>
+              {metric.status && (
+                <AlertCircle
+                  className={`h-4 w-4 ${
+                    metric.status === "warning"
+                      ? "text-yellow-500"
+                      : "text-red-500"
+                  }`}
+                />
+              )}
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-black">
+                {metric.title === "Orders" ? metric.count : formatCurrency(metric.amount)}
+              </div>
+              <div className="flex items-center justify-between">
+                {metric.title !== "Orders" && (
+                  <p className="text-xs text-muted-foreground">
+                    {metric.count} invoices
+                  </p>
+                )}
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="h-8 w-8 p-0"
+                  onClick={() => {
+                    if (index === 0) setShowPendingPayments(true);
+                    else if (index === 1) setShowOverduePayments(true);
+                    else if (index === 2) setShowOrders(true);
+                  }}
+                >
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <Dialog 
+        open={showPendingPayments} 
+        onOpenChange={setShowPendingPayments}
+      >
+        <DialogContent className="max-w-[95vw] h-[90vh] flex flex-col">
+          <DialogHeader className="flex flex-row items-center justify-between">
+            <DialogTitle className="text-black">Pending Payments</DialogTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowPendingPayments(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </DialogHeader>
-          <div className="max-h-[600px] overflow-auto">
-            <Table>
-              <thead>
-                <tr>
-                  <th>Invoice Number</th>
-                  <th>Customer</th>
-                  <th>Amount</th>
-                  <th>Date</th>
-                </tr>
-              </thead>
-              <tbody>
-                {selectedData.map((invoice) => (
-                  <tr key={invoice.invId}>
-                    <td>{invoice.invNumber}</td>
-                    <td>{invoice.customerMaster.custBusinessname}</td>
-                    <td>₹{invoice.invTotal.toLocaleString()}</td>
-                    <td>{new Date(invoice.invDate).toLocaleDateString()}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
+          <div className="flex-1 overflow-auto">
+            <PaymentDetailsTable 
+              data={metrics?.[0].invoices || []}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog 
+        open={showOverduePayments} 
+        onOpenChange={setShowOverduePayments}
+      >
+        <DialogContent className="max-w-[95vw] h-[90vh] flex flex-col">
+          <DialogHeader className="flex flex-row items-center justify-between">
+            <DialogTitle className="text-black">Overdue Payments</DialogTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowOverduePayments(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto">
+            <PaymentDetailsTable 
+              data={metrics?.[1].invoices || []}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog 
+        open={showOrders} 
+        onOpenChange={setShowOrders}
+      >
+        <DialogContent className="max-w-[95vw] h-[90vh] flex flex-col">
+          <DialogHeader className="flex flex-row items-center justify-between">
+            <DialogTitle className="text-black">Orders</DialogTitle>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setShowOrders(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </DialogHeader>
+          <div className="flex-1 overflow-auto">
+            <PaymentDetailsTable 
+              data={metrics?.[2].invoices || []}
+            />
           </div>
         </DialogContent>
       </Dialog>
     </>
   );
-}
+};

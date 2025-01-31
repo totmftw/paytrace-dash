@@ -1,25 +1,21 @@
-import { LedgerEntry } from '@/types/types';
+import { LedgerEntry } from "@/types/ledger";
 
-export const calculateTotalDebit = (entries: LedgerEntry[]): number => {
-  return entries.reduce((total, entry) => {
-    if (entry.transaction_type === 'DEBIT') {
-      return total + entry.debit_amount;
+export const calculateRunningBalance = (entries: LedgerEntry[]): LedgerEntry[] => {
+  let balance = 0;
+  return entries.map(entry => {
+    if (entry.type === 'invoice') {
+      balance += entry.amount;
+    } else if (entry.type === 'payment') {
+      balance -= entry.amount;
     }
-    return total;
-  }, 0);
+    return { ...entry, balance };
+  });
 };
 
-export const calculateTotalCredit = (entries: LedgerEntry[]): number => {
-  return entries.reduce((total, entry) => {
-    if (entry.transaction_type === 'CREDIT') {
-      return total + entry.credit_amount;
-    }
-    return total;
-  }, 0);
+export const formatLedgerDate = (date: string) => {
+  return new Date(date).toLocaleDateString();
 };
 
-export const sortEntriesByDate = (entries: LedgerEntry[]): LedgerEntry[] => {
-  return [...entries].sort((a, b) => 
-    new Date(a.transaction_date).getTime() - new Date(b.transaction_date).getTime()
-  );
+export const sortLedgerEntries = (entries: LedgerEntry[]) => {
+  return entries.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 };

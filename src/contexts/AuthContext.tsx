@@ -1,81 +1,98 @@
-// src/contexts/AuthContext.tsx
-import { createContext, useContext, useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { useSessionContext, useSupabaseClient } from '@supabase/auth-helpers-react';
-import { User } from '@supabase/supabase-js';
+import { createContext, useContext, useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
+import type { Database } from "@/integrations/supabase/types";
+
+type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
 
 interface AuthContextType {
-  user: User | null;
-  signIn: (email: string, password: string) => Promise<void>;
+  user: UserProfile | null;
+  loading: boolean;
   signOut: () => Promise<void>;
-  isLoading: boolean;
 }
 
-const AuthContext = createContext<AuthContextType | null>(null);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-  const { session, isLoading: sessionLoading } = useSessionContext();
-  const supabase = useSupabaseClient();
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<UserProfile | null>(null);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const location = useLocation();
-  const [isLoading, setIsLoading] = useState(true);
-  const [user, setUser] = useState<User | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
-    if (!sessionLoading) {
-      setUser(session?.user ?? null);
-      setIsLoading(false);
-    }
-  }, [session, sessionLoading]);
+    // Check active session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      } else {
+        setLoading(false);
+      }
+    });
 
-  const signIn = async (email: string, password: string) => {
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        fetchUserProfile(session.user.id);
+      } else {
+        setUser(null);
+        setLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  async function fetchUserProfile(userId: string) {
     try {
-      setIsLoading(true);
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) throw error;
+      const { data, error } = await supabase
+        .from("user_profiles")
+        .select("*")
+        .eq("id", userId)
+        .single();
 
-      // Get the intended path from location state or default to '/'
-      const from = (location.state as any)?.from || '/';
-      navigate(from, { replace: true });
+      if (error) throw error;
+      setUser(data);
     } catch (error) {
-      console.error('Sign in error:', error);
-      throw error;
+      console.error("Error fetching user profile:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch user profile",
+        variant: "destructive",
+      });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  };
+  }
 
   const signOut = async () => {
     try {
-      setIsLoading(true);
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-      navigate('/login', { replace: true });
+      await supabase.auth.signOut();
+      navigate("/login");
+      toast({
+        title: "Signed out successfully",
+      });
     } catch (error) {
-      console.error('Sign out error:', error);
-      throw error;
-    } finally {
-      setIsLoading(false);
+      console.error("Error signing out:", error);
+      toast({
+        title: "Error",
+        description: "Failed to sign out",
+        variant: "destructive",
+      });
     }
   };
 
-  const value = {
-    user,
-    signIn,
-    signOut,
-    isLoading: isLoading || sessionLoading,
-  };
+  return (
+    <AuthContext.Provider value={{ user, loading, signOut }}>
+      {children}
+    </AuthContext.Provider>
+  );
+}
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-};
-
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
-};
+}

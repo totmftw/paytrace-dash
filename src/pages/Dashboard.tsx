@@ -13,18 +13,19 @@ import { CustomerStats } from "@/components/dashboard/CustomerStats";
 import { RecentSales } from "@/components/dashboard/RecentSales";
 import { PaymentTracking } from "@/components/dashboard/PaymentTracking";
 import { FinancialYearSelector } from "@/components/FinancialYearSelector";
+import { DashboardGridLayout } from "@/components/DashboardGridLayout";
+import { Button } from "@/components/ui/button";
 
 export default function Dashboard() {
   const { toast } = useToast();
   const { user } = useAuth();
   const { selectedYear } = useFinancialYear();
+  const isITAdmin = user?.role === "it_admin";
 
   const { data: dashboardData, error } = useQuery({
-    queryKey: ["dashboard-metrics"],
+    queryKey: ["dashboard-metrics", selectedYear],
     queryFn: async () => {
-      if (!user) {
-        throw new Error("No authenticated session");
-      }
+      if (!user) throw new Error("No authenticated session");
 
       const { data, error } = await supabase
         .from("dashboard_metrics")
@@ -36,26 +37,67 @@ export default function Dashboard() {
     enabled: !!user,
   });
 
-  useEffect(() => {
-    if (error) {
+  const widgets = [
+    {
+      id: "payment-metrics",
+      x: 0,
+      y: 0,
+      w: 6,
+      h: 4,
+      content: <PaymentMetrics />,
+    },
+    {
+      id: "sales-overview",
+      x: 6,
+      y: 0,
+      w: 6,
+      h: 4,
+      content: <SalesOverview />,
+    },
+    {
+      id: "customer-stats",
+      x: 0,
+      y: 4,
+      w: 4,
+      h: 4,
+      content: <CustomerStats />,
+    },
+    {
+      id: "payment-tracking",
+      x: 4,
+      y: 4,
+      w: 4,
+      h: 4,
+      content: <PaymentTracking />,
+    },
+    {
+      id: "recent-sales",
+      x: 8,
+      y: 4,
+      w: 4,
+      h: 4,
+      content: <RecentSales />,
+    },
+  ];
+
+  const handleApplyLayout = async () => {
+    try {
+      const { error } = await supabase
+        .from("dashboard_layouts")
+        .upsert({ user_id: user?.id, layout: widgets });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Dashboard layout has been updated.",
+      });
+    } catch (error) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to load dashboard data. Please try again.",
+        description: "Failed to update dashboard layout.",
       });
-    }
-  }, [error, toast]);
-
-  const getVariant = (status: string) => {
-    switch (status) {
-      case 'normal':
-        return 'default';
-      case 'warning':
-        return 'secondary';
-      case 'danger':
-        return 'destructive';
-      default:
-        return 'default';
     }
   };
 
@@ -63,38 +105,20 @@ export default function Dashboard() {
     <div className="space-y-8 p-8">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-bold">Dashboard</h1>
-        <FinancialYearSelector />
+        <div className="flex items-center gap-4">
+          <FinancialYearSelector />
+          {isITAdmin && (
+            <Button onClick={handleApplyLayout}>
+              Apply Layout
+            </Button>
+          )}
+        </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {dashboardData?.map((metric) => (
-          <Card key={metric.id}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
-                {metric.metric_name}
-              </CardTitle>
-              <Badge variant={getVariant(metric.metric_status)}>
-                {metric.metric_status}
-              </Badge>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">
-                {metric.metric_type === 'currency' 
-                  ? formatCurrency(metric.metric_value)
-                  : metric.metric_value}
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <PaymentMetrics />
-        <SalesOverview />
-        <CustomerStats />
-        <PaymentTracking />
-        <RecentSales />
-      </div>
+      <DashboardGridLayout 
+        widgets={widgets}
+        onApply={handleApplyLayout}
+      />
     </div>
   );
 }

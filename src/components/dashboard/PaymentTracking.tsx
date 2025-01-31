@@ -16,7 +16,7 @@ export const PaymentTracking = () => {
         .from("invoiceTable")
         .select(`
           *,
-          customerMaster (
+          customerMaster!fk_invcustid_customer (
             custBusinessname,
             custCreditperiod
           ),

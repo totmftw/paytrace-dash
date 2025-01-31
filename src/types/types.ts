@@ -2,6 +2,7 @@ import type { Json } from '@/integrations/supabase/types';
 
 export interface PaymentTransaction {
   paymentId: number;
+  invId: number;
   amount: number;
   paymentDate: string;
   transactionId: string;
@@ -9,7 +10,9 @@ export interface PaymentTransaction {
   chequeNumber?: string;
   bankName?: string;
   remarks?: string;
-  invId: number;
+  createdAt?: string;
+  createdBy?: string;
+  updatedAt?: string;
 }
 
 export interface CustomerMaster {
@@ -35,7 +38,7 @@ export interface Invoice {
   invSubamount?: number;
   invMarkcleared?: boolean;
   fy: string;
-  customerMaster: CustomerMaster;
+  customerMaster?: CustomerMaster;
   paymentTransactions: PaymentTransaction[];
 }
 

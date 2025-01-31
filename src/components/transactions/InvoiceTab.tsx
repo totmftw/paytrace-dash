@@ -11,7 +11,10 @@ export default function InvoiceTab({ year }: { year: string }) {
   const { data: invoices, isLoading } = useQuery({
     queryKey: ["invoices", year],
     queryFn: async () => {
-      const [startYear] = year.split('-');
+      const [startYear, endYear] = year.split('-');
+      const startDate = `${startYear}-04-01`;
+      const endDate = `${endYear}-03-31`;
+
       const { data, error } = await supabase
         .from("invoiceTable")
         .select(`
@@ -32,10 +35,13 @@ export default function InvoiceTab({ year }: { year: string }) {
             remarks
           )
         `)
-        .gte("invDate", `${startYear}-04-01`)
-        .lte("invDate", `${parseInt(startYear) + 1}-03-31`);
+        .gte('invDate', startDate)
+        .lte('invDate', endDate);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching invoices:", error);
+        throw error;
+      }
       return data as Invoice[];
     },
   });
@@ -56,14 +62,12 @@ export default function InvoiceTab({ year }: { year: string }) {
         <UploadInvoiceButton />
       </div>
       
-      <ColumnConfigProvider>
-        <TransactionInvoiceTable 
-          data={invoices || []}
-          isLoading={isLoading}
-          onCustomerClick={handleCustomerClick}
-          onInvoiceClick={handleInvoiceClick}
-        />
-      </ColumnConfigProvider>
+      <TransactionInvoiceTable 
+        data={invoices || []}
+        isLoading={isLoading}
+        onCustomerClick={handleCustomerClick}
+        onInvoiceClick={handleInvoiceClick}
+      />
     </div>
   );
 }

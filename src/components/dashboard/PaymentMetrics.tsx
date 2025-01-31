@@ -2,13 +2,13 @@ import { useFinancialYear } from "@/contexts/FinancialYearContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { formatCurrency } from "@/lib/utils";
-import { DetailedDataTable } from "./DetailedDataTable";
+import { DetailedDataTable } from "@/components/DetailedDataTable";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
 
 export function PaymentMetrics() {
   const { selectedYear } = useFinancialYear();
-  const [selectedData, setSelectedData] = useState<any[]>([]);
+  const [selectedData, setSelectedData] = useState([]);
   const [dialogTitle, setDialogTitle] = useState("");
 
   const { data: metrics } = useQuery({

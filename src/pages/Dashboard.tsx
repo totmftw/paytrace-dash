@@ -15,6 +15,7 @@ import { PaymentTracking } from "@/components/dashboard/PaymentTracking";
 import { FinancialYearSelector } from "@/components/FinancialYearSelector";
 import { DashboardGridLayout } from "@/components/DashboardGridLayout";
 import { Button } from "@/components/ui/button";
+import { Json } from "@/integrations/supabase/types";
 
 export default function Dashboard() {
   const { toast } = useToast();
@@ -82,9 +83,15 @@ export default function Dashboard() {
 
   const handleApplyLayout = async () => {
     try {
+      const serializedLayout = widgets.map(({ content, ...rest }) => rest) as unknown as Json;
+      
       const { error } = await supabase
         .from("dashboard_layouts")
-        .upsert({ user_id: user?.id, layout: widgets });
+        .insert({
+          layout: serializedLayout,
+          created_by: user?.id,
+          is_active: true
+        });
 
       if (error) throw error;
 

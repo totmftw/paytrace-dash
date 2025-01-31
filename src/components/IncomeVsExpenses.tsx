@@ -42,12 +42,12 @@ export function IncomeVsExpenses() {
 
   financialData.invoices?.forEach((invoice) => {
     const month = new Date(invoice.invDate).getMonth();
-    monthlyData[month].income += invoice.invTotal;
+    monthlyData[month].income += Number(invoice.invTotal);
   });
 
   financialData.expenses?.forEach((expense) => {
     const month = new Date(expense.date).getMonth();
-    monthlyData[month].expenses += expense.amount;
+    monthlyData[month].expenses += Number(expense.amount);
   });
 
   return (
@@ -57,8 +57,8 @@ export function IncomeVsExpenses() {
         <AreaChart data={monthlyData}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="month" />
-          <YAxis tickFormatter={(value) => `₹${value.toLocaleString()}`} />
-          <Tooltip formatter={(value) => formatCurrency(value)} />
+          <YAxis tickFormatter={(value) => `₹${Number(value).toLocaleString()}`} />
+          <Tooltip formatter={(value: number) => formatCurrency(value)} />
           <Area
             type="monotone"
             dataKey="income"

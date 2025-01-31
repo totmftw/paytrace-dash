@@ -20,7 +20,13 @@ export function InvoiceDetailsPopup({
     queryFn: async () => {
       const { data, error } = await supabase
         .from("invoiceTable")
-        .select("*, customerMaster(*), paymentTransactions(*)")
+        .select(`
+          *,
+          customerMaster!invoiceTable_invCustid_fkey (
+            custBusinessname
+          ),
+          paymentTransactions (*)
+        `)
         .eq("invId", invoiceId)
         .single();
 
@@ -45,25 +51,25 @@ export function InvoiceDetailsPopup({
               <div className="col-span-2 md:col-span-1">
                 <dt className="text-sm text-gray-600">Date</dt>
                 <dd className="text-gray-900">
-                  {new Date(data?.invDate).toLocaleDateString()}
+                  {data?.invDate ? new Date(data.invDate).toLocaleDateString() : '-'}
                 </dd>
               </div>
               <div className="col-span-2 md:col-span-1">
                 <dt className="text-sm text-gray-600">Customer</dt>
                 <dd className="text-gray-900">
-                  {data?.customerMaster?.custBusinessname}
+                  {data?.customerMaster?.custBusinessname || '-'}
                 </dd>
               </div>
               <div className="col-span-2 md:col-span-1">
                 <dt className="text-sm text-gray-600">Total</dt>
                 <dd className="text-gray-900">
-                  {formatCurrency(data?.invTotal)}
+                  {data?.invTotal ? formatCurrency(data.invTotal) : '-'}
                 </dd>
               </div>
               <div className="col-span-2 md:col-span-1">
                 <dt className="text-sm text-gray-600">Due Date</dt>
                 <dd className="text-gray-900">
-                  {new Date(data?.invDuedate).toLocaleDateString()}
+                  {data?.invDuedate ? new Date(data.invDuedate).toLocaleDateString() : '-'}
                 </dd>
               </div>
             </dl>

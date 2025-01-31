@@ -4,7 +4,7 @@ import { TransactionInvoiceTable } from "./TransactionInvoiceTable";
 import { AddInvoiceButton } from "../buttons/AddInvoiceButton";
 import { DownloadTemplateButton } from "../buttons/DownloadTemplateButton";
 import { UploadInvoiceButton } from "../buttons/UploadInvoiceButton";
-import type { Invoice } from "@/types";
+import type { Invoice } from "@/types/types";
 
 export default function PaymentTab({ year }: { year: string }) {
   const { data: invoices, isLoading } = useQuery({
@@ -22,6 +22,7 @@ export default function PaymentTab({ year }: { year: string }) {
           ),
           paymentTransactions (
             paymentId,
+            invId,
             amount,
             paymentDate,
             transactionId,

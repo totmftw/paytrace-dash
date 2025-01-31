@@ -10,6 +10,9 @@ export interface PaymentTransaction {
   chequeNumber?: string;
   bankName?: string;
   remarks?: string;
+  createdAt?: string;
+  createdBy?: string;
+  updatedAt?: string;
 }
 
 export interface CustomerMaster {
@@ -28,12 +31,12 @@ export interface Invoice {
   invGst: number;
   invBalanceAmount: number;
   invPaymentStatus: string;
-  invMessage1: string;
-  invMessage2?: string;
-  invMessage3?: string;
   invAddamount?: number;
   invSubamount?: number;
   invMarkcleared?: boolean;
+  invMessage1: string;
+  invMessage2?: string;
+  invMessage3?: string;
   fy: string;
   customerMaster: CustomerMaster;
   paymentTransactions: PaymentTransaction[];

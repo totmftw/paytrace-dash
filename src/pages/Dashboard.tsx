@@ -22,6 +22,7 @@ export default function Dashboard({ year }: DashboardProps) {
           ),
           paymentTransactions!paymentTransactions_invId_fkey (
             paymentId,
+            invId,
             amount,
             paymentDate,
             transactionId,

@@ -79,7 +79,7 @@ export default function Dashboard() {
   });
 
   const updateLayoutMutation = useMutation({
-    mutationFn: async (newLayout: any) => {
+    mutationFn: async (newLayout: DashboardWidget[]) => {
       if (!user) throw new Error('No user');
       const { error } = await supabase
         .from('dashboard_layouts')
@@ -96,7 +96,7 @@ export default function Dashboard() {
     },
   });
 
-  const currentLayout = layoutData?.layout ? JSON.parse(layoutData.layout) : defaultWidgets;
+  const currentLayout = layoutData?.layout ? JSON.parse(layoutData.layout) as DashboardWidget[] : defaultWidgets;
 
   return (
     <div className="space-y-4">

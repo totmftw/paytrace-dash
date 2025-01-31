@@ -33,7 +33,7 @@ export function InvoiceTable() {
         .lte('invDate', `${selectedYear.split('-')[1]}-03-31`);
 
       if (error) throw error;
-      return data as Invoice[];
+      return data as unknown as Invoice[];
     },
     retry: 3,
     retryDelay: 1000,
@@ -57,22 +57,22 @@ export function InvoiceTable() {
     },
     { 
       accessorKey: 'customerMaster.custBusinessname',
-      header: 'Customer'
+      header: 'Customer',
     },
     { 
       accessorKey: 'invDate',
       header: 'Invoice Date',
-      cell: ({ getValue }) => new Date(getValue() as string).toLocaleDateString()
+      cell: ({ getValue }) => new Date(getValue() as string).toLocaleDateString(),
     },
     { 
       accessorKey: 'invDuedate',
       header: 'Due Date',
-      cell: ({ getValue }) => new Date(getValue() as string).toLocaleDateString()
+      cell: ({ getValue }) => new Date(getValue() as string).toLocaleDateString(),
     },
     { 
       accessorKey: 'invTotal',
       header: 'Total Amount',
-      cell: ({ getValue }) => `₹${(getValue() as number).toLocaleString()}`
+      cell: ({ getValue }) => `₹${(getValue() as number).toLocaleString()}`,
     },
   ];
 
@@ -90,7 +90,7 @@ export function InvoiceTable() {
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => (
                 <TableHead key={header.id}>
-                  {header.column.columnDef.header as string}
+                  {header.column.columnDef.header}
                 </TableHead>
               ))}
             </TableRow>

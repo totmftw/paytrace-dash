@@ -5,16 +5,15 @@ export interface LayoutData {
   layout: Layout[];
 }
 
-export interface DashboardProps {
-  year?: string;
-}
-
 export interface MetricsCardProps {
   title: string;
   value: number | string;
   icon?: ReactNode;
   isMonetary?: boolean;
-  onClick?: () => void;
+}
+
+export interface DashboardProps {
+  year?: string;
 }
 
 export interface DashboardWidget extends Layout {

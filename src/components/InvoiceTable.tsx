@@ -23,14 +23,14 @@ export function InvoiceTable({ data, isLoading, visibleColumns }: InvoiceTablePr
     }
     
     if (column === 'customerMaster') {
-      return (invoice.customerMaster as any)?.custBusinessname || '';
+      return invoice.customerMaster?.custBusinessname || '';
     }
     
     if (Array.isArray(value)) {
       return value.length.toString();
     }
     
-    if (typeof value === 'object') {
+    if (typeof value === 'object' && value !== null) {
       return JSON.stringify(value);
     }
     

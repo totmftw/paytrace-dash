@@ -15,9 +15,11 @@ export const useInvoiceData = (year: string) => {
         .select(`
           *,
           customerMaster!invoiceTable_invCustid_fkey (
-            custBusinessname
+            custBusinessname,
+            custWhatsapp,
+            custCreditperiod
           ),
-          paymentTransactions (
+          paymentTransactions!paymentTransactions_invId_fkey (
             paymentId,
             amount,
             paymentDate

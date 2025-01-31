@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { Json } from '@/integrations/supabase/types';
 
 interface ColumnConfigContextType {
   visibleColumns: string[];

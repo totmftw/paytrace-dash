@@ -42,35 +42,12 @@ export interface Invoice {
   paymentTransactions: PaymentTransaction[];
 }
 
-export interface PaymentData {
-  invId: number;
-  amount: number;
-  paymentDate: string;
-  paymentMode: string;
-  transactionId: string;
-  chequeNumber?: string;
-  bankName?: string;
-  remarks?: string;
+export interface UserPreferences {
+  columns?: string[];
 }
-
-export interface LedgerEntry {
-  transaction_date: string;
-  description: string;
-  invoice_number?: string;
-  debit_amount: number;
-  credit_amount: number;
-  balance: number;
-  transaction_type: string;
-}
-
-export type TableName = 'invoiceTable' | 'customerMaster' | 'paymentTransactions';
 
 export interface ColumnConfigContextType {
   visibleColumns: string[];
   setVisibleColumns: (columns: string[]) => void;
   setColumnOrder: (order: string[]) => Promise<void>;
-}
-
-export interface UserPreferences {
-  columns?: string[];
 }

@@ -1,6 +1,14 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/contexts/AuthContext";
-import { useColumnConfig } from "@/contexts/columnConfigContext";
+import { useColumnConfig } from "@/contexts/ColumnConfigContext";
+
+const defaultColumns = {
+  invDate: "Invoice Date",
+  invNumber: "Invoice Number",
+  invTotal: "Total Amount",
+  invPaymentStatus: "Payment Status",
+  // Add more columns as needed
+};
 
 export function ColumnConfigPanel() {
   const { user } = useAuth();
@@ -36,11 +44,3 @@ export function ColumnConfigPanel() {
     </details>
   );
 }
-
-const defaultColumns = {
-  invDate: "Invoice Date",
-  invNumber: "Invoice Number",
-  invTotal: "Total Amount",
-  invPaymentStatus: "Payment Status",
-  // Add more columns as needed
-};

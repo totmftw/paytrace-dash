@@ -1,8 +1,10 @@
-import { ReactNode } from 'react';
 import { Layout } from 'react-grid-layout';
+import { ReactNode } from 'react';
+import { LucideIcon } from 'lucide-react';
 
-export interface LayoutData {
-  layout: Layout[];
+export interface DashboardWidget extends Layout {
+  id: string;
+  content: ReactNode;
 }
 
 export interface MetricsCardProps {
@@ -10,15 +12,11 @@ export interface MetricsCardProps {
   value: number | string;
   icon?: ReactNode;
   isMonetary?: boolean;
+  onClick?: () => void;
 }
 
 export interface DashboardProps {
   year?: string;
-}
-
-export interface DashboardWidget extends Layout {
-  id: string;
-  content: ReactNode;
 }
 
 export interface PaymentTransaction {
@@ -58,6 +56,10 @@ export interface MetricsSummary {
   pendingPayments: number;
   outstandingPayments: number;
   totalInvoices: number;
+}
+
+export interface LayoutData {
+  layout: Layout[];
 }
 
 export interface LayoutItem {

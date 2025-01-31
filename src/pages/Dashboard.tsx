@@ -1,10 +1,8 @@
 import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
-import { useFinancialYear } from "@/contexts/FinancialYearContext";
 import { PaymentMetrics } from "@/components/dashboard/PaymentMetrics";
 import { SalesOverview } from "@/components/dashboard/SalesOverview";
 import { CustomerStats } from "@/components/dashboard/CustomerStats";
@@ -14,89 +12,104 @@ import { DashboardGridLayout } from "@/components/DashboardGridLayout";
 import { Button } from "@/components/ui/button";
 import { useLayouts } from "@/hooks/useLayouts";
 
+const defaultLayout = [
+  {
+    id: "payment-metrics",
+    x: 0,
+    y: 0,
+    w: 12,
+    h: 4,
+    content: <PaymentMetrics />
+  },
+  {
+    id: "sales-overview",
+    x: 0,
+    y: 4,
+    w: 12,
+    h: 4,
+    content: <SalesOverview />
+  },
+  {
+    id: "customer-stats",
+    x: 0,
+    y: 8,
+    w: 6,
+    h: 4,
+    content: <CustomerStats />
+  },
+  {
+    id: "payment-tracking",
+    x: 6,
+    y: 8,
+    w: 6,
+    h: 4,
+    content: <PaymentTracking />
+  }
+];
+
 export default function Dashboard() {
   const { toast } = useToast();
   const { user } = useAuth();
-  const { selectedYear } = useFinancialYear();
-  const isITAdmin = user?.role === "it_admin";
   const { saveLayout, resetLayout, undo, redo } = useLayouts();
+  const isITAdmin = user?.role === "it_admin";
 
-  const widgets = [
-    {
-      id: "payment-metrics",
-      x: 0,
-      y: 0,
-      w: 6,
-      h: 4,
-      content: <PaymentMetrics />,
-    },
-    {
-      id: "sales-overview",
-      x: 6,
-      y: 0,
-      w: 6,
-      h: 4,
-      content: <SalesOverview />,
-    },
-    {
-      id: "customer-stats",
-      x: 0,
-      y: 4,
-      w: 4,
-      h: 4,
-      content: <CustomerStats />,
-    },
-    {
-      id: "payment-tracking",
-      x: 4,
-      y: 4,
-      w: 4,
-      h: 4,
-      content: <PaymentTracking />,
-    },
-    {
-      id: "recent-sales",
-      x: 8,
-      y: 4,
-      w: 4,
-      h: 4,
-      content: <RecentSales />,
-    },
-    {
-      id: "sales-vs-payments",
-      x: 0,
-      y: 8,
-      w: 12,
-      h: 5,
-      content: <SalesVsPaymentsChart />,
-    },
-  ];
+  const { data: layoutData } = useQuery({
+    queryKey: ["dashboard-layout", user?.id],
+    queryFn: async () => {
+      if (!user) throw new Error("No user");
+      
+      const { data, error } = await supabase
+        .from("dashboard_layouts")
+        .select("*")
+        .eq("created_by", user.id)
+        .eq("is_active", true)
+        .maybeSingle();
 
-  useEffect(() => {
-    const saveLayout = async () => {
-      if (!user) return;
+      if (error) {
+        console.error("Error fetching layout:", error);
+        return null;
+      }
 
+      return data;
+    },
+    enabled: !!user
+  });
+
+  const updateLayoutMutation = useMutation({
+    mutationFn: async (newLayout: any) => {
+      if (!user) throw new Error("No user");
+      
       const { error } = await supabase
         .from("dashboard_layouts")
         .upsert({
           created_by: user.id,
-          layout: widgets.map(widget => ({
-            i: widget.id,
-            x: widget.x,
-            y: widget.y,
-            w: widget.w,
-            h: widget.h
-          })),
-          is_active: true,
+          layout: newLayout,
+          is_active: true
         });
 
       if (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to save layout"
+        });
         throw error;
       }
-    };
 
-    saveLayout();
-  }, [widgets, user]);
+      toast({
+        title: "Success",
+        description: "Layout saved successfully"
+      });
+    }
+  });
+
+  const handleLayoutChange = async (newLayout: any) => {
+    try {
+      await updateLayoutMutation.mutateAsync(newLayout);
+    } catch (error) {
+      console.error("Error updating layout:", error);
+    }
+  };
 
   return (
     <div className="space-y-8 p-8">
@@ -106,7 +119,9 @@ export default function Dashboard() {
           <FinancialYearSelector />
           {isITAdmin && (
             <div className="flex gap-2">
-              <Button onClick={() => saveLayout(widgets)}>Save Layout</Button>
+              <Button onClick={() => saveLayout(layoutData?.layout || defaultLayout)}>
+                Save Layout
+              </Button>
               <Button onClick={resetLayout}>Reset Layout</Button>
               <Button onClick={undo}>Undo</Button>
               <Button onClick={redo}>Redo</Button>
@@ -115,69 +130,9 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <DashboardGridLayout 
-        widgets={widgets}
-      />
-    </div>
-  );
-}
-
-  const [isPopupOpen, setIsPopupOpen] = useState<boolean>(false);
-  const [popupData, setPopupData] = useState<any[]>([]);
-  const [popupTitle, setPopupTitle] = useState<string>("");
-
-  const handleDetail = async (type: string, data?: any) => {
-    setIsPopupOpen(true);
-    if (data) setPopupData(data);
-    setPopupTitle(type);
-  };
-
-  const handleApplyLayout = async (newLayout: any) => {
-    try {
-      const { error } = await supabase
-        .from("dashboard_layouts")
-        .upsert({
-          layout: newLayout,
-          created_by: user?.id,
-          is_active: true,
-        });
-
-      if (error) throw error;
-      toast({
-        title: "Success",
-        description: "Dashboard layout has been updated.",
-      });
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update dashboard layout.",
-      });
-    }
-  };
-
-  return (
-    <div className="space-y-8 p-8">
-      {isITAdmin && (
-        <div className="flex items-center justify-between mb-4">
-          <Button variant={isEditing ? "destructive" : "outline"} onClick={() => setIsEditing(!isEditing)}>
-            {isEditing ? "Cancel" : "Configure Layout"}
-          </Button>
-          {isEditing && (
-            <Button onClick={() => handleApplyLayout(gridLayout)}>
-              Apply Changes
-            </Button>
-          )}
-        </div>
-      )}
       <DashboardGridLayout
-        widgets={gridLayout || defaultWidgets}
-        onApply={handleApplyLayout}
-      />
-      <DetailedDataTable
-        title={popupTitle}
-        data={popupData}
-        onClose={() => setIsPopupOpen(false)}
+        widgets={layoutData?.layout || defaultLayout}
+        onApply={handleLayoutChange}
       />
     </div>
   );

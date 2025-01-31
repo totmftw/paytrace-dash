@@ -1,52 +1,43 @@
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { getCurrentFinancialYear } from "@/utils/financialYearUtils";
 
-export const FinancialYearSelector = () => {
-  const { selectedYear, setSelectedYear, availableYears, loading } = useFinancialYear();
-  const [dirtyAvailableYears, setDirtyAvailableYears] = useState([]);
+export function FinancialYearSelector() {
+  const { selectedYear, setSelectedYear } = useFinancialYear();
 
-  useEffect(() => {
-    if (!loading && availableYears.length > 0) {
-      setDirtyAvailableYears(availableYears);
+  const { data: fyData } = useQuery({
+    queryKey: ["financial-years"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("financial_year_ranges")
+        .select("*")
+        .order("financial_year", { ascending: false });
+
+      if (error) throw error;
+      return data || [];
     }
-  }, [availableYears, loading]);
+  });
 
   return (
-    <div className="flex items-center gap-2 bg-gray-200 px-4 py-2 rounded-lg">
-      <span className="text-sm font-semibold">Financial Year:</span>
-      <select
-        value={selectedYear}
-        onChange={(e) => setSelectedYear(e.target.value)}
-        className="bg-gray-200 border-none focus:ring-0 text-sm"
+    <div className="flex items-center gap-2">
+      <span className="text-sm font-medium">Financial Year:</span>
+      <Select
+        value={selectedYear || getCurrentFinancialYear()}
+        onValueChange={setSelectedYear}
       >
-        {dirtyAvailableYears.map((year) => (
-          <option key={year} value={year}>
-            {year}
-          </option>
-        ))}
-      </select>
+        <SelectTrigger className="w-[180px]">
+          <SelectValue placeholder="Select year" />
+        </SelectTrigger>
+        <SelectContent>
+          {fyData?.map((fy) => (
+            <SelectItem key={fy.financial_year} value={fy.financial_year}>
+              {fy.financial_year}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
     </div>
   );
-};
-  useEffect(() => {
-    if (fyData && fyData.length > 0) {
-      const years = fyData.map((year) => year.financial_year || "");
-      setAvailableYears(years);
-      
-      // Set default fiscal year
-      const currentDate = new Date();
-      const currentYear = currentDate.getFullYear();
-      const currentMonth = currentDate.getMonth() + 1; // 1-12
-      const fiscalYear = currentMonth > fiscalYearStartMonth
-        ? currentYear.toString()
-        : (currentYear - 1).toString();
-      
-      if (!selectedYear) {
-        setSelectedYear(fiscalYear);
-      }
-    }
-  }, [fyData, setSelectedYear, selectedYear]);
-
-  if (isLoading) return null;
-
- 
+}

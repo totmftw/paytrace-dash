@@ -1,75 +1,124 @@
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { formatCurrency } from "@/lib/utils";
-import { DetailedDataTable } from "@/components/DetailedDataTable";
 import { useState } from "react";
+import { DetailedDataTable } from "@/components/DetailedDataTable";
+import { MetricsCard } from "./MetricsCard";
+import { getFinancialYearDates } from "@/utils/financialYearUtils";
 
-interface Invoice {
-  invId: number;
-  invNumber: string;
-  invTotal: number;
-  invDuedate: string;
-  invDate: string;
-  customerMaster: {
-    custBusinessname: string;
-  };
-  paymentTransactions: Array<{
-    amount: number;
-  }>;
-}
-
-interface PaymentMetricsProps {
-  onDetail: (type: string, data?: any[]) => void;
-}
-
-export function PaymentMetrics({ onDetail }: PaymentMetricsProps) {
+export function PaymentMetrics() {
   const { selectedYear } = useFinancialYear();
-  const [selectedData, setSelectedData] = useState<Invoice[]>([]);
+  const [selectedData, setSelectedData] = useState<any[]>([]);
+  const [dialogTitle, setDialogTitle] = useState("");
 
   const { data: metrics } = useQuery({
     queryKey: ["payment-metrics", selectedYear],
     queryFn: async () => {
-      // Fetch and calculate metrics
-    },
+      const { start, end } = getFinancialYearDates(selectedYear);
+      
+      const { data: invoices, error } = await supabase
+        .from("invoiceTable")
+        .select(`
+          *,
+          customerMaster!invoiceTable_invCustid_fkey (
+            custBusinessname,
+            custCreditperiod,
+            custWhatsapp
+          ),
+          paymentTransactions (
+            amount,
+            paymentId
+          )
+        `)
+        .gte("invDate", start.toISOString().split('T')[0])
+        .lte("invDate", end.toISOString().split('T')[0]);
+
+      if (error) {
+        console.error("Error fetching invoices:", error);
+        throw error;
+      }
+
+      const today = new Date();
+      const totalSales = invoices?.reduce((sum, inv) => sum + inv.invTotal, 0) || 0;
+      const totalOrders = invoices?.length || 0;
+
+      // Calculate pending and outstanding payments
+      const pendingPayments = invoices?.filter(inv => new Date(inv.invDuedate) > today) || [];
+      const outstandingPayments = invoices?.filter(inv => new Date(inv.invDuedate) < today) || [];
+
+      const totalPendingAmount = pendingPayments.reduce((sum, inv) => 
+        sum + (inv.invTotal - inv.paymentTransactions.reduce((psum, p) => psum + p.amount, 0)), 0);
+
+      const totalOutstandingAmount = outstandingPayments.reduce((sum, inv) => 
+        sum + (inv.invTotal - inv.paymentTransactions.reduce((psum, p) => psum + p.amount, 0)), 0);
+
+      return {
+        pendingPayments,
+        outstandingPayments,
+        totalPendingAmount,
+        totalOutstandingAmount,
+        totalSales,
+        totalOrders,
+        allInvoices: invoices || []
+      };
+    }
   });
 
   const handleMetricClick = (type: string) => {
     switch (type) {
       case "pending":
         setSelectedData(metrics?.pendingPayments || []);
-        onDetail("Pending Payments", metrics?.pendingPayments || []);
+        setDialogTitle("Pending Payments");
         break;
       case "outstanding":
-        onDetail("Outstanding Payments", metrics?.outstandingPayments || []);
+        setSelectedData(metrics?.outstandingPayments || []);
+        setDialogTitle("Outstanding Payments");
         break;
       case "sales":
-        onDetail("Total Sales", metrics?.allInvoices || []);
+        setSelectedData(metrics?.allInvoices || []);
+        setDialogTitle("Total Sales");
         break;
       case "orders":
-        onDetail("Total Orders", metrics?.allInvoices || []);
+        setSelectedData(metrics?.allInvoices || []);
+        setDialogTitle("Total Orders");
         break;
     }
   };
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-      {/* Metric Cards */}
-      <Card
-        className="cursor-pointer hover:shadow-lg transition-shadow"
-        onClick={() => handleMetricClick("pending")}
-      >
-        {/* Card Content */}
-        <CardHeader>
-          <CardTitle>Pending Payments</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">
-            {formatCurrency(metrics?.totalPendingAmount || 0)}
-          </div>
-        </CardContent>
-      </Card>
-      {/* Repeat for other metrics */}
-    </div>
+    <>
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <MetricsCard
+          title="Pending Payments"
+          value={metrics?.totalPendingAmount || 0}
+          onClick={() => handleMetricClick("pending")}
+        />
+        <MetricsCard
+          title="Outstanding Payments"
+          value={metrics?.totalOutstandingAmount || 0}
+          onClick={() => handleMetricClick("outstanding")}
+        />
+        <MetricsCard
+          title="Total Sales"
+          value={metrics?.totalSales || 0}
+          onClick={() => handleMetricClick("sales")}
+        />
+        <MetricsCard
+          title="Total Orders"
+          value={metrics?.totalOrders || 0}
+          isMonetary={false}
+          onClick={() => handleMetricClick("orders")}
+        />
+      </div>
+
+      <DetailedDataTable
+        title={dialogTitle}
+        data={selectedData}
+        onClose={() => {
+          setSelectedData([]);
+          setDialogTitle("");
+        }}
+      />
+    </>
   );
 }

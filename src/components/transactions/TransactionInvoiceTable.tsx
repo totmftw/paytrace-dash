@@ -1,12 +1,9 @@
-import {
-  ColumnDef,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from "@tanstack/react-table";
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { PDFExport } from "@/components/buttons/PDFExport";
+import { useColumnConfig } from "@/contexts/columnConfigContext";
+import { Invoice } from "@/types/types";
+import { formatCurrency } from "@/lib/utils";
 import {
   Table,
   TableBody,
@@ -16,13 +13,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import React from "react";
-import { Button } from "@/components/ui/button";
-import PDFExport from "@/components/buttons/PDFExport";
-import { useColumnConfig } from "@/contexts/columnConfigContext";
-import { Invoice } from "@/types/types";
-import { formatCurrency } from "@/lib/utils";
-import { Skeleton } from "@/components/ui/skeleton";
 
 interface TransactionInvoiceTableProps {
   data: Invoice[];
@@ -37,9 +27,16 @@ export function TransactionInvoiceTable({
   onInvoiceClick,
   isLoading = false,
 }: TransactionInvoiceTableProps) {
-  const { visibleColumns, setVisibleColumns } = useColumnConfig();
-  
-  const columns: ColumnDef<Invoice>[] = [
+  const { visibleColumns } = useColumnConfig();
+
+  const pdfData = data.map(invoice => ({
+    date: invoice.invDate || '',
+    description: `Invoice #${invoice.invNumber}`,
+    amount: invoice.invTotal,
+    balance: invoice.invBalanceAmount || 0
+  }));
+
+  const columns = [
     {
       id: "invNumber",
       header: "Invoice Number",
@@ -130,13 +127,6 @@ export function TransactionInvoiceTable({
       </div>
     );
   }
-
-  const pdfData = data.map(invoice => ({
-    date: invoice.invDate || '',
-    description: `Invoice #${invoice.invNumber}`,
-    amount: invoice.invTotal,
-    balance: invoice.invBalanceAmount || 0
-  }));
 
   return (
     <div className="space-y-4">

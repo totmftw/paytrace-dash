@@ -3,15 +3,18 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
-import { jsPDF } from "jspdf";
-import "jspdf-autotable";
-import { FinancialYearSelector } from "@/components/FinancialYearSelector";
-import { useAuth } from "@/contexts/AuthContext";
+import { PDFExport } from "@/components/buttons/PDFExport";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { formatCurrency } from "@/lib/utils";
 
 export default function LedgerTab({ year }: { year: string }) {
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
-  const { user } = useAuth();
 
   const { data: customers, isLoading: isLoadingCustomers } = useQuery({
     queryKey: ["customers"],
@@ -56,7 +59,7 @@ export default function LedgerTab({ year }: { year: string }) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <Select 
-          value={selectedCustomerId || ''}
+          value={selectedCustomerId?.toString() || ''}
           onValueChange={(value) => setSelectedCustomerId(parseInt(value))}
         >
           <SelectTrigger>

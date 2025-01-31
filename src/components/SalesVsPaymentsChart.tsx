@@ -1,35 +1,37 @@
 import { Card } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { useInvoiceData } from '@/hooks/useInvoiceApi';
-import { getFinancialYearDates } from '@/utils/financialYear';
-import { Invoice } from '@/types';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 interface SalesVsPaymentsChartProps {
   selectedYear: string;
 }
 
 export function SalesVsPaymentsChart({ selectedYear }: SalesVsPaymentsChartProps) {
-  const { start, end } = getFinancialYearDates(selectedYear);
-  const { data: invoices } = useInvoiceData({ startDate: start.toISOString(), endDate: end.toISOString() });
+  const [startDate, endDate] = selectedYear.split('-');
+  const fyStartDate = `${startDate}-04-01`;
+  const fyEndDate = `${endDate}-03-31`;
 
-  // Chart logic using invoices data
-
-export function SalesVsPaymentsChart({ selectedYear }: { selectedYear: string }) {
-  const [start, end] = selectedYear.split('-');
-  const startDate = `${start}-04-01`;
-  const endDate = `${end}-03-31`;
-
-  const { data } = useQuery({
-    queryKey: ['sales-vs-payments', selectedYear],
+  const { data: chartData } = useQuery({
+    queryKey: ["sales-vs-payments", selectedYear],
     queryFn: async () => {
-      const { data: invoices } = await supabase
-        .from('invoiceTable')
-        .select('invTotal, invDate')
-        .gte('invDate', startDate)
-        .lte('invDate', endDate);
+      const { data: invoices, error: invError } = await supabase
+        .from("invoiceTable")
+        .select(`
+          invTotal,
+          invDate,
+          paymentTransactions (
+            amount,
+            paymentDate
+          )
+        `)
+        .gte("invDate", fyStartDate)
+        .lte("invDate", fyEndDate);
+
+      if (invError) throw invError;
 
       const monthlyData = Array.from({ length: 12 }, (_, i) => ({
-        month: new Date(0, i).toLocaleString("default", { month: "short" }),
+        month: new Date(2000, i).toLocaleString('default', { month: 'short' }),
         sales: 0,
         payments: 0,
       }));
@@ -37,46 +39,24 @@ export function SalesVsPaymentsChart({ selectedYear }: { selectedYear: string })
       invoices?.forEach((invoice) => {
         const month = new Date(invoice.invDate).getMonth();
         monthlyData[month].sales += invoice.invTotal;
+
+        const payments = invoice.paymentTransactions?.reduce(
+          (sum, payment) => sum + payment.amount,
+          0
+        ) || 0;
+        monthlyData[month].payments += payments;
       });
 
       return monthlyData;
     },
   });
-}
-  return (
-    <Card>
-      <h3 className="text-lg font-semibold mb-4 px-4">Sales vs Payments</h3>
-      <div className="h-[300px]">
-        <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="month" />
-            <YAxis />
-            <Tooltip />
-            <Bar dataKey="sales" fill="#22c55e" name="Sales" />
-            <Bar dataKey="payments" fill="#3b82f6" name="Payments Received" />
-          </BarChart>
-        </ResponsiveContainer>
-      </div>
-    </Card>
-  );
-}
-export function SalesVsPaymentsChart() {
-  const data = [
-    { month: 'Jan', sales: 4000, payments: 3500 },
-    { month: 'Feb', sales: 3000, payments: 2500 },
-    { month: 'Mar', sales: 2000, payments: 1500 },
-    { month: 'Apr', sales: 2780, payments: 2000 },
-    { month: 'May', sales: 1890, payments: 1600 },
-    { month: 'Jun', sales: 2390, payments: 2000 },
-  ];
 
   return (
     <Card>
       <h3 className="text-lg font-semibold mb-4 px-4">Sales vs Payments</h3>
       <div className="h-[300px]">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data}>
+          <BarChart data={chartData}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="month" />
             <YAxis />

@@ -1,6 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { Database } from "@/integrations/supabase/types";
-// src/utils/financialYear.ts
+
 export const generateFinancialYearOptions = () => {
   const currentYear = new Date().getFullYear();
   return Array.from({ length: 5 }, (_, i) => ({
@@ -11,18 +10,9 @@ export const generateFinancialYearOptions = () => {
 
 export const getFinancialYearDates = (year: string) => {
   const start = new Date(`${year}-04-01`);
-  const end = new Date(`${Number(year) + 1}-03-31`);
-  return { start, end };
-};
-
-export const getFinancialYearDates = (year: string) => {
-  const start = new Date(`${year}-04-01`);
   const end = new Date(`${parseInt(year) + 1}-03-31`);
   return { start, end };
 };
-
-
-type Invoice = Database['public']['Tables']['invoiceTable']['Row'];
 
 export const getCurrentFinancialYear = () => {
   const today = new Date();
@@ -42,5 +32,5 @@ export const getInvoicesForFY = async (fy: string) => {
     .eq("fy", fy);
 
   if (error) throw error;
-  return data as Invoice[];
+  return data;
 };

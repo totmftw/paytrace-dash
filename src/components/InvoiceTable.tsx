@@ -29,19 +29,14 @@ export function InvoiceTable({ selectedYear }: InvoiceTableProps) {
           paymentTransactions!paymentTransactions_invId_fkey (
             paymentId,
             amount,
-            paymentDate,
-            transactionId,
-            paymentMode,
-            chequeNumber,
-            bankName,
-            remarks
+            paymentDate
           )
         `)
         .gte('invDate', `${selectedYear.split('-')[0]}-04-01`)
         .lte('invDate', `${selectedYear.split('-')[1]}-03-31`);
 
       if (error) throw error;
-      return data as unknown as Invoice[];
+      return data as Invoice[];
     },
   });
 

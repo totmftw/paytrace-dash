@@ -1,121 +1,89 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useFinancialYear } from "@/contexts/FinancialYearContext";
-import { CustomerSelector } from "./CustomerSelector";
 import { DataTable } from "@/components/ui/data-table";
 import { Button } from "@/components/ui/button";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
+import { FinancialYearSelector } from "@/components/FinancialYearSelector";
+import { useAuth } from "@/contexts/AuthContext";
 import { formatCurrency } from "@/lib/utils";
 
-interface CustomerData {
-  custBusinessname: string;
-  custAddress: string;
-  custGST: string;
-  custPhone: number;  // Changed from string to number to match the database type
-}
-
-interface DatabaseLedgerEntry {
-  transaction_date: string;
-  description: string;
-  invoice_number: string;
-  debit: number;
-  credit: number;
-  balance: number;
-}
-
-export default function LedgerTab() {
-  const { selectedYear, getFYDates } = useFinancialYear();
+export default function LedgerTab({ year }: { year: string }) {
   const [selectedCustomerId, setSelectedCustomerId] = useState<number | null>(null);
-  const { start, end } = getFYDates();
+  const { user } = useAuth();
 
-  const { data: customerData } = useQuery({
-    queryKey: ['customer', selectedCustomerId],
+  const { data: customers, isLoading: isLoadingCustomers } = useQuery({
+    queryKey: ["customers"],
     queryFn: async () => {
-      if (!selectedCustomerId) return null;
-      const { data, error } = await supabase
-        .from('customerMaster')
-        .select('custBusinessname, custAddress, custGST, custPhone')
-        .eq('id', selectedCustomerId)
-        .single();
-      
+      const { data, error } = await supabase.from("customerMaster").select("id, custBusinessname");
       if (error) throw error;
-      return data as CustomerData;
-    },
-    enabled: !!selectedCustomerId
+      return data || [];
+    }
   });
 
-  const { data: ledgerData } = useQuery({
-    queryKey: ['ledger', selectedCustomerId, selectedYear],
+  const { data: ledgerData, isLoading: isLoadingLedger } = useQuery({
+    queryKey: ["ledger", selectedCustomerId, year],
     queryFn: async () => {
       if (!selectedCustomerId) return [];
-      const { data, error } = await supabase.rpc('get_customer_ledger', {
+      const { data, error } = await supabase.rpc("get_customer_ledger", {
         p_customer_id: selectedCustomerId,
-        p_start_date: start.toISOString(),
-        p_end_date: end.toISOString()
+        p_start_date: `${year}-04-01`,
+        p_end_date: `${parseInt(year) + 1}-03-31`
       });
       if (error) throw error;
-      return data as DatabaseLedgerEntry[];
+      return data || [];
     },
     enabled: !!selectedCustomerId
   });
 
   const handlePDFDownload = () => {
-    if (!ledgerData || !customerData) return;
     const doc = new jsPDF();
     doc.autoTable({
-      head: [['Date', 'Description', 'Debit', 'Credit', 'Balance']],
-      body: ledgerData.map(entry => [
-        new Date(entry.transaction_date).toLocaleDateString(),
-        entry.description,
-        entry.debit ? formatCurrency(entry.debit) : '-',
-        entry.credit ? formatCurrency(entry.credit) : '-',
+      head: [['Date', 'Reference', 'Type', 'Amount', 'Balance']],
+      body: ledgerData.map((entry: any) => [
+        new Date(entry.date).toLocaleDateString(),
+        entry.type === 'credit' ? entry.transactionId : entry.invoiceNumber,
+        entry.type,
+        formatCurrency(entry.amount),
         formatCurrency(entry.balance)
       ])
     });
-    doc.save(`${customerData.custBusinessname}-ledger.pdf`);
+    doc.save('ledger.pdf');
   };
-
-  const columns = [
-    {
-      key: 'transaction_date',
-      header: 'Date',
-      cell: (item: DatabaseLedgerEntry) => new Date(item.transaction_date).toLocaleDateString()
-    },
-    {
-      key: 'description',
-      header: 'Description'
-    },
-    {
-      key: 'debit',
-      header: 'Debit',
-      cell: (item: DatabaseLedgerEntry) => item.debit ? formatCurrency(item.debit) : '-'
-    },
-    {
-      key: 'credit',
-      header: 'Credit',
-      cell: (item: DatabaseLedgerEntry) => item.credit ? formatCurrency(item.credit) : '-'
-    },
-    {
-      key: 'balance',
-      header: 'Balance',
-      cell: (item: DatabaseLedgerEntry) => formatCurrency(item.balance)
-    }
-  ];
 
   return (
     <div className="space-y-4">
-      <CustomerSelector
-        selectedCustomerId={selectedCustomerId}
-        onSelect={setSelectedCustomerId}
-      />
-      {ledgerData && ledgerData.length > 0 && (
-        <Button onClick={handlePDFDownload}>Download PDF</Button>
-      )}
+      <div className="flex items-center justify-between">
+        <Select 
+          value={selectedCustomerId || ''}
+          onValueChange={(value) => setSelectedCustomerId(parseInt(value))}
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select Customer" />
+          </SelectTrigger>
+          <SelectContent>
+            {customers?.map((customer) => (
+              <SelectItem key={customer.id} value={customer.id.toString()}>
+                {customer.custBusinessname}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button onClick={handlePDFDownload} disabled={!selectedCustomerId}>
+          Export PDF
+        </Button>
+      </div>
       <DataTable
-        columns={columns}
+        columns={[
+          { key: "date", header: "Date", cell: (item: any) => new Date(item.date).toLocaleDateString() },
+          { key: "reference", header: "Reference" },
+          { key: "type", header: "Type" },
+          { key: "amount", header: "Amount", cell: (item: any) => formatCurrency(item.amount) },
+          { key: "balance", header: "Balance", cell: (item: any) => formatCurrency(item.balance) },
+        ]}
         data={ledgerData || []}
+        isLoading={isLoadingLedger || isLoadingCustomers}
       />
     </div>
   );

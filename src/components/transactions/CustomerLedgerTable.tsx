@@ -7,7 +7,24 @@ import { DataTable } from "@/components/ui/data-table";
 import { columns, LedgerEntry } from "./table-columns";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 import { FinancialYearSelector } from "@/components/FinancialYearSelector";
+// src/components/tables/CustomerLedgerTable.tsx
+import { DataTable } from "@/components/ui/data-table";
+import { useCustomerLedger } from "@/hooks/useCustomerLedger";
+import { useFinancialYear } from "@/contexts/FinancialYearContext";
+import { PDFExport } from "@/components/buttons/PDFExport";
 
+export const CustomerLedgerTable = () => {
+  const { selectedYear } = useFinancialYear();
+  const { ledgerData, isLoading, customers } = useCustomerLedger(selectedYear);
+  const columns = getLedgerColumns(customers);
+
+  return (
+    <div className="space-y-4 w-full">
+      <PDFExport data={ledgerData} />
+      <DataTable columns={columns} data={ledgerData} isLoading={isLoading} />
+    </div>
+  );
+};
 interface CustomerLedgerTableProps {
   onCustomerClick?: (customer: any) => void;
 }

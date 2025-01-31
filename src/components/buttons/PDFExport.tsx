@@ -16,7 +16,35 @@ type PDFExportProps = {
     phone: string;
   };
 };
+// src/components/buttons/PDFExport.ts
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import { formatCurrency } from "@/lib/utils";
 
+export const PDFExport = ({ data }: { data: any[] }) => {
+  const handleExport = () => {
+    const doc = new jsPDF();
+    doc.autoTable({
+      styles: { overflow: "linebreak" },
+      columnStyles: { amount: { halign: "right" } },
+      theme: "striped",
+      body: data.map(row => ({
+        date: new Date(row.date).toLocaleDateString(),
+        description: row.description,
+        reference: row.type === "credit" ? row.transactionId : row.invoiceNumber,
+        amount: formatCurrency(row.amount),
+        balance: formatCurrency(row.balance),
+      })),
+    });
+    doc.save("ledger.pdf");
+  };
+
+  return (
+    <Button variant="outline" onClick={handleExport}>
+      Export Ledger PDF
+    </Button>
+  );
+};
 export default function PDFExport({ data, customer }: PDFExportProps) {
   const handleExport = () => {
     const doc = new jsPDF();

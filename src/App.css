@@ -5,6 +5,38 @@
   display: flex;
   flex-direction: column;
 }
+
+import { Button } from "@/components/ui/button";
+
+<Button variant="default">Click Me</Button>
+<div className="border rounded-md">
+  {/* Custom table implementation */}
+</div>
+import { DataTable } from "@/components/ui/data-table";
+
+export default function TransactionsPage() {
+  const { data: invoices } = useInvoicesQuery();
+
+  return (
+    <DataTable
+      columns={[
+        {
+          accessorKey: "invNumber",
+          header: "Invoice #",
+        },
+        {
+          accessorKey: "invDate",
+          header: "Date",
+          cell: (info) => new Date(info.getValue()).toLocaleDateString(),
+        },
+        // Add other columns
+      ]}
+      data={invoices}
+    />
+  );
+}
+<div className="flex justify-between items-center px-4 py-2 bg-primary text-primary-foreground">
+  
 /* Sidebar */
 .sidebar {
   background-color: #FFD7B1; /* Light pastel orange */

@@ -1,68 +1,70 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useFinancialYear } from "@/contexts/FinancialYearContext";
 import { DataTable } from "@/components/ui/data-table";
+import AddPaymentButton from "../buttons/AddPaymentButton";
+import DownloadTemplateButton from "../buttons/DownloadTemplateButton";
+import UploadDataButton from "../buttons/UploadDataButton";
+import { useFinancialYear } from "@/contexts/FinancialYearContext";
 
-interface Payment {
-  paymentId: number;
-  invId: number;
-  transactionId: string;
-  paymentMode: string;
-  chequeNumber?: string;
-  bankName?: string;
-  paymentDate: string;
-  amount: number;
-  remarks?: string;
-  createdAt: string;
-  createdBy?: string;
-  updatedAt: string;
-}
-
-export default function PaymentTab() {
-  const { selectedYear, getFYDates } = useFinancialYear();
-  const { start, end } = getFYDates();
-
-  const { data: payments } = useQuery({
-    queryKey: ['payments', selectedYear],
+export default function PaymentTab({ year }: { year: string }) {
+  const { data: payments, isLoading } = useQuery({
+    queryKey: ["payments", year],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from('paymentTransactions')
+        .from("paymentTransactions")
         .select('*')
-        .gte('paymentDate', start.toISOString())
-        .lte('paymentDate', end.toISOString());
+        .gte("paymentDate", `${year}-04-01`)
+        .lte("paymentDate", `${parseInt(year) + 1}-03-31`);
 
       if (error) throw error;
-      return data as Payment[];
+      return data || [];
     }
   });
 
   const columns = [
     {
-      key: 'paymentDate',
-      header: 'Date',
-      cell: (item: Payment) => new Date(item.paymentDate).toLocaleDateString()
+      key: "paymentDate",
+      header: "Date",
+      cell: (item: any) => new Date(item.paymentDate).toLocaleDateString()
     },
     {
-      key: 'transactionId',
-      header: 'Transaction ID'
+      key: "transactionId",
+      header: "Transaction ID"
     },
     {
-      key: 'paymentMode',
-      header: 'Payment Mode'
+      key: "paymentMode",
+      header: "Payment Mode"
     },
     {
-      key: 'amount',
-      header: 'Amount',
-      cell: (item: Payment) => item.amount.toFixed(2)
+      key: "amount",
+      header: "Amount",
+      cell: (item: any) => item.amount.toFixed(2)
     }
   ];
 
   return (
     <div className="space-y-4">
+      <div className="flex items-center gap-4">
+        <AddPaymentButton />
+        <DownloadTemplateButton 
+          columns={[
+            { label: "Payment ID", key: "paymentId" },
+            { label: "Invoice ID", key: "invId" },
+            { label: "Transaction ID", key: "transactionId" },
+            { label: "Payment Date", key: "paymentDate" },
+            { label: "Amount", key: "amount" },
+            { label: "Payment Mode", key: "paymentMode" },
+          ]}
+          tableName="paymentTransactions"
+        />
+        <UploadDataButton tableName="paymentTransactions" />
+      </div>
+      
       <DataTable
         columns={columns}
         data={payments || []}
+        isLoading={isLoading}
       />
     </div>
   );

@@ -7,72 +7,55 @@ import DownloadTemplateButton from "../buttons/DownloadTemplateButton";
 import UploadInvoiceButton from "../buttons/UploadInvoiceButton";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
 import { useToast } from "@/components/ui/use-toast";
-import { ColumnConfigProvider } from "@/contexts/columnConfigContext";
 
-export default function InvoiceTab() {
-  const { selectedYear, getFYDates } = useFinancialYear();
+export default function InvoiceTab({ year }: { year: string }) {
   const { toast } = useToast();
-  const { start, end } = getFYDates();
 
   const { data: invoices, isLoading, error } = useQuery({
-    queryKey: ['invoices', selectedYear],
+    queryKey: ["invoices", year],
     queryFn: async () => {
-      try {
-        const { data, error } = await supabase
-          .from('invoiceTable')
-          .select('*')
-          .gte('invDate', start.toISOString())
-          .lte('invDate', end.toISOString());
+      const { data, error } = await supabase
+        .from("invoiceTable")
+        .select('*')
+        .gte("invDate", `${year}-04-01`)
+        .lte("invDate", `${parseInt(year) + 1}-03-31`);
 
-        if (error) {
-          toast({
-            variant: "destructive",
-            title: "Error fetching invoices",
-            description: error.message
-          });
-          throw error;
-        }
-        return data || [];
-      } catch (err) {
-        console.error('Error fetching invoices:', err);
-        toast({
-          variant: "destructive",
-          title: "Error fetching invoices",
-          description: "Please try again later"
-        });
-        return [];
-      }
-    }
+      if (error) throw error;
+      return data || [];
+    },
   });
 
   if (error) {
-    return (
-      <div className="p-4 text-red-500">
-        Failed to load invoices. Please try again later.
-      </div>
-    );
+    toast({
+      variant: "destructive",
+      title: "Error",
+      description: "Failed to load invoices",
+    });
+    return <div>Failed to load invoices</div>;
   }
 
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-4">
-        <AddInvoiceButton tableName="invoiceTable" />
-        <DownloadTemplateButton tableName="invoiceTable" />
+        <AddInvoiceButton />
+        <DownloadTemplateButton 
+          columns={[
+            { label: "Invoice Number", key: "invNumber" },
+            { label: "Customer ID", key: "invCustid" },
+            { label: "Invoice Date", key: "invDate" },
+            { label: "Due Date", key: "invDuedate" },
+            { label: "Total", key: "invTotal" },
+            { label: "Status", key: "invPaymentStatus" },
+          ]}
+          tableName="invoiceTable"
+        />
         <UploadInvoiceButton tableName="invoiceTable" />
       </div>
       
-      <ColumnConfigProvider>
-        <TransactionInvoiceTable 
-          data={invoices || []}
-          onCustomerClick={(customer) => {
-            // Handle customer click
-          }}
-          onInvoiceClick={(invoice) => {
-            // Handle invoice click
-          }}
-          isLoading={isLoading}
-        />
-      </ColumnConfigProvider>
+      <TransactionInvoiceTable 
+        data={invoices || []}
+        isLoading={isLoading}
+      />
     </div>
   );
 }

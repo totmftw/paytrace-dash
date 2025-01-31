@@ -1,6 +1,6 @@
 // src/contexts/AuthContext.tsx
 import { createContext, useContext, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useSessionContext, useSupabaseClient } from '@supabase/auth-helpers-react';
 import { User } from '@supabase/supabase-js';
 
@@ -17,6 +17,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const { session, isLoading: sessionLoading } = useSessionContext();
   const supabase = useSupabaseClient();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState(true);
   const [user, setUser] = useState<User | null>(null);
 
@@ -28,20 +29,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   }, [session, sessionLoading]);
 
   const signIn = async (email: string, password: string) => {
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    if (error) throw error;
+    try {
+      setIsLoading(true);
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      if (error) throw error;
+
+      // Get the intended path from location state or default to '/'
+      const from = (location.state as any)?.from || '/';
+      navigate(from, { replace: true });
+    } catch (error) {
+      console.error('Sign in error:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
+      setIsLoading(true);
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
       navigate('/login', { replace: true });
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error('Sign out error:', error);
       throw error;
+    } finally {
+      setIsLoading(false);
     }
   };
 

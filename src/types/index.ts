@@ -45,3 +45,25 @@ export interface Options {
   endDate: string;
   selectQuery?: string;
 }
+
+export interface PDFExportProps {
+  onExport?: () => void;
+  fileName?: string;
+}
+
+export interface DataTableProps<T> {
+  columns: {
+    accessorKey: string;
+    header: string;
+    cell?: (row: T) => React.ReactNode;
+  }[];
+  data: T[];
+  isLoading?: boolean;
+}
+
+export interface CustomerSelectorProps {
+  selectedCustomerId: number | null;
+  onSelect: (id: number | null) => void;
+  customers?: Customer[];
+  isLoading?: boolean;
+}

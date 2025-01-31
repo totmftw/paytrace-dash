@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchInvoiceData } from '@/utils/supabaseQueries';
+import { supabase } from '@/integrations/supabase/client';
+import type { Invoice } from '@/types/dashboard';
 
 export const useInvoiceData = (year: string) => {
   return useQuery({
@@ -8,7 +9,15 @@ export const useInvoiceData = (year: string) => {
       const [startYear, endYear] = year.split('-');
       const startDate = `${startYear}-04-01`;
       const endDate = `${endYear}-03-31`;
-      return await fetchInvoiceData(startDate, endDate);
+      
+      const { data, error } = await supabase
+        .from('invoiceTable')
+        .select('*')
+        .gte('invDate', startDate)
+        .lte('invDate', endDate);
+
+      if (error) throw error;
+      return data as Invoice[];
     }
   });
 };

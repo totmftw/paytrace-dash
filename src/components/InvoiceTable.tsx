@@ -1,13 +1,5 @@
-// src/components/transactions/InvoiceTable.tsx
-import React from 'react';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Invoice } from '@/types/dashboard';
 
 interface InvoiceTableProps {
   data: Invoice[];
@@ -31,7 +23,9 @@ export function InvoiceTable({ data, isLoading, visibleColumns }: InvoiceTablePr
         {data.map((invoice) => (
           <TableRow key={invoice.invId}>
             {visibleColumns.map((column) => (
-              <TableCell key={column}>{invoice[column]}</TableCell>
+              <TableCell key={column}>
+                {invoice[column as keyof Invoice]}
+              </TableCell>
             ))}
           </TableRow>
         ))}

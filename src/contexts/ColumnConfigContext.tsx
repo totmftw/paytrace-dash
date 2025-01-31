@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { Json } from '@/integrations/supabase/types';
 
 interface ColumnConfigContextType {
   visibleColumns: string[];
@@ -8,10 +9,19 @@ interface ColumnConfigContextType {
   setColumnOrder: (order: string[]) => Promise<void>;
 }
 
+const defaultColumns = [
+  'invNumber',
+  'invDate',
+  'invDuedate',
+  'invTotal',
+  'invBalanceAmount',
+  'invPaymentStatus'
+];
+
 const ColumnConfigContext = createContext<ColumnConfigContextType | undefined>(undefined);
 
 export const ColumnConfigProvider = ({ children }: { children: React.ReactNode }) => {
-  const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
+  const [visibleColumns, setVisibleColumns] = useState<string[]>(defaultColumns);
   const { user } = useAuth();
 
   useEffect(() => {
@@ -23,8 +33,8 @@ export const ColumnConfigProvider = ({ children }: { children: React.ReactNode }
         .eq('id', user.id)
         .single();
 
-      if (data?.preferences?.columns) {
-        setVisibleColumns(data.preferences.columns);
+      if (data?.preferences && typeof data.preferences === 'object' && 'columns' in data.preferences) {
+        setVisibleColumns(data.preferences.columns as string[]);
       }
     };
     fetchColumns();

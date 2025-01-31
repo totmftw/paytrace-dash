@@ -1,12 +1,12 @@
 import { createContext, useContext, useState } from "react";
 
-interface FinancialYearContextType {
+export interface FinancialYearContextType {
   selectedYear: string;
   setSelectedYear: (year: string) => void;
   getFYDates: () => { start: Date; end: Date };
 }
 
-const FinancialYearContext = createContext<FinancialYearContextType | undefined>(undefined);
+export const FinancialYearContext = createContext<FinancialYearContextType | undefined>(undefined);
 
 export function useFinancialYear() {
   const context = useContext(FinancialYearContext);

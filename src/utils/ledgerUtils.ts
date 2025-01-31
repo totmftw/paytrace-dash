@@ -1,14 +1,10 @@
-import { LedgerEntry } from "@/types/ledger";
+import { LedgerEntry } from "@/types/types";
 import { formatCurrency as formatCurrencyUtil } from "@/lib/utils";
 
 export const calculateRunningBalance = (entries: LedgerEntry[]): LedgerEntry[] => {
   let balance = 0;
   return entries.map(entry => {
-    if (entry.transaction_type === 'invoice') {
-      balance += entry.debit_amount;
-    } else if (entry.transaction_type === 'payment') {
-      balance -= entry.credit_amount;
-    }
+    balance = balance + entry.debit_amount - entry.credit_amount;
     return { ...entry, balance };
   });
 };

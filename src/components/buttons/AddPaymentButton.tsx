@@ -12,21 +12,25 @@ interface SelectedInvoice {
 export function AddPaymentButton() {
   const [selectedInvoices, setSelectedInvoices] = useState<SelectedInvoice[]>([]);
 
-  const handlePayment = async (paymentData: PaymentData[]) => {
-    const formattedPayments = paymentData.map(payment => ({
-      ...payment,
-      paymentDate: format(new Date(payment.paymentDate), 'yyyy-MM-dd')
-    }));
-
+  const handlePayment = async (paymentData: PaymentData) => {
     const { error } = await supabase
       .from("paymentTransactions")
-      .insert(formattedPayments);
+      .insert({
+        ...paymentData,
+        paymentDate: format(new Date(paymentData.paymentDate), 'yyyy-MM-dd')
+      });
 
     if (error) throw error;
   };
 
   return (
-    <Button onClick={() => handlePayment([])}>
+    <Button onClick={() => handlePayment({
+      invId: 0, // This should be set with actual invoice ID
+      amount: 0,
+      paymentDate: new Date().toISOString(),
+      paymentMode: 'cash',
+      transactionId: 'temp-id'
+    })}>
       Add Payment
     </Button>
   );

@@ -1,6 +1,6 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/hooks/use-auth';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface ColumnConfigContextType {
   visibleColumns: string[];
@@ -8,16 +8,35 @@ interface ColumnConfigContextType {
   setColumnOrder: (order: string[]) => Promise<void>;
 }
 
-const ColumnConfigContext = createContext<ColumnConfigContextType | undefined>(undefined);
+export const ColumnConfigContext = createContext<ColumnConfigContextType>({
+  visibleColumns: [],
+  setVisibleColumns: () => {},
+  setColumnOrder: async () => {},
+});
 
-export function ColumnConfigProvider({ children }: { children: ReactNode }) {
+export const ColumnConfigProvider = ({ children }: { children: React.ReactNode }) => {
   const [visibleColumns, setVisibleColumns] = useState<string[]>([]);
   const { user } = useAuth();
+
+  useEffect(() => {
+    const fetchColumns = async () => {
+      if (!user) return;
+      const { data } = await supabase
+        .from('user_profiles')
+        .select('preferences')
+        .eq('id', user.id)
+        .single();
+
+      if (data?.preferences?.columns) {
+        setVisibleColumns(data.preferences.columns);
+      }
+    };
+    fetchColumns();
+  }, [user]);
 
   const setColumnOrder = async (newOrder: string[]) => {
     if (!user) return;
     setVisibleColumns(newOrder);
-    
     await supabase
       .from('user_profiles')
       .update({ 
@@ -27,20 +46,16 @@ export function ColumnConfigProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <ColumnConfigContext.Provider value={{ 
-      visibleColumns, 
-      setVisibleColumns,
-      setColumnOrder 
-    }}>
+    <ColumnConfigContext.Provider value={{ visibleColumns, setVisibleColumns, setColumnOrder }}>
       {children}
     </ColumnConfigContext.Provider>
   );
-}
+};
 
-export function useColumnConfig() {
+export const useColumnConfig = () => {
   const context = useContext(ColumnConfigContext);
   if (!context) {
     throw new Error('useColumnConfig must be used within ColumnConfigProvider');
   }
   return context;
-}
+};

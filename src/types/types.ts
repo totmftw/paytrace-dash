@@ -11,8 +11,8 @@ export interface PaymentTransaction {
 
 export interface CustomerMaster {
   custBusinessname: string;
-  custCreditperiod?: number;
-  custWhatsapp?: number;
+  custCreditperiod: number;
+  custWhatsapp: number;
 }
 
 export interface Invoice {
@@ -37,6 +37,7 @@ export interface Invoice {
 }
 
 export interface PaymentData {
+  invId: number;
   amount: number;
   paymentDate: string;
   paymentMode: string;
@@ -47,9 +48,12 @@ export interface PaymentData {
 }
 
 export interface LedgerEntry {
-  date: string;
-  description: string;
-  debit: number;
-  credit: number;
+  transaction_date: string;
+  transaction_type: string;
+  debit_amount: number;
+  credit_amount: number;
   balance: number;
+  description: string;
 }
+
+export type TableName = 'invoiceTable' | 'customerMaster' | 'paymentTransactions';

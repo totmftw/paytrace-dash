@@ -1,46 +1,56 @@
-import { createContext, useContext, useState } from "react";
+// src/contexts/FinancialYearContext.tsx
+import { createContext, useContext, useState } from 'react';
+import dayjs from 'dayjs';
 
-export interface FinancialYearContextType {
-  selectedYear: string;
-  setSelectedYear: (year: string) => void;
-  getFYDates: () => { start: Date; end: Date };
-}
 
-export const FinancialYearContext = createContext<FinancialYearContextType | undefined>(undefined);
-
-export function useFinancialYear() {
-  const context = useContext(FinancialYearContext);
-  if (!context) {
-    throw new Error("useFinancialYear must be used within a FinancialYearProvider");
-  }
-  return context;
-}
-
-export function FinancialYearProvider({ children }: { children: React.ReactNode }) {
-  const [selectedYear, setSelectedYear] = useState<string>(() => {
-    const currentDate = new Date();
-    const currentYear = currentDate.getFullYear();
-    const currentMonth = currentDate.getMonth() + 1; // JavaScript months are 0-based
-    return currentMonth >= 4 
-      ? `${currentYear}-${currentYear + 1}`
-      : `${currentYear - 1}-${currentYear}`;
+// src/contexts/FinancialYearContext.tsx
+export function FinancialYearProvider({ children }: React.PropsWithChildren) {
+  const [selectedYear, setSelectedYear] = React.useState(() => {
+    const now = dayjs();
+    const year = now.month() >= 3 ? now.year() : now.year() - 1;
+    return `${year}-${year + 1}`;
   });
 
-  const getFYDates = () => {
-    const [startYear] = selectedYear.split('-');
-    const start = new Date(parseInt(startYear), 3, 1); // April 1st
-    const end = new Date(parseInt(startYear) + 1, 2, 31); // March 31st
-    return { start, end };
-  };
-
-  const value = {
-    selectedYear,
-    setSelectedYear,
-    getFYDates
+  const handleChangeYear = async (newYear: string) => {
+    // Save to Supabase if needed
+    setSelectedYear(newYear);
   };
 
   return (
-    <FinancialYearContext.Provider value={value}>
+    <FinancialYearContext.Provider value={{ selectedYear, startDate, endDate, handleChangeYear }}>
+      {children}
+    </FinancialYearContext.Provider>
+  );
+}
+
+
+interface FinancialYearContextType {
+  selectedYear: string;
+  setSelectedYear: (year: string) => void;
+  startDate: Date;
+  endDate: Date;
+}
+
+const FinancialYearContext = createContext<FinancialYearContextType | undefined>(undefined);
+
+export function useFinancialYear() {
+  const context = useContext(FinancialYearContext);
+  if (!context) throw new Error('useFinancialYear must be used within FinancialYearContextProvider');
+  return context;
+}
+
+export function FinancialYearProvider({ children }: React.PropsWithChildren) {
+  const [selectedYear, setSelectedYear] = useState(() => {
+    const now = dayjs();
+    const year = now.month() >= 3 ? now.year() : now.year() - 1;
+    return `${year}-${year + 1}`;
+  });
+
+  const startDate = dayjs(`${selectedYear.split('-')[0]}-04-01`).toDate();
+  const endDate = dayjs(`${selectedYear.split('-')[1]}-03-31`).toDate();
+
+  return (
+    <FinancialYearContext.Provider value={{ selectedYear, startDate, endDate, setSelectedYear }}>
       {children}
     </FinancialYearContext.Provider>
   );

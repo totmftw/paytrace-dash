@@ -3,7 +3,15 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 import { useFinancialYear } from "@/contexts/FinancialYearContext";
+// SalesOverview.tsx
+import BarChart from "@/components/Charts/BarChart";
 
+<BarChart
+  data={data}
+  xAxisKey="month"
+  yAxisKey="sales"
+  colors={["#22c55e"]}
+/>
 export function SalesOverview() {
   const { selectedYear, getFYDates } = useFinancialYear();
   const { start, end } = getFYDates();

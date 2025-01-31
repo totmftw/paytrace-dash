@@ -5,7 +5,27 @@ import { useState } from "react";
 import { DetailedDataTable } from "@/components/DetailedDataTable";
 import { MetricsCard } from "./MetricsCard";
 import type { Invoice } from "@/types/types";
+// src/hooks/useMetricDetail.ts
+import { useQuery } from "@tanstack/react-query";
+import { fetchInvoiceMetrics } from "@/apis/invoiceApi";
+import { useFinancialYear } from "@/contexts/FinancialYearContext";
 
+export const useMetricDetail = () => {
+  const { start, end } = useFinancialYear();
+  const { data: metrics } = useQuery({
+    queryKey: ["invoice-metrics", start, end],
+    queryFn: () => fetchInvoiceMetrics({ startDate: start, endDate: end }),
+  });
+  return metrics;
+};
+
+// PaymentMetrics.tsx
+import { useMetricDetail } from "@/hooks/useMetricDetail";
+
+const PaymentMetrics = () => {
+  const metrics = useMetricDetail();
+  return <div>{/* render metrics */}</div>;
+};
 interface PaymentMetricsData {
   pendingPayments: Invoice[];
   outstandingPayments: Invoice[];

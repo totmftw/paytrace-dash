@@ -36,7 +36,7 @@ export interface Invoice {
   customerMaster: {
     custBusinessname: string;
     custCreditperiod: number;
-    custWhatsapp: number;
+    custWhatsapp: number;  // Changed from string to number to match database
   };
   paymentTransactions: {
     amount: number;

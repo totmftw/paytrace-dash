@@ -4,29 +4,24 @@ import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { DetailedDataTable } from "@/components/DetailedDataTable";
 import { MetricsCard } from "./MetricsCard";
+import type { Invoice } from "@/types/types";
 
-interface PaymentData {
-  invId: number;
-  invNumber: string;
-  invDate: string;
-  invTotal: number;
-  paymentTransactions: {
-    amount: number;
-    paymentId: number;
-  }[];
-  customerMaster: {
-    custBusinessname: string;
-    custCreditperiod: number;
-    custWhatsapp: string;
-  };
+interface PaymentMetricsData {
+  pendingPayments: Invoice[];
+  outstandingPayments: Invoice[];
+  totalPendingAmount: number;
+  totalOutstandingAmount: number;
+  totalSales: number;
+  totalOrders: number;
+  allInvoices: Invoice[];
 }
 
 export function PaymentMetrics() {
   const { selectedYear, getFYDates } = useFinancialYear();
-  const [selectedData, setSelectedData] = useState<PaymentData[]>([]);
+  const [selectedData, setSelectedData] = useState<Invoice[]>([]);
   const [dialogTitle, setDialogTitle] = useState("");
 
-  const { data: metrics } = useQuery({
+  const { data: metrics } = useQuery<PaymentMetricsData>({
     queryKey: ["payment-metrics", selectedYear],
     queryFn: async () => {
       const { start, end } = getFYDates();
@@ -53,7 +48,7 @@ export function PaymentMetrics() {
 
       if (error) throw error;
 
-      const invoices = data as PaymentData[];
+      const invoices = data as Invoice[];
       const today = new Date();
 
       const totalSales = invoices.reduce((sum, inv) => sum + inv.invTotal, 0);

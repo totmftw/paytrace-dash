@@ -14,12 +14,9 @@ export default function Customers() {
           customerMaster!invoiceTable_invCustid_fkey (
             custBusinessname,
             custCreditperiod,
-            custWhatsapp,
-            custGST,
-            custPhone,
-            custAddress
+            custWhatsapp
           ),
-          paymentTransactions (
+          paymentTransactions!paymentTransactions_invId_fkey (
             paymentId,
             invId,
             amount,

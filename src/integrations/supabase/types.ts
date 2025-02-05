@@ -296,41 +296,6 @@ export type Database = {
           },
         ]
       }
-      invoice_table_config: {
-        Row: {
-          column_order: string[] | null
-          created_at: string | null
-          id: string
-          updated_at: string | null
-          user_id: string | null
-          visible_columns: string[] | null
-        }
-        Insert: {
-          column_order?: string[] | null
-          created_at?: string | null
-          id?: string
-          updated_at?: string | null
-          user_id?: string | null
-          visible_columns?: string[] | null
-        }
-        Update: {
-          column_order?: string[] | null
-          created_at?: string | null
-          id?: string
-          updated_at?: string | null
-          user_id?: string | null
-          visible_columns?: string[] | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "invoice_table_config_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "user_management"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       invoiceTable: {
         Row: {
           fy: string

@@ -15,7 +15,7 @@ export function FinancialYearSelector() {
   };
 
   return (
-    <Select value={selectedYear} onValueChange={(e) => setSelectedYear(e as string)}>
+    <Select value={selectedYear} onValueChange={setSelectedYear}>
       <SelectTrigger className="w-[180px]">
         <SelectValue placeholder="Select Year" />
       </SelectTrigger>

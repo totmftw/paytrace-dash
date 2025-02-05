@@ -18,10 +18,7 @@ export default function PaymentTab({ year }: { year: string }) {
           customerMaster!invoiceTable_invCustid_fkey (
             custBusinessname,
             custCreditperiod,
-            custWhatsapp,
-            custGST,
-            custPhone,
-            custAddress
+            custWhatsapp
           ),
           paymentTransactions (
             paymentId,

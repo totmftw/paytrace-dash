@@ -1,60 +1,52 @@
-import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-interface SalesVsPaymentsChartProps {
-  selectedYear: string;
-}
+import type { Invoice, SalesVsPaymentsChartProps } from "@/types";
 
 export function SalesVsPaymentsChart({ selectedYear }: SalesVsPaymentsChartProps) {
+  const [startYear, endYear] = selectedYear.split('-');
+  const fyStartDate = `${startYear}-04-01`;
+  const fyEndDate = `${endYear}-03-31`;
+
   const { data: invoices } = useQuery({
     queryKey: ["sales-vs-payments", selectedYear],
     queryFn: async () => {
-      const [startYear, endYear] = selectedYear.split("-");
-      const startDate = `${startYear}-04-01`;
-      const endDate = `${endYear}-03-31`;
-
       const { data, error } = await supabase
         .from("invoiceTable")
         .select(`
-          invTotal,
-          invDate,
-          paymentTransactions (
+          *,
+          customerMaster:customerMaster!invoiceTable_invCustid_fkey (
+            custBusinessname,
+            custCreditperiod,
+            custWhatsapp
+          ),
+          paymentTransactions!paymentTransactions_invId_fkey (
             amount,
             paymentDate
           )
         `)
-        .gte("invDate", startDate)
-        .lte("invDate", endDate);
+        .gte("invDate", fyStartDate)
+        .lte("invDate", fyEndDate);
 
       if (error) throw error;
-      return data || [];
+      return data as unknown as Invoice[];
     },
   });
 
-  const chartData = React.useMemo(() => {
-    if (!invoices) return [];
-
-    const monthlyData = Array.from({ length: 12 }, (_, i) => ({
-      month: new Date(2000, i).toLocaleString('default', { month: 'short' }),
-      sales: 0,
-      payments: 0
-    }));
-
-    invoices.forEach(invoice => {
-      const month = new Date(invoice.invDate).getMonth();
-      monthlyData[month].sales += invoice.invTotal;
-      
-      invoice.paymentTransactions?.forEach(payment => {
-        const paymentMonth = new Date(payment.paymentDate).getMonth();
-        monthlyData[paymentMonth].payments += payment.amount;
-      });
-    });
-
-    return monthlyData;
-  }, [invoices]);
+  const chartData = invoices
+    ? Array.from({ length: 12 }, (_, i) => {
+        const month = new Date(2000, i).toLocaleString('default', { month: 'short' });
+        const monthInvoices = invoices.filter(inv => 
+          new Date(inv.invDate).getMonth() === i
+        );
+        const sales = monthInvoices.reduce((sum, inv) => sum + inv.invTotal, 0);
+        const payments = monthInvoices.reduce((sum, inv) => 
+          sum + (inv.paymentTransactions?.reduce((pSum, p) => pSum + p.amount, 0) || 0), 
+        0);
+        return { month, sales, payments };
+      })
+    : [];
 
   return (
     <Card>

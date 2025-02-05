@@ -1,21 +1,6 @@
 import { ReactNode } from 'react';
 import { Layout } from 'react-grid-layout';
 
-export interface LayoutData {
-  layout: Layout[];
-}
-
-export interface MetricsCardProps {
-  title: string;
-  value: number | string;
-  icon?: ReactNode;
-  isMonetary?: boolean;
-}
-
-export interface DashboardProps {
-  year?: string;
-}
-
 export interface DashboardWidget extends Layout {
   id: string;
   content: ReactNode;
@@ -31,8 +16,6 @@ export interface CustomerMaster {
   custBusinessname: string;
   custCreditperiod?: number;
   custWhatsapp?: number;
-  custGST?: string;
-  custPhone?: number;
 }
 
 export interface Invoice {
@@ -41,14 +24,11 @@ export interface Invoice {
   invDate: string;
   invDuedate: string;
   invTotal: number;
+  invValue: number;
+  invGst: number;
   invBalanceAmount: number;
   invPaymentStatus: string;
   fy: string;
-  invAddamount?: number;
-  invAlert?: string;
-  invGst: number;
-  invMarkcleared?: boolean;
-  invMessage1: string;
   customerMaster: CustomerMaster;
   paymentTransactions: PaymentTransaction[];
 }

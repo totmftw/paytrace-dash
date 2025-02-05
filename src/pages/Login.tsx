@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 
 interface LoginCredentials {
   email: string;
@@ -30,8 +30,11 @@ export default function Login() {
     setError(null);
 
     try {
-      const { error } = await signIn(credentials.email, credentials.password, { rememberMe: credentials.rememberMe });
-      if (error) throw error;
+      await signIn(
+        credentials.email,
+        credentials.password,
+        credentials.rememberMe
+      );
       navigate(from, { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred during login');
@@ -46,8 +49,7 @@ export default function Login() {
     setError(null);
 
     try {
-      const { error } = await resetPassword(credentials.email);
-      if (error) throw error;
+      await resetPassword(credentials.email);
       setError('Password reset link has been sent to your email');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred');

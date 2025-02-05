@@ -1,6 +1,5 @@
 
 import React from 'react';
-import type { CustomerTableProps } from '@/types';
 import {
   Table,
   TableBody,
@@ -9,6 +8,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import type { Invoice } from '@/types';
+
+interface CustomerTableProps {
+  data: Invoice[];
+  isLoading: boolean;
+}
 
 export const CustomerTable: React.FC<CustomerTableProps> = ({ data, isLoading }) => {
   if (isLoading) {
@@ -42,3 +47,4 @@ export const CustomerTable: React.FC<CustomerTableProps> = ({ data, isLoading })
     </div>
   );
 };
+

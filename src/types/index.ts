@@ -14,9 +14,10 @@ export interface PaymentTransaction {
 export interface CustomerMaster {
   custBusinessname: string;
   custCreditperiod: number;
-  custWhatsapp: number; // Made required to match types.ts
+  custWhatsapp: number;
   custPhone: number;
   custGST: string;
+  custStatus: string; // Added this field
 }
 
 export interface Invoice {
@@ -36,7 +37,6 @@ export interface Invoice {
   invMessage2?: string;
   invMessage3?: string;
   invPaymentStatus: string;
-  invAlert?: string;
   fy: string;
   customerMaster: CustomerMaster;
   paymentTransactions: PaymentTransaction[];

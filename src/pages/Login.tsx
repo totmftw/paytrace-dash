@@ -30,7 +30,7 @@ export default function Login() {
     setError(null);
 
     try {
-      const { error } = await signIn(credentials.email, credentials.password);
+      const { error } = await signIn(credentials.email, credentials.password, { rememberMe: credentials.rememberMe });
       if (error) throw error;
       navigate(from, { replace: true });
     } catch (err) {

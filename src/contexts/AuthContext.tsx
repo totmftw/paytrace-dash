@@ -25,8 +25,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  const signIn = async (email: string, password: string) => {
-    return supabase.auth.signInWithPassword({ email, password });
+  const signIn = async (email: string, password: string, options?: { rememberMe?: boolean }) => {
+    return supabase.auth.signInWithPassword({ 
+      email, 
+      password,
+      options: {
+        persistSession: options?.rememberMe
+      }
+    });
   };
 
   const signOut = async () => {

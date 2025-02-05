@@ -1,3 +1,4 @@
+
 export interface PaymentTransaction {
   paymentId: number;
   amount: number;
@@ -11,8 +12,10 @@ export interface PaymentTransaction {
 
 export interface CustomerMaster {
   custBusinessname: string;
-  custCreditperiod: number;
-  custWhatsapp: number;
+  custCreditperiod?: number;
+  custWhatsapp?: number;
+  custPhone: number;
+  custGST: string;
 }
 
 export interface Invoice {
@@ -31,6 +34,7 @@ export interface Invoice {
   invMessage2?: string;
   invMessage3?: string;
   invPaymentStatus?: string;
+  invAlert?: string;
   fy: string;
   customerMaster: CustomerMaster;
   paymentTransactions: PaymentTransaction[];
@@ -40,13 +44,6 @@ export interface PDFExportProps {
   fileName?: string;
   data?: any[];
   onExport?: () => void;
-}
-
-export interface Customer {
-  id: number;
-  custBusinessname: string;
-  custWhatsapp: number;
-  custCreditperiod: number;
 }
 
 export interface InvoiceTableProps {

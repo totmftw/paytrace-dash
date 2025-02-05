@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { TransactionInvoiceTable } from "./TransactionInvoiceTable";
@@ -18,7 +19,9 @@ export default function PaymentTab({ year }: { year: string }) {
           customerMaster!invoiceTable_invCustid_fkey (
             custBusinessname,
             custCreditperiod,
-            custWhatsapp
+            custWhatsapp,
+            custPhone,
+            custGST
           ),
           paymentTransactions (
             paymentId,
@@ -36,7 +39,7 @@ export default function PaymentTab({ year }: { year: string }) {
         .lte("invDate", `${parseInt(startYear) + 1}-03-31`);
 
       if (error) throw error;
-      return data as Invoice[];
+      return data as unknown as Invoice[];
     },
   });
 

@@ -1,7 +1,8 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { CustomerTable } from "@/components/customers/CustomerTable";
-import type { Invoice } from "@/types/types";
+import type { Invoice } from "@/types";
 
 export default function Customers() {
   const { data: invoices, isLoading } = useQuery({
@@ -14,7 +15,9 @@ export default function Customers() {
           customerMaster!invoiceTable_invCustid_fkey (
             custBusinessname,
             custCreditperiod,
-            custWhatsapp
+            custWhatsapp,
+            custPhone,
+            custGST
           ),
           paymentTransactions!paymentTransactions_invId_fkey (
             paymentId,
@@ -29,7 +32,7 @@ export default function Customers() {
           )
         `);
       if (error) throw error;
-      return data as Invoice[];
+      return data as unknown as Invoice[];
     },
   });
 

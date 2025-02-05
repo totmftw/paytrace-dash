@@ -1,6 +1,7 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import type { Invoice } from '@/types/types';
+import type { Invoice } from '@/types';
 
 interface DashboardProps {
   year: string;
@@ -18,7 +19,9 @@ export default function Dashboard({ year }: DashboardProps) {
           customerMaster!invoiceTable_invCustid_fkey (
             custBusinessname,
             custCreditperiod,
-            custWhatsapp
+            custWhatsapp,
+            custPhone,
+            custGST
           ),
           paymentTransactions!paymentTransactions_invId_fkey (
             paymentId,
@@ -36,7 +39,7 @@ export default function Dashboard({ year }: DashboardProps) {
         .lte('invDate', `${endYear}-03-31`);
 
       if (error) throw error;
-      return data as Invoice[];
+      return data as unknown as Invoice[];
     },
   });
 

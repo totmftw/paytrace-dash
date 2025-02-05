@@ -13,8 +13,8 @@ export interface PaymentTransaction {
 
 export interface CustomerMaster {
   custBusinessname: string;
-  custCreditperiod: number; // Made required to match types.ts
-  custWhatsapp?: number;
+  custCreditperiod: number;
+  custWhatsapp: number; // Made required to match types.ts
   custPhone: number;
   custGST: string;
 }
@@ -35,7 +35,7 @@ export interface Invoice {
   invMessage1: string;
   invMessage2?: string;
   invMessage3?: string;
-  invPaymentStatus: string; // Made required to match types.ts
+  invPaymentStatus: string;
   invAlert?: string;
   fy: string;
   customerMaster: CustomerMaster;

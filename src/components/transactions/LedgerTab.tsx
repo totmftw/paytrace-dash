@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { DataTable } from "@/components/ui/datatable";
 import { PDFExport } from "@/components/buttons/PDFExport";
 import { Card } from "@/components/ui/card";
-import type { Customer } from "@/types";
+import type { CustomerMaster } from "@/types";
 
 export default function LedgerTab() {
   const { data: customers } = useQuery({
@@ -19,7 +19,7 @@ export default function LedgerTab() {
         throw error;
       }
 
-      return data as Customer[];
+      return data as CustomerMaster[];
     },
   });
 

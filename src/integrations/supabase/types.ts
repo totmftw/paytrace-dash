@@ -50,6 +50,41 @@ export type Database = {
           },
         ]
       }
+      customer_ledger: {
+        Row: {
+          amount: number | null
+          balance: number | null
+          customer_id: number | null
+          fiscal_year: string | null
+          id: number
+          transaction_type: string | null
+        }
+        Insert: {
+          amount?: number | null
+          balance?: number | null
+          customer_id?: number | null
+          fiscal_year?: string | null
+          id?: number
+          transaction_type?: string | null
+        }
+        Update: {
+          amount?: number | null
+          balance?: number | null
+          customer_id?: number | null
+          fiscal_year?: string | null
+          id?: number
+          transaction_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "customer_ledger_customer_id_fkey"
+            columns: ["customer_id"]
+            isOneToOne: false
+            referencedRelation: "customerMaster"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       customerMaster: {
         Row: {
           custAddress: string | null
@@ -134,6 +169,92 @@ export type Database = {
         }
         Relationships: []
       }
+      dashboard_layouts: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_active: boolean | null
+          layout: Json
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          layout: Json
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_active?: boolean | null
+          layout?: Json
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dashboard_layouts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "user_management"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      dashboard_metrics: {
+        Row: {
+          created_at: string | null
+          id: number
+          metric_name: string
+          metric_status: string
+          metric_type: string
+          metric_value: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: number
+          metric_name: string
+          metric_status?: string
+          metric_type: string
+          metric_value: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: number
+          metric_name?: string
+          metric_status?: string
+          metric_type?: string
+          metric_value?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      expenses: {
+        Row: {
+          amount: number | null
+          date: string | null
+          description: string | null
+          expenseid: string
+        }
+        Insert: {
+          amount?: number | null
+          date?: string | null
+          description?: string | null
+          expenseid?: string
+        }
+        Update: {
+          amount?: number | null
+          date?: string | null
+          description?: string | null
+          expenseid?: string
+        }
+        Relationships: []
+      }
       feature_permissions: {
         Row: {
           created_at: string | null
@@ -175,12 +296,48 @@ export type Database = {
           },
         ]
       }
+      invoice_table_config: {
+        Row: {
+          column_order: string[] | null
+          created_at: string | null
+          id: string
+          updated_at: string | null
+          user_id: string | null
+          visible_columns: string[] | null
+        }
+        Insert: {
+          column_order?: string[] | null
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string | null
+          visible_columns?: string[] | null
+        }
+        Update: {
+          column_order?: string[] | null
+          created_at?: string | null
+          id?: string
+          updated_at?: string | null
+          user_id?: string | null
+          visible_columns?: string[] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_table_config_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_management"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       invoiceTable: {
         Row: {
+          fy: string
           invAddamount: number | null
           invAlert: string | null
           invBalanceAmount: number | null
-          invCustid: number
+          invCustid: number | null
           invDate: string | null
           invDuedate: string | null
           invGst: number
@@ -200,10 +357,11 @@ export type Database = {
           invValue: number
         }
         Insert: {
+          fy: string
           invAddamount?: number | null
           invAlert?: string | null
           invBalanceAmount?: number | null
-          invCustid: number
+          invCustid?: number | null
           invDate?: string | null
           invDuedate?: string | null
           invGst: number
@@ -223,10 +381,11 @@ export type Database = {
           invValue: number
         }
         Update: {
+          fy?: string
           invAddamount?: number | null
           invAlert?: string | null
           invBalanceAmount?: number | null
-          invCustid?: number
+          invCustid?: number | null
           invDate?: string | null
           invDuedate?: string | null
           invGst?: number
@@ -246,6 +405,13 @@ export type Database = {
           invValue?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_invcustid_customer"
+            columns: ["invCustid"]
+            isOneToOne: false
+            referencedRelation: "customerMaster"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "invoiceTable_invCustid_fkey"
             columns: ["invCustid"]
@@ -760,7 +926,37 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: number[]
       }
-      get_customer_ledger: {
+      get_customer_ledger:
+        | {
+            Args: {
+              p_customer_id: number
+              p_start_date: string
+              p_end_date: string
+            }
+            Returns: {
+              transaction_date: string
+              description: string
+              amount: number
+              balance: number
+              type: string
+            }[]
+          }
+        | {
+            Args: {
+              p_customer_id: number
+              p_start_date: string
+              p_end_date: string
+            }
+            Returns: {
+              transaction_date: string
+              description: string
+              invoice_number: string
+              debit: number
+              credit: number
+              balance: number
+            }[]
+          }
+      get_customer_ledger_with_details: {
         Args: {
           p_customer_id: number
           p_start_date: string
@@ -768,11 +964,21 @@ export type Database = {
         }
         Returns: {
           transaction_date: string
-          description: string
-          invoice_number: string
-          debit: number
-          credit: number
+          transaction_type: string
+          reference_number: string
+          debit_amount: number
+          credit_amount: number
           balance: number
+          description: string
+        }[]
+      }
+      get_financial_year: {
+        Args: {
+          the_date: string
+        }
+        Returns: {
+          fy_start: string
+          fy_end: string
         }[]
       }
       get_user_permissions: {
@@ -787,6 +993,12 @@ export type Database = {
           can_delete: boolean
           custom_permissions: Json
         }[]
+      }
+      update_dashboard_layout: {
+        Args: {
+          new_layout: Json
+        }
+        Returns: string
       }
       update_user_role: {
         Args: {

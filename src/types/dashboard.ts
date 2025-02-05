@@ -1,38 +1,43 @@
-// src/types/dashboard.ts
-export interface DashboardLayout {
-    i: string;
-    x: number;
-    y: number;
-    w: number;
-    h: number;
-  }
-  
-  export interface Invoice {
-    invNumber: string;
-    invDate: string;
-    invDueDate: string;
-    invTotalAmount: number;
-    customerName: string;
-  }
-  
-  export interface PaymentTransaction {
-    invNumber: string;
-    paymentAmount: number;
-    paymentDate: string;
-  }
-// src/types/dashboard.ts
-export interface DashboardLayout {
-  i: string;
-  x: number;
-  y: number;
-  w: number;
-  h: number;
+import { ReactNode } from 'react';
+import { Layout } from 'react-grid-layout';
+
+export interface DashboardWidget extends Layout {
+  id: string;
+  content: ReactNode;
 }
 
-export interface DashboardState {
-  layouts: {
-    [key: string]: DashboardLayout[];
-  };
-  user_id: string;
+export interface PaymentTransaction {
+  paymentId: number;
+  amount: number;
+  paymentDate: string;
 }
-  
+
+export interface CustomerMaster {
+  custBusinessname: string;
+  custCreditperiod?: number;
+}
+
+export interface Invoice {
+  invId: number;
+  invNumber: string;
+  invDate: string;
+  invDuedate: string;
+  invTotal: number;
+  invBalanceAmount: number;
+  invPaymentStatus: string;
+  fy: string;
+  invAddamount?: number;
+  invAlert?: string;
+  invGst: number;
+  invMarkcleared?: boolean;
+  invMessage1: string;
+  customerMaster: CustomerMaster;
+  paymentTransactions: PaymentTransaction[];
+}
+
+export interface MetricsSummary {
+  totalSales: number;
+  pendingPayments: number;
+  outstandingPayments: number;
+  totalInvoices: number;
+}

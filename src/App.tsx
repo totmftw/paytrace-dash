@@ -1,36 +1,25 @@
+import { BrowserRouter } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { ColumnConfigProvider } from '@/contexts/ColumnConfigContext';
+import { FinancialYearProvider } from '@/contexts/FinancialYearContext';
+import AppRoutes from './AppRoutes';
+import './index.css';
 
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthProvider';
-import { ProtectedRoute } from './components/ProtectedRoute';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
+const queryClient = new QueryClient();
 
-function App() {
+export default function App() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/dashboard" element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } />
-          <Route path="/transactions" element={
-            <ProtectedRoute>
-              <div>Transactions</div>
-            </ProtectedRoute>
-          } />
-          <Route path="/invoices" element={
-            <ProtectedRoute>
-              <div>Invoices</div>
-            </ProtectedRoute>
-          } />
-          <Route path="*" element={<Navigate to="/dashboard" replace />} />
-        </Routes>
-      </AuthProvider>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <FinancialYearProvider>
+            <ColumnConfigProvider>
+              <AppRoutes />
+            </ColumnConfigProvider>
+          </FinancialYearProvider>
+        </AuthProvider>
+      </QueryClientProvider>
     </BrowserRouter>
   );
 }
-
-export default App;

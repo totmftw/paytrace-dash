@@ -2,19 +2,10 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.38.0";
 import * as puppeteer from 'https://deno.land/x/puppeteer@16.2.0/mod.ts';
 
-const corsHeaders: { [key: string]: string } = {
+const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-interface LedgerEntry {
-  transaction_date: string;
-  description: string;
-  invoice_number?: string;
-  debit: number;
-  credit: number;
-  balance: number;
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -22,16 +13,16 @@ serve(async (req) => {
   }
 
   try {
-    const { customerId, entries, year }: { customerId: string, entries: LedgerEntry[], year: string } = await req.json();
+    const { customerId, entries, year } = await req.json();
 
     // Generate HTML content for PDF
-    const html: string = generateLedgerHTML(entries, year);
+    const html = generateLedgerHTML(entries, year);
 
     // Launch browser and create PDF
-    const browser: puppeteer.Browser = await puppeteer.launch();
-    const page: puppeteer.Page = await browser.newPage();
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
     await page.setContent(html);
-    const pdf: Uint8Array = await page.pdf({ format: 'A4' });
+    const pdf = await page.pdf({ format: 'A4' });
     await browser.close();
 
     // Upload PDF to Supabase Storage
@@ -40,7 +31,7 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    const fileName: string = `ledger-${customerId}-${year}.pdf`;
+    const fileName = `ledger-${customerId}-${year}.pdf`;
     const { data, error } = await supabase.storage
       .from('ledgers')
       .upload(fileName, pdf, {
@@ -62,7 +53,7 @@ serve(async (req) => {
         status: 200,
       }
     );
-  } catch (error: unknown) {
+  } catch (error) {
     console.error('Error generating PDF:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
@@ -74,7 +65,7 @@ serve(async (req) => {
   }
 });
 
-function generateLedgerHTML(entries: LedgerEntry[], year: string): string {
+function generateLedgerHTML(entries: any[], year: string) {
   return `
     <!DOCTYPE html>
     <html>

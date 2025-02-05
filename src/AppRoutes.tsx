@@ -1,7 +1,8 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import AppLayout from "@/components/AppLayout";
+import { AppLayout } from "@/components/AppLayout";
 import DashboardLayout from "@/components/DashboardLayout";
+import { useFinancialYear } from "@/hooks/useFinancialYear";
 
 // Pages
 import Index from "@/pages/Index";
@@ -9,46 +10,41 @@ import Login from "@/pages/Login";
 import Dashboard from "@/pages/Dashboard";
 import Customers from "@/pages/Customers";
 import Products from "@/pages/Products";
-import Transactions from "@/pages/Transactions";
-import UserManagement from "@/pages/UserProfiles";
 import WhatsappReminders from "@/pages/WhatsappReminders";
+import TransactionsPage from "@/pages/Transactions";
+import UserManagement from "@/pages/UserProfiles";
 
 const AppRoutes = () => {
+  const { currentYear } = useFinancialYear();
+
   return (
     <Routes>
-      <Route
-        path="/"
+      <Route path="/" element={<Index />} />
+      <Route path="/login" element={<Login />} />
+      
+      <Route 
         element={
           <ProtectedRoute>
-            <AppLayout>
-              <Route path="/" element={<Index />} />
-              <Route path="/login" element={<Login />} />
-              <Route
-                path="/dashboard/*"
-                element={
-                  <ProtectedRoute>
-                    <DashboardLayout>
-                      <Route path="dashboard" element={<Dashboard />} />
-                      <Route path="customers" element={<Customers />} />
-                      <Route path="products" element={<Products />} />
-                      <Route path="transactions" element={<Transactions />} />
-                      <Route
-                        path="user-management"
-                        element={
-                          <ProtectedRoute adminOnly>
-                            <UserManagement />
-                          </ProtectedRoute>
-                        }
-                      />
-                      <Route path="whatsapp-reminders" element={<WhatsappReminders />} />
-                    </DashboardLayout>
-                  </ProtectedRoute>
-                }
-              />
-            </AppLayout>
+            <AppLayout />
           </ProtectedRoute>
         }
-      />
+      >
+        <Route element={<DashboardLayout />}>
+          <Route path="/dashboard" element={<Dashboard year={currentYear} />} />
+          <Route path="/customers" element={<Customers />} />
+          <Route path="/whatsapp-reminders" element={<WhatsappReminders />} />
+          <Route path="/transactions" element={<TransactionsPage />} />
+          <Route 
+            path="/user-management" 
+            element={
+              <ProtectedRoute adminOnly>
+                <UserManagement />
+              </ProtectedRoute>
+            } 
+          />
+        </Route>
+      </Route>
+
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );

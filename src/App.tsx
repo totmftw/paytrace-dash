@@ -1,41 +1,18 @@
 // src/App.tsx
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from './contexts/AuthContext'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import Login from './pages/Login'
-// src/App.tsx
-import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { ProtectedRoute } from './components/ProtectedRoute'
-import Login from './pages/Login'
-import Dashboard from './pages/Dashboard'
-
-function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route
-          path="/dashboard"
-          element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          }
-        />
-      </Routes>
-    </BrowserRouter>
-  )
-}
+import Dashboard from './pages/Dashboard';
 
 function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
         <Routes>
-          <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
-          <Route element={<ProtectedLayout />}>
-            {/* All your app routes go here */}
-            <Route path="/dashboard" element={<div>Dashboard</div>} />
+          <Route path="/login" element={<Login />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/transactions" element={<div>Transactions</div>} />
             <Route path="/invoices" element={<div>Invoices</div>} />
             {/* Add more routes as needed */}

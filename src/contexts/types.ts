@@ -3,6 +3,7 @@ export interface UserProfile {
     id: string;
     email: string;
     name?: string;
+    image?: string; // Add image property
     // Add other user profile fields as necessary
 }
 
@@ -15,5 +16,7 @@ export interface AuthContextType {
 export interface User {
     id: string;
     email: string;
+    name?: string; // Add name property
+    image?: string; // Add image property
     // Add other user fields as necessary
 }

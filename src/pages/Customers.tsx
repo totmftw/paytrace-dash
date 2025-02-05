@@ -37,7 +37,7 @@ export default function Customers() {
         throw error;
       }
 
-      return data as unknown as Invoice[];
+      return data as Invoice[];
     },
   });
 

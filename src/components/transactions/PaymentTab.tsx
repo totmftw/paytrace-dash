@@ -44,7 +44,7 @@ export default function PaymentTab({ year }: { year: string }) {
         throw error;
       }
 
-      return data as unknown as Invoice[];
+      return data as Invoice[];
     },
   });
 

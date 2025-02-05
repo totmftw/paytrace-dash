@@ -12,7 +12,7 @@ interface LoginCredentials {
 export default function Login() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { signIn } = useAuth()
+  const { signIn, resetPassword } = useAuth()
   const from = location.state?.from?.pathname || '/dashboard'
   
   const [loading, setLoading] = useState(false)
@@ -49,7 +49,7 @@ export default function Login() {
     setError(null)
 
     try {
-      await useAuth().resetPassword(credentials.email)
+      await resetPassword(credentials.email)
       setError('Password reset link has been sent to your email')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')

@@ -1,8 +1,6 @@
 // src/components/dashboard/FinancialYearSelector.tsx
 import { useState, useEffect } from 'react';
-import { Select } from '@/components/ui/select';
-// src/components/dashboard/FinancialYearSelector.tsx
-import { Select } from '@mui/material';  // Change from @/components/ui/select
+import { Select, MenuItem } from '@mui/material';
 
 // Update the component to use MUI Select
 export function FinancialYearSelector({ value, onChange }: FinancialYearSelectorProps) {
@@ -47,18 +45,18 @@ export function FinancialYearSelector({ value, onChange }: FinancialYearSelector
     if (!value) {
       onChange(financialYears[financialYears.length - 1]);
     }
-  }, []);
+  }, [onChange, value, setYears]);
 
   return (
     <Select
       value={value}
-      onValueChange={onChange}
-      className="w-48"
+      onChange={(e) => onChange(e.target.value)}
+      sx={{ width: 200 }}
     >
       {years.map((year) => (
-        <Select.Option key={year} value={year}>
+        <MenuItem key={year} value={year}>
           FY {year}
-        </Select.Option>
+        </MenuItem>
       ))}
     </Select>
   );

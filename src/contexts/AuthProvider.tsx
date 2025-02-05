@@ -1,18 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { getInitialSession, getAuthStateChangeSubscription } from './constants';
-import { AuthContextType, UserProfile } from './types';
-
-interface UserProfile {
-  id: string;
-  email: string;
-  name: string;
-  image: string;
-}
+import { AuthContextType, UserProfile, User } from './types';
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) => {
-    const [user, setUser] = useState<UserProfile | null>(null);
+    const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -21,10 +14,10 @@ export const AuthProvider: React.FC<React.PropsWithChildren> = ({ children }) =>
             if (session && session.user) {
                 setUser({
                     id: session.user.id,
-                    email: session.user.email || '', 
-                    name: session.user.name || '', 
-                    image: session.user.image || '', 
-                });
+                    email: session.user.email || '',
+                    name: session.user.name || '',
+                    image: session.user.image || '',
+                } as User);
             }
             setLoading(false);
         });

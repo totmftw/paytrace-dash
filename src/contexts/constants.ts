@@ -8,7 +8,7 @@ export const getInitialSession = async () => {
 
 export const getAuthStateChangeSubscription = () => {
   const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
-    // This callback is handled in the AuthProvider
+    // This callback is intentionally empty as it's handled in the AuthProvider
   });
   return subscription;
 };

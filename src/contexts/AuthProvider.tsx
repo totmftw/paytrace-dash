@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from 'react';
-import type { Session, User } from '@supabase/supabase-js';
+import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '../integrations/supabase/client';
 import { AuthContext } from './AuthContext';
 import { getInitialSession, getAuthStateChangeSubscription } from './constants';
@@ -39,7 +39,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       email,
       password,
       options: {
-        persistSession: rememberMe
+        data: {
+          persistSession: rememberMe
+        }
       }
     });
     if (error) throw error;

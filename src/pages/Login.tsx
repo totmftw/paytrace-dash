@@ -1,62 +1,62 @@
-// src/pages/Login.tsx
-import { useState } from 'react'
-import { useNavigate, useLocation, Link } from 'react-router-dom'
-import { useAuth } from '../contexts/AuthContext'
+
+import { useState } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
 interface LoginCredentials {
-  email: string
-  password: string
-  rememberMe: boolean
+  email: string;
+  password: string;
+  rememberMe: boolean;
 }
 
 export default function Login() {
-  const navigate = useNavigate()
-  const location = useLocation()
-  const { signIn, resetPassword } = useAuth()
-  const from = location.state?.from?.pathname || '/dashboard'
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { signIn, resetPassword } = useAuth();
+  const from = location.state?.from?.pathname || '/dashboard';
   
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [isResetMode, setIsResetMode] = useState(false)
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isResetMode, setIsResetMode] = useState(false);
   const [credentials, setCredentials] = useState<LoginCredentials>({
     email: '',
     password: '',
     rememberMe: false
-  })
+  });
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
     try {
       await signIn(
         credentials.email,
         credentials.password,
         credentials.rememberMe
-      )
-      navigate(from, { replace: true })
+      );
+      navigate(from, { replace: true });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred during login')
+      setError(err instanceof Error ? err.message : 'An error occurred during login');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handlePasswordReset = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
 
     try {
-      await resetPassword(credentials.email)
-      setError('Password reset link has been sent to your email')
+      await resetPassword(credentials.email);
+      setError('Password reset link has been sent to your email');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -149,47 +149,8 @@ export default function Login() {
               {loading ? 'Processing...' : (isResetMode ? 'Send Reset Link' : 'Sign in')}
             </button>
           </div>
-
-          {/* Social Login Buttons (Disabled) */}
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-300" />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with</span>
-              </div>
-            </div>
-
-            <div className="mt-6 grid grid-cols-3 gap-3">
-              <button
-                type="button"
-                disabled
-                className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-              >
-                <span className="sr-only">Sign in with Google</span>
-                Google
-              </button>
-              <button
-                type="button"
-                disabled
-                className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-              >
-                <span className="sr-only">Sign in with GitHub</span>
-                GitHub
-              </button>
-              <button
-                type="button"
-                disabled
-                className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-              >
-                <span className="sr-only">Sign in with Microsoft</span>
-                Microsoft
-              </button>
-            </div>
-          </div>
         </form>
       </div>
     </div>
-  )
+  );
 }

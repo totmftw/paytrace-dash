@@ -1,4 +1,17 @@
 // src/components/dashboard/Dashboard.tsx
+import { useState } from 'react';
+import { useAuth } from '../../hooks/useAuth';
+import { supabase } from '../../lib/supabaseClient';
+import { Box, Button, Snackbar, Alert } from '@mui/material';
+import { FinancialYearSelector } from './FinancialYearSelector';
+
+interface DashboardLayout {
+  // Add your layout properties here
+  id: string;
+  position: number;
+  // Add other properties as needed
+}
+
 export function Dashboard() {
   const { user } = useAuth();
   const [selectedYear, setSelectedYear] = useState<string>('');
@@ -7,7 +20,7 @@ export function Dashboard() {
   const [snackbarState, setSnackbarState] = useState({
     open: false,
     message: '',
-    severity: 'success' as const
+    severity: 'success' as 'success' | 'error'
   });
 
   const handleLayoutSave = async () => {
@@ -64,7 +77,7 @@ export function Dashboard() {
         )}
       </Box>
 
-      <ResponsiveGridLayout
+      {/* <ResponsiveGridLayout
         className="layout"
         layouts={{ lg: layout }}
         breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
@@ -75,7 +88,7 @@ export function Dashboard() {
         onLayoutChange={(newLayout) => setLayout(newLayout)}
       >
         {/* Grid items will go here */}
-      </ResponsiveGridLayout>
+      {/* </ResponsiveGridLayout> */}
 
       <Snackbar
         open={snackbarState.open}

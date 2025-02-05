@@ -4,28 +4,6 @@ import { Select, MenuItem } from '@mui/material';
 
 // Update the component to use MUI Select
 export function FinancialYearSelector({ value, onChange }: FinancialYearSelectorProps) {
-  // ... rest of the implementation
-  return (
-    <Select
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      sx={{ width: 200 }}
-    >
-      {years.map((year) => (
-        <MenuItem key={year} value={year}>
-          FY {year}
-        </MenuItem>
-      ))}
-    </Select>
-  );
-}
-
-interface FinancialYearSelectorProps {
-  value: string;
-  onChange: (year: string) => void;
-}
-
-export function FinancialYearSelector({ value, onChange }: FinancialYearSelectorProps) {
   const [years, setYears] = useState<string[]>([]);
 
   useEffect(() => {
@@ -60,4 +38,9 @@ export function FinancialYearSelector({ value, onChange }: FinancialYearSelector
       ))}
     </Select>
   );
+}
+
+interface FinancialYearSelectorProps {
+  value: string;
+  onChange: (year: string) => void;
 }

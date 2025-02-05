@@ -11,7 +11,7 @@ function App() {
       <AuthProvider>
         <Routes>
           <Route path="/login" element={<Login />} />
-          <Route element={<ProtectedRoute />}>
+          <Route element={<ProtectedRoute><Dashboard /></ProtectedRoute>}>
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/transactions" element={<div>Transactions</div>} />
             <Route path="/invoices" element={<div>Invoices</div>} />

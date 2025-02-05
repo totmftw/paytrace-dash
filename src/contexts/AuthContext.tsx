@@ -1,125 +1,89 @@
-// src/context/constants.ts
-import { Session, User } from '@supabase/supabase-js'
-import { supabase } from '../integrations/supabase/client'
+import { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabaseClient';
+import { User, AuthContextType } from '../types/auth';
 
-export const getInitialSession = async () => {
-  const { data: { session } } = await supabase.auth.getSession()
-  return session
-}
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export const getAuthStateChangeSubscription = () => {
-  const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
-    // This callback is not used in this file, but it's required by the onAuthStateChange method
-  })
-  return subscription
-}
-
-// src/context/types.ts
-interface AuthContextType {
-  user: User | null
-  session: Session | null
-  loading: boolean
-  signIn: (email: string, password: string, rememberMe: boolean) => Promise<void>
-  signOut: () => Promise<void>
-  resetPassword: (email: string) => Promise<void>
-}
-
-export { AuthContextType };
-
-// src/context/AuthContext.tsx
-import { createContext, useContext, useEffect, useState } from 'react'
-import { Session, User } from '@supabase/supabase-js'
-import { getInitialSession, getAuthStateChangeSubscription } from './constants'
-import { AuthContextType } from './types';
-import { useAuthProvider } from './AuthProvider';
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
-
-export { AuthContext };
-
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  return useAuthProvider({ children });
-}
-
-export const useAuth = () => {
-  const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
-}
-
-// src/context/AuthProvider.tsx
-import { useState, useEffect } from 'react'
-import { Session, User } from '@supabase/supabase-js'
-import { getInitialSession, getAuthStateChangeSubscription } from './constants'
-import { AuthContext } from './AuthContext';
-import { AuthContextType } from './types';
-
-export function useAuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [session, setSession] = useState<Session | null>(null)
-  const [loading, setLoading] = useState(true)
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    getInitialSession().then((session) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
+    // Check active sessions and sets the user
+    const getSession = async () => {
+      const session = await supabase.auth.getSession();
+      
+      if (session && session.data) {
+        const { user: supaUser } = session.data;
+        if (supaUser) {
+          const mappedUser: User = {
+            id: supaUser.id,
+            email: supaUser.email || '',
+          };
+          setUser(mappedUser);
+        }
+      }
+      
+      setLoading(false);
+    };
 
-    // Listen for auth changes
-    const subscription = getAuthStateChangeSubscription()
-    const handleAuthStateChange = (_event: any, session: Session | null) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-    }
-    supabase.auth.onAuthStateChange(handleAuthStateChange)
+    getSession();
+
+    // Listen for changes on auth state (sign in, sign out, etc.)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session && session.data && session.data.user) {
+        const { user: supaUser } = session.data;
+        const mappedUser: User = {
+          id: supaUser.id,
+          email: supaUser.email || '',
+        };
+        setUser(mappedUser);
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
 
     return () => {
-      subscription.unsubscribe()
-      supabase.auth.offAuthStateChange(handleAuthStateChange)
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const signIn = async (email: string, password: string) => {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      return { data: null, error };
     }
-  }, [])
-
-  const signIn = async (email: string, password: string, rememberMe: boolean) => {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-      options: {
-        persistSession: rememberMe
-      }
-    });
-    if (error) throw error;
-
-    setUser(data.user);
-    setSession(data.session);
-  }
+    return { data, error: null };
+  };
 
   const signOut = async () => {
-    const { error } = await supabase.auth.signOut()
-    if (error) throw error
-  }
+    const { error } = await supabase.auth.signOut();
+    return { error };
+  };
 
   const resetPassword = async (email: string) => {
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/reset-password`
-    })
-    if (error) throw error
-  }
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    return { error };
+  };
 
-  return (
-    <AuthContext.Provider value={{
-      user,
-      session,
-      loading,
-      signIn,
-      signOut,
-      resetPassword
-    }}>
-      {children}
-    </AuthContext.Provider>
-  )
-}
+  const value = {
+    user,
+    loading,
+    signIn,
+    signOut,
+    resetPassword,
+  };
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
+
+export { AuthContext };

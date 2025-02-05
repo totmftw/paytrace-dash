@@ -20,8 +20,13 @@ interface RowData {
   invTotalAmount: number;
 }
 
-export function DashboardMetric({ title, value, type, data, onMetricClick }: DashboardMetricProps) {
+export const DashboardMetric = ({ title, value, type, data, onMetricClick }: DashboardMetricProps) => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const handleClick = () => {
+    onMetricClick();
+    setIsDialogOpen(true);
+  };
 
   const columns = [
     { field: 'invNumber', headerName: 'Invoice No' },
@@ -37,7 +42,7 @@ export function DashboardMetric({ title, value, type, data, onMetricClick }: Das
     <>
       <div 
         className="p-4 bg-white rounded-lg shadow cursor-pointer hover:shadow-lg transition-shadow"
-        onClick={() => setIsDialogOpen(true)}
+        onClick={handleClick}
       >
         <h3 className="text-lg font-semibold text-gray-700">{title}</h3>
         <p className="text-2xl font-bold mt-2">
@@ -45,11 +50,9 @@ export function DashboardMetric({ title, value, type, data, onMetricClick }: Das
         </p>
       </div>
 
-      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <Dialog.Content className="max-w-4xl">
-          <Dialog.Header>
-            <Dialog.Title>{title} Details</Dialog.Title>
-          </Dialog.Header>
+      <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
+        <div className="dialog-content">
+          <h2>{title} Details</h2>
           <div className="max-h-[70vh] overflow-auto">
             <DataGrid
               columns={columns}
@@ -57,7 +60,7 @@ export function DashboardMetric({ title, value, type, data, onMetricClick }: Das
               pagination
             />
           </div>
-        </Dialog.Content>
+        </div>
       </Dialog>
     </>
   );

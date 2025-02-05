@@ -1,14 +1,28 @@
 // src/components/ProtectedRoute.tsx
-import { Navigate, useLocation } from 'react-router-dom'
-import { useAuth } from '../hooks/useAuth' // You'll need to create this
+import { Navigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
+import type { AuthContextType } from '../types/auth';
 
-export function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth()
-  const location = useLocation()
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+  adminOnly?: boolean;
+}
 
-  if (!user) {
-    return <Navigate to="/login" state={{ from: location }} replace />
+export function ProtectedRoute({ children, adminOnly = false }: ProtectedRouteProps) {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+
+  if (loading) {
+    return <div>Loading...</div>;
   }
 
-  return <>{children}</>
+  if (!user) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  if (adminOnly && !user.isAdmin) {
+    return <Navigate to="/unauthorized" replace />;
+  }
+
+  return <>{children}</>;
 }

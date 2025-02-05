@@ -8,7 +8,7 @@
     "module": "ESNext",
     "strict": true,
     "jsx": "react-jsx",
-    "moduleResolution": "node",
+    "moduleResolution": "node16",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,

@@ -1,9 +1,8 @@
-
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthProvider';
-import { ProtectedRoute } from './components/ProtectedRoute';
-import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
+import { AuthProvider } from './contexts/AuthProvider.tsx';
+import { ProtectedRoute } from './components/ProtectedRoute.tsx';
+import Login from './pages/Login.tsx';
+import Dashboard from './pages/Dashboard.tsx';
 
 function App() {
   return (

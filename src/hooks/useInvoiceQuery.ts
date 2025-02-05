@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { Invoice } from "@/types";
@@ -13,22 +14,33 @@ export async function fetchInvoicesForYear(year: string): Promise<Invoice[]> {
     .from("invoiceTable")
     .select(`
       *,
-      customerMaster!invoiceTable_invCustid_fkey (
+      customerMaster:customerMaster!invoiceTable_invCustid_fkey (
         custBusinessname,
         custCreditperiod,
-        custWhatsapp
+        custWhatsapp,
+        custPhone,
+        custGST
       ),
       paymentTransactions (
         paymentId,
         amount,
-        paymentDate
+        paymentDate,
+        transactionId,
+        paymentMode,
+        chequeNumber,
+        bankName,
+        remarks
       )
     `)
     .gte("invDate", `${startYear}-04-01`)
     .lte("invDate", `${parseInt(startYear) + 1}-03-31`);
 
-  if (error) throw error;
-  return data as Invoice[];
+  if (error) {
+    console.error("Error fetching invoices:", error);
+    throw error;
+  }
+
+  return data as unknown as Invoice[];
 }
 
 export function useInvoiceQuery({ year, options }: UseInvoiceQueryProps) {

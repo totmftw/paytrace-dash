@@ -8,7 +8,7 @@ interface DashboardProps {
 }
 
 export default function Dashboard({ year }: DashboardProps) {
-  const { data: invoices } = useQuery({
+  const { data: invoices, error, isLoading } = useQuery({
     queryKey: ['invoices', year],
     queryFn: async () => {
       const [startYear, endYear] = year.split('-');
@@ -16,7 +16,7 @@ export default function Dashboard({ year }: DashboardProps) {
         .from('invoiceTable')
         .select(`
           *,
-          customerMaster!invoiceTable_invCustid_fkey (
+          customerMaster:customerMaster!invoiceTable_invCustid_fkey (
             custBusinessname,
             custCreditperiod,
             custWhatsapp,
@@ -38,10 +38,17 @@ export default function Dashboard({ year }: DashboardProps) {
         .gte('invDate', `${startYear}-04-01`)
         .lte('invDate', `${endYear}-03-31`);
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching invoices:', error);
+        throw error;
+      }
+
       return data as unknown as Invoice[];
     },
   });
+
+  if (isLoading) return <div>Loading...</div>;
+  if (error) return <div>Error loading dashboard data</div>;
 
   return (
     <div>

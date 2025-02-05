@@ -1,3 +1,4 @@
+
 import {
   Dialog,
   DialogContent,
@@ -7,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Invoice } from "@/types/dashboard";
+import { Invoice } from "@/types";
 import { formatCurrency } from "@/lib/utils";
 
 interface MetricsDetailPopupProps {

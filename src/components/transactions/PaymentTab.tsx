@@ -5,25 +5,26 @@ import { TransactionInvoiceTable } from "./TransactionInvoiceTable";
 import { AddInvoiceButton } from "../buttons/AddInvoiceButton";
 import { DownloadTemplateButton } from "../buttons/DownloadTemplateButton";
 import { UploadInvoiceButton } from "../buttons/UploadInvoiceButton";
-import type { Invoice } from "@/types/types";
+import type { Invoice } from "@/types";
 
 export default function PaymentTab({ year }: { year: string }) {
-  const { data: invoices, isLoading } = useQuery({
+  const [startYear] = year.split('-');
+
+  const { data: invoices, isLoading, error } = useQuery({
     queryKey: ["invoices", year],
     queryFn: async () => {
-      const [startYear] = year.split('-');
       const { data, error } = await supabase
         .from("invoiceTable")
         .select(`
           *,
-          customerMaster!invoiceTable_invCustid_fkey (
+          customerMaster:customerMaster!invoiceTable_invCustid_fkey (
             custBusinessname,
             custCreditperiod,
             custWhatsapp,
             custPhone,
             custGST
           ),
-          paymentTransactions (
+          paymentTransactions!paymentTransactions_invId_fkey (
             paymentId,
             invId,
             amount,
@@ -38,32 +39,33 @@ export default function PaymentTab({ year }: { year: string }) {
         .gte("invDate", `${startYear}-04-01`)
         .lte("invDate", `${parseInt(startYear) + 1}-03-31`);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching invoices:", error);
+        throw error;
+      }
+
       return data as unknown as Invoice[];
     },
   });
 
-  const handleCustomerClick = (customer: any) => {
-    console.log('Customer clicked:', customer);
-  };
-
-  const handleInvoiceClick = (invoice: Invoice) => {
-    console.log('Invoice clicked:', invoice);
-  };
+  if (error) {
+    return <div>Error loading data</div>;
+  }
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-4">
+      <div className="flex items-center justify-between">
         <AddInvoiceButton />
-        <DownloadTemplateButton tableName="invoiceTable" />
-        <UploadInvoiceButton />
+        <div className="flex items-center gap-4">
+          <DownloadTemplateButton tableName="invoiceTable" />
+          <UploadInvoiceButton />
+        </div>
       </div>
-      
-      <TransactionInvoiceTable 
+      <TransactionInvoiceTable
         data={invoices || []}
         isLoading={isLoading}
-        onCustomerClick={handleCustomerClick}
-        onInvoiceClick={handleInvoiceClick}
+        onCustomerClick={() => {}}
+        onInvoiceClick={() => {}}
       />
     </div>
   );

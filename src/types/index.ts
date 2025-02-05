@@ -40,10 +40,23 @@ export interface Invoice {
   paymentTransactions: PaymentTransaction[];
 }
 
-export interface PDFExportProps {
-  fileName?: string;
-  data?: any[];
-  onExport?: () => void;
+export interface Customer {
+  id: number;
+  custBusinessname: string;
+  custOwnername: string;
+  custPhone: number;
+  custWhatsapp?: number;
+  custEmail: string;
+  custOwneremail?: string;
+  custType: string;
+  custAddress?: string;
+  custProvince?: string;
+  custCity?: string;
+  custPincode?: number;
+  custGST: string;
+  custRemarks?: string;
+  custStatus: string;
+  custCreditperiod?: number;
 }
 
 export interface InvoiceTableProps {

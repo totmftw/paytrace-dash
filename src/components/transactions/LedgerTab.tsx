@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { DataTable } from "@/components/ui/datatable";
@@ -13,8 +14,12 @@ export default function LedgerTab() {
         .from("customerMaster")
         .select("*");
 
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.error("Error fetching customers:", error);
+        throw error;
+      }
+
+      return data as Customer[];
     },
   });
 

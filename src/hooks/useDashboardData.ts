@@ -1,3 +1,4 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { Invoice } from '@/types';
@@ -18,14 +19,16 @@ export const useDashboardData = (selectedYear: string) => {
   return useQuery({
     queryKey: ["dashboard-metrics", selectedYear],
     queryFn: async (): Promise<DashboardData> => {
-      const { data: invoices = [] } = await supabase
+      const { data: invoices = [], error } = await supabase
         .from("invoiceTable")
         .select(`
           *,
-          customerMaster!invoiceTable_invCustid_fkey (
+          customerMaster:customerMaster!invoiceTable_invCustid_fkey (
             custBusinessname,
             custCreditperiod,
-            custWhatsapp
+            custWhatsapp,
+            custPhone,
+            custGST
           ),
           paymentTransactions!paymentTransactions_invId_fkey (
             paymentId,
@@ -36,11 +39,15 @@ export const useDashboardData = (selectedYear: string) => {
         .gte("invDate", startDate)
         .lte("invDate", endDate);
 
-      const totalSales = invoices.reduce((sum, inv) => sum + inv.invTotal, 0);
-      const pendingPayments = invoices
+      if (error) throw error;
+
+      const invoiceData = invoices as unknown as Invoice[];
+
+      const totalSales = invoiceData.reduce((sum, inv) => sum + inv.invTotal, 0);
+      const pendingPayments = invoiceData
         .filter(inv => new Date(inv.invDuedate) > new Date())
         .reduce((sum, inv) => sum + (inv.invTotal - (inv.paymentTransactions?.reduce((s, p) => s + p.amount, 0) || 0)), 0);
-      const outstandingPayments = invoices
+      const outstandingPayments = invoiceData
         .filter(inv => new Date(inv.invDuedate) < new Date())
         .reduce((sum, inv) => sum + (inv.invTotal - (inv.paymentTransactions?.reduce((s, p) => s + p.amount, 0) || 0)), 0);
 
@@ -48,8 +55,8 @@ export const useDashboardData = (selectedYear: string) => {
         totalSales,
         pendingPayments,
         outstandingPayments,
-        totalInvoices: invoices.length,
-        invoices: invoices as Invoice[]
+        totalInvoices: invoiceData.length,
+        invoices: invoiceData
       };
     },
   });

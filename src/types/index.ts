@@ -1,10 +1,11 @@
 
 export interface PaymentTransaction {
   paymentId: number;
+  invId: number;
   amount: number;
   paymentDate: string;
-  transactionId?: string;
-  paymentMode?: string;
+  transactionId: string;
+  paymentMode: string;
   chequeNumber?: string;
   bankName?: string;
   remarks?: string;
@@ -20,6 +21,7 @@ export interface CustomerMaster {
 
 export interface Invoice {
   invId: number;
+  invCustid?: number;
   invNumber: string;
   invDate: string;
   invDuedate: string;
@@ -33,7 +35,7 @@ export interface Invoice {
   invMessage1: string;
   invMessage2?: string;
   invMessage3?: string;
-  invPaymentStatus?: string;
+  invPaymentStatus: string;
   invAlert?: string;
   fy: string;
   customerMaster: CustomerMaster;
